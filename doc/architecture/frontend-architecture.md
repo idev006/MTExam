@@ -116,6 +116,7 @@ src/assets/main.css:
 - ใช้ daisyUI components ก่อนสร้าง design system เพิ่ม
 - Theme และ accessibility token อยู่จุดเดียว
 - หลีกเลี่ยง style ซ้ำในหลาย component
+- Typography baseline ใช้ Google Font `Chakra Petch` ผ่าน `src/assets/main.css` จุดเดียว เพื่อให้ทุกหน้าใช้รูปแบบเดียวกันและแก้ไขง่าย
 
 ## Routing
 
