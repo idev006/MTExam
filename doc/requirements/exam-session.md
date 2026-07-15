@@ -6,7 +6,7 @@
 
 ## Requirements
 
-The current development preview is available at `/exam/pdpa`. It is a practice flow only: it loads the seeded PDPA bank through the API, keeps answers in client state, and reveals score plus stored rationales only after the examinee submits the complete paper. It is not yet an authenticated or durable exam session.
+The current development preview is available at `/exam/pdpa`. It is a practice flow only: an administrator selects the number of questions per page (1, 5, 10, 20, or 50), the examinee can navigate directly to any page, answers stay in client state, and score plus stored rationales are revealed only after the complete paper is submitted. It is not yet an authenticated or durable exam session.
 
 ### EXAM-001 — Exam window
 

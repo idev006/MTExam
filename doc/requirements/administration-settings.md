@@ -17,6 +17,7 @@ Provide a small, role-protected settings area for operational configuration with
 ## Initial settings scope
 
 - Session limits and expiry policy
+- Exam display page size (number of questions per page)
 - Import validation policy and batch limits
 - Theme preference and display density
 - Read-only system/API/database health

@@ -5,15 +5,21 @@ import AppToast from "@/components/feedback/AppToast.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import ThemeSelector from "@/components/settings/ThemeSelector.vue";
+import { EXAM_PAGE_SIZE_OPTIONS, useExamSettings } from "@/stores/examSettings";
 
 const sessionMode = ref("role");
 const maxSessions = ref(3);
 const idleTimeout = ref(30);
 const strictImport = ref(true);
 const toastVisible = ref(false);
+const { pageSize, setPageSize } = useExamSettings();
 
 function saveSettings() {
   toastVisible.value = true;
+}
+
+function updatePageSize(event: Event) {
+  setPageSize(Number((event.target as HTMLSelectElement).value));
 }
 </script>
 
@@ -32,6 +38,7 @@ function saveSettings() {
         </div></section>
 
         <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body"><h2 class="card-title">การนำเข้าบุคลากร</h2><p class="text-sm text-base-content/60">ตัวเลือกที่มีผลต่อการตรวจสอบไฟล์ CSV รอบถัดไป</p><label class="label mt-3 cursor-pointer justify-between"><span><span class="label-text font-medium">ตรวจสอบข้อมูลเข้มงวด</span><span class="block text-xs text-base-content/60">หยุดทั้ง batch เมื่อพบข้อมูลผิดรูปแบบ</span></span><input v-model="strictImport" class="toggle toggle-primary" type="checkbox" /></label></div></section>
+        <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body gap-3"><h2 class="card-title">การแสดงข้อสอบ</h2><p class="text-sm text-base-content/60">กำหนดจำนวนข้อที่แสดงต่อหน้า ผู้สอบสามารถไปหน้าใดก็ได้</p><label class="form-control max-w-xs"><span class="label-text font-medium">จำนวนข้อต่อหน้า</span><select class="select select-bordered" :value="pageSize" @change="updatePageSize"><option v-for="size in EXAM_PAGE_SIZE_OPTIONS" :key="size" :value="size">{{ size }} ข้อ</option></select></label></div></section>
       </div>
 
       <aside class="space-y-6"><section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body"><h2 class="card-title text-base">การแสดงผล</h2><p class="text-sm text-base-content/60">การตั้งค่านี้เป็น client-side UI state</p><ThemeSelector /></div></section><section class="alert alert-info"><span aria-hidden="true">ⓘ</span><div><p class="font-semibold">ปลอดภัยต่อการขยายระบบ</p><p class="text-xs">ค่าตั้งค่าจะถูกตรวจสอบและบันทึกผ่าน API เมื่อ backend endpoint พร้อมใช้งาน</p></div></section></aside>
