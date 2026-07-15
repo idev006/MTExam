@@ -6,7 +6,15 @@
 
 ## Requirements
 
-The current development preview is available at `/exam/pdpa`. It is a practice flow only: an administrator selects the number of questions per page (1, 5, 10, 20, or 50), the examinee can navigate directly to any page, answers stay in client state, and score plus stored rationales are revealed only after the complete paper is submitted. It is not yet an authenticated or durable exam session.
+The current development preview is available at `/exam/pdpa`. An administrator selects the number of questions per page (1, 5, 10, 20, or 50), and the examinee can navigate directly to any page. The recovery POC creates a durable SQLite `practice_exam_sessions` row, autosaves each answer through the API, keeps a local browser recovery copy, and resumes the same session after refresh, browser restart, or temporary network loss. Score plus stored rationales are revealed only after the complete paper is submitted. Identity binding and formal authenticated exam windows remain pending.
+
+### Recovery acceptance criteria
+
+- A session has a stable `session_id` and can be loaded again after a page reload.
+- Each answer is persisted independently; retrying an answer update is safe.
+- Offline or failed writes remain in browser recovery storage and are retried when the user continues or submits.
+- Submit is idempotent: a repeated submit returns the existing result and never recalculates a second attempt.
+- The server rejects incomplete submissions and calculates the score from the server-side question bank.
 
 ### EXAM-001 — Exam window
 

@@ -19,6 +19,7 @@ from backend.app.db.models.identity import (
     UserAccount,
 )
 from backend.app.db.models.imports import PersonnelImportBatch, PersonnelImportRow
+from backend.app.db.models.practice import PracticeExamSession
 from backend.app.db.models.questions import (
     Question,
     QuestionBank,
@@ -53,4 +54,5 @@ __all__ = [
     "QuestionVersion",
     "Tag",
     "UserAccount",
+    "PracticeExamSession",
 ]

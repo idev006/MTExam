@@ -14,3 +14,12 @@ export interface PracticeBank {
   version: number;
   questions: PracticeQuestion[];
 }
+
+export interface PracticeSession {
+  session_id: string;
+  bank_code: string;
+  status: "in_progress" | "submitted";
+  answers: Record<number, number>;
+  score: number | null;
+  updated_at: string;
+}

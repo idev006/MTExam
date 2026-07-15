@@ -31,3 +31,16 @@ export async function apiGet<T>(path: string): Promise<T> {
 
   return (await response.json()) as T;
 }
+
+export async function apiRequest<T>(path: string, method: "POST" | "PUT", body?: unknown): Promise<T> {
+  const response = await fetch(API_BASE_URL + path, {
+    method,
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const payload = (await response.json()) as ApiErrorResponse;
+    throw new ApiClientError(payload.error?.message ?? "Request failed.", payload.error?.code ?? "HTTP_ERROR", payload.error?.correlation_id ?? "", response.status);
+  }
+  return (await response.json()) as T;
+}

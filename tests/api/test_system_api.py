@@ -38,6 +38,28 @@ def test_pdpa_practice_bank_is_available_for_examinee_preview(client: TestClient
     assert body["questions"][0]["explanation"]
 
 
+def test_practice_session_recovers_answers_and_submit_is_idempotent(client: TestClient) -> None:
+    created = client.post("/api/v1/practice/sessions").json()
+    session_id = created["session_id"]
+    saved = client.put(
+        f"/api/v1/practice/sessions/{session_id}/answers",
+        json={"question_index": 0, "choice_index": 1},
+    )
+    assert saved.status_code == 200
+    resumed = client.get(f"/api/v1/practice/sessions/{session_id}").json()
+    assert resumed["answers"] == {"0": 1}
+    for question_index in range(1, 50):
+        assert client.put(
+            f"/api/v1/practice/sessions/{session_id}/answers",
+            json={"question_index": question_index, "choice_index": 0},
+        ).status_code == 200
+    submitted = client.post(f"/api/v1/practice/sessions/{session_id}/submit")
+    assert submitted.status_code == 200
+    repeated = client.post(f"/api/v1/practice/sessions/{session_id}/submit")
+    assert repeated.status_code == 200
+    assert repeated.json()["score"] == submitted.json()["score"]
+
+
 def test_not_found_uses_standard_error_envelope(client: TestClient) -> None:
     response = client.get("/api/v1/not-a-route")
 

@@ -13,6 +13,7 @@ from backend.app.api.middleware import CorrelationIdMiddleware
 from backend.app.api.router import api_router
 from backend.app.config import PROJECT_ROOT, Settings, get_settings
 from backend.app.db.database import Database
+from backend.app.db.models.practice import PracticeExamSession
 
 
 def create_app(
@@ -24,6 +25,7 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        PracticeExamSession.__table__.create(database.engine, checkfirst=True)
         yield
         database.dispose()
 
