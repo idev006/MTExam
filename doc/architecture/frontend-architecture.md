@@ -2,6 +2,10 @@
 
 ## Stack
 
+Exam Creation uses progressive disclosure: subject selection loads server-side questions,
+search/filter narrows the list, checkbox selection shows the selected/required counter, and the
+submit action stays disabled until the business invariants are satisfied.
+
 - Vite
 - Vue 3
 - TypeScript

@@ -67,6 +67,8 @@ class QuestionResponse(BaseModel):
     difficulty: str | None
     status: str
     choices: list[dict[str, object]]
+    bank_id: UUID
+    bank_name: str
 
 
 @router.get("/subjects", response_model=list[SubjectResponse])
@@ -104,6 +106,18 @@ def list_banks(
 ) -> list[BankResponse]:
     rows = db.scalars(select(QuestionBank).order_by(QuestionBank.created_at.desc()))
     return [BankResponse.model_validate(row, from_attributes=True) for row in rows]
+
+
+@router.get("/questions", response_model=list[QuestionResponse])
+def list_questions_for_selection(
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+    subject_id: UUID | None = None,
+) -> list[QuestionResponse]:
+    query = select(Question, QuestionBank).join(QuestionBank, Question.bank_id == QuestionBank.id).where(Question.status == ContentStatus.DRAFT)
+    if subject_id is not None:
+        query = query.where(QuestionBank.subject_id == subject_id)
+    return [QuestionResponse(id=question.id, content=question.content, difficulty=question.difficulty, status=question.status, bank_id=bank.id, bank_name=bank.name, choices=[{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order))]) for question, bank in db.execute(query).all()]
 
 
 @router.post("", response_model=BankResponse, status_code=201)
@@ -168,7 +182,7 @@ def list_questions(
     if db.get(QuestionBank, bank_id) is None:
         raise HTTPException(status_code=404, detail="Question bank not found")
     questions = db.scalars(select(Question).where(Question.bank_id == bank_id).order_by(Question.created_at))
-    return [QuestionResponse(id=question.id, content=question.content, difficulty=question.difficulty, status=question.status, choices=[{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order))]) for question in questions]
+    return [QuestionResponse(id=question.id, content=question.content, difficulty=question.difficulty, status=question.status, bank_id=question.bank_id, bank_name=db.get(QuestionBank, question.bank_id).name, choices=[{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order))]) for question in questions]
 
 
 @router.post("/{bank_id}/publish", response_model=BankResponse)
