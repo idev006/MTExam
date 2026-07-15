@@ -86,6 +86,13 @@ class AuditSettings(BaseModel):
     record_user_agent: bool = True
 
 
+class AuthSettings(BaseModel):
+    max_sessions_examinee: int = Field(default=1, ge=1)
+    max_sessions_admin: int = Field(default=3, ge=1)
+    session_expire_minutes: int = Field(default=480, ge=5)
+    session_idle_minutes: int = Field(default=30, ge=1)
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
@@ -101,6 +108,7 @@ class Settings(BaseSettings):
     exam: ExamSettings = Field(default_factory=ExamSettings)
     personnel_import: PersonnelImportSettings = Field(default_factory=PersonnelImportSettings)
     audit: AuditSettings = Field(default_factory=AuditSettings)
+    auth: AuthSettings = Field(default_factory=AuthSettings)
     database_url: str = Field(
         default="sqlite:///./data/mtexam.db",
         validation_alias=AliasChoices("DATABASE_URL", "database_url"),

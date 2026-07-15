@@ -67,6 +67,12 @@
     record_ip_address = true
     record_user_agent = true
 
+    [auth]
+    max_sessions_examinee = 1
+    max_sessions_admin = 3
+    session_expire_minutes = 480
+    session_idle_minutes = 30
+
 ## Environment Variables
 
 Required candidates:

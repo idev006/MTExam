@@ -29,6 +29,7 @@
 | [PER-IMP-001](https://github.com/idev006/MTExam/issues/9) | Implement personnel CSV staging/import | High | Blocked | Data Owner/Developer | PER-IMP-001 | Representative sample CSV |
 | [SEC-001](https://github.com/idev006/MTExam/issues/10) | Confirm SSO/OIDC provider | High | Blocked | Product Owner | Authentication architecture | Provider decision and metadata |
 | [POC-001](https://github.com/idev006/MTExam/issues/11) | Executable proof of project technology stack | High | Verify | Technical Lead/AI | Technology POC | Human review/acceptance |
+| [AUTH-001](https://github.com/idev006/MTExam/issues/12) | Implement DB-backed browser sessions and concurrent-session policy | High | In progress | Backend/AI | ADR-0007, AUTH-003 | Full login/API wiring |
 
 ## Ticket Acceptance
 
@@ -69,9 +70,9 @@
 
 ### POC-001
 
-- 26 executable POC tests cover API/config/database/CSV/security/exam rules
+- 34 executable POC tests cover API/config/database/CSV/security/exam rules/session policy
 - Existing 18 tests, Ruff, Vue type-check and Vite production build pass
-- All 23 tables compile for SQLite, MySQL and PostgreSQL dialects
+- All 24 tables compile for SQLite, MySQL and PostgreSQL dialects
 - External/live verification gaps are explicitly recorded and not claimed as passed
 
 ## Blocked Detail
@@ -104,7 +105,7 @@
 ### Backend and API
 
 - Ruff: passed
-- pytest: 44 passed, no warning (26 POC + 18 existing)
+- pytest: 52 passed, no warning (34 POC + 18 existing)
 - Health API: verified with in-memory SQLite
 - Public config: verified no secret/database URL exposure
 - Standard error envelope and correlation ID: verified
@@ -117,7 +118,7 @@
 - Alembic schema check: no new operations
 - SQLite foreign key enforcement: verified
 - MySQL/PostgreSQL execution: pending connected CI services
-- Portable DDL compile: all 23 tables passed SQLite/MySQL/PostgreSQL dialect compilation
+- Portable DDL compile: all 24 tables passed SQLite/MySQL/PostgreSQL dialect compilation
 
 ### Frontend
 

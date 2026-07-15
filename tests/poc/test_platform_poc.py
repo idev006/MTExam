@@ -68,7 +68,7 @@ def test_toml_settings_are_typed_env_overrides_and_secrets_stay_private(monkeypa
 
 @pytest.mark.parametrize("dialect", [sqlite.dialect(), mysql.dialect(), postgresql.dialect()])
 def test_all_tables_compile_for_all_supported_sql_dialects(dialect) -> None:
-    assert len(Base.metadata.sorted_tables) == 23
+    assert len(Base.metadata.sorted_tables) == 24
     for table in Base.metadata.sorted_tables:
         ddl = str(CreateTable(table).compile(dialect=dialect))
         assert table.name in ddl

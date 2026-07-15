@@ -26,8 +26,10 @@
 - 10 tracked GitHub Issues migrated: Done 3, Verify 5, Blocked 2
 - SQLite employee table contract, model และ migration 0002 verified
 - Executable technology POC implemented for API/config/database/CSV/security/exam rules/frontend
-- POC runner passed: 26 POC + 18 existing tests, Ruff, Vue type-check and Vite build
-- All 23 metadata tables compile for SQLite, MySQL and PostgreSQL dialects
+- POC runner passed: 34 POC + 18 existing tests, Ruff, Vue type-check and Vite build
+- All 24 metadata tables compile for SQLite, MySQL and PostgreSQL dialects
+- Database-backed browser session policy implemented: Examinee 1 session, admin 3 sessions, oldest revoke
+- AUTH-001 (#12) tracked in GitHub Project as In progress; current commit contains session foundation
 - POC GitHub Actions run 29412132325 passed at implementation commit 2b82892
 
 ## In Progress
@@ -39,6 +41,7 @@
 
 - MySQL/PostgreSQL CI execution
 - M1 personnel import service and identity implementation
+- Full login/API wiring remains next step; session storage/policy foundation is ready
 
 ## Current Blockers
 
@@ -54,7 +57,7 @@
 2. PER-IMP-001 Provide representative CSV and implement staging/import
 3. SEC-001 Confirm SSO/OIDC provider
 4. DB-VERIFY-001 Run migrations/integration suite on live MySQL and PostgreSQL
-5. AUTH-001 Implement the approved authentication approach
+5. AUTH-001 Complete login/API wiring on the session foundation
 6. PERF-001 Define workload and verify the 500-user target before production
 
 ## Release Readiness

@@ -13,6 +13,10 @@ def test_settings_load_committed_toml() -> None:
     assert settings.personnel_import.columns.emp_cid == "emp_cid"
     assert settings.personnel_import.columns.emp_position_rank == "emp_position_rank"
     assert settings.exam.batch.allow_late_entry is True
+    assert settings.auth.max_sessions_examinee == 1
+    assert settings.auth.max_sessions_admin == 3
+    assert settings.auth.session_expire_minutes == 480
+    assert settings.auth.session_idle_minutes == 30
 
 
 def test_question_range_must_be_valid() -> None:

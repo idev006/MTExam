@@ -43,6 +43,15 @@ emp_gender, emp_tel, emp_bh, emp_bk, emp_kk, emp_status, emp_descr, created_dt, 
 
 id, person_id, username_normalized, password_hash, role, status, must_change_password, created_at, updated_at
 
+### auth_sessions
+
+id, user_account_id, token_hash, created_at, last_seen_at, expires_at, revoked_at, revoke_reason,
+ip_address, user_agent
+
+- `token_hash` เป็น unique SHA-256 ของ opaque browser session token; raw token ไม่เก็บใน database
+- index ที่ user, token hash, expiry และ revoke state รองรับการตรวจ session และจำกัดจำนวน session
+- ไม่มี hard delete ระหว่าง session ที่ยังอยู่ใน audit/incident window; revoke เป็น state change
+
 ### org_units
 
 id, code, name, level, parent_id, status

@@ -25,6 +25,11 @@
 - Generic login error
 - Account/person inactive เข้าไม่ได้
 - Secret จาก environment
+- Browser session ใช้ opaque random token ใน `HttpOnly` cookie
+- `auth_sessions` เก็บ token hash, expiry, last-seen และ revoke reason; ไม่เก็บ raw token
+- Concurrent-session policy: Examinee 1, admin 3, role อื่น 1; เกิน limit revoke oldest
+- Logout, idle expiry และ personnel deactivation revoke session ได้
+- JWT/OIDC เป็น future adapter สำหรับ mobile/external API/split frontend ไม่ใช่ initial browser authority
 
 ### Authorization
 

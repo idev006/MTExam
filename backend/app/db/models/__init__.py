@@ -12,6 +12,7 @@ from backend.app.db.models.exams import (
     ExamWindowScope,
 )
 from backend.app.db.models.identity import (
+    AuthSession,
     OrgUnit,
     Person,
     PersonUnitAssignment,
@@ -29,6 +30,7 @@ from backend.app.db.models.questions import (
 
 __all__ = [
     "AuditLog",
+    "AuthSession",
     "Employee",
     "ExamAnswer",
     "ExamPaper",

@@ -21,6 +21,7 @@
 | D-017 | 2026-07-15 | ประกาศผลทันทีหลัง finalization | Approved | Scoring requirement |
 | D-018 | 2026-07-15 | ใช้ SQLite เป็นฐานข้อมูลเริ่มต้น | Approved | Database portability |
 | D-019 | 2026-07-15 | Employee table/header ใช้ชื่อ `emp_*` ตาม contract | Approved | Personnel import requirement |
+| D-020 | 2026-07-15 | Browser ใช้ DB-backed session; Examinee 1/admin 3; JWT เป็น future adapter | Approved | ADR-0007 |
 
 ## Open Decisions
 
