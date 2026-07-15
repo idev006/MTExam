@@ -57,6 +57,16 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | AUDIT-002 | requirements/reporting.md | audit schema | TBD | Planned |
 | AUDIT-003 | requirements/reporting.md | audit authorization | TBD | Planned |
 
+## Use-case interaction traceability
+
+| Use-case set | Catalog | Sequence evidence | Implementation/test link |
+|---|---|---|---|
+| Authentication and RBAC | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-AUTH-01/02 | backend/app/api/v1/auth.py; tests/api/test_system_api.py |
+| Personnel import | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-ORG-01 | requirements/personnel-import.md; domain import POC |
+| Question/paper authoring | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-QBANK-01/UC-PAPER-01 | requirements/question-bank.md, exam-paper.md |
+| Durable examination | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-EXAM-01/02/03 | backend/app/api/v1/practice_exam.py; tests/api/test_system_api.py |
+| Reporting | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-REPORT-01 | requirements/reporting.md |
+
 ## Update Rules
 
 - เมื่อสร้าง ticket ให้เพิ่ม Ticket column หรือ link ใน row ที่เกี่ยวข้อง

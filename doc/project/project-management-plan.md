@@ -22,6 +22,8 @@
 - [Dependency Register](dependency-register.md)
 - [Status Report](status-report.md)
 - [Traceability Matrix](../traceability.md)
+- Actor/use-case baseline: [Actor and Use-Case Catalog](../use-cases/actor-use-case-catalog.md)
+- Interaction evidence: [Use-Case Sequence Diagrams](../workflows/use-case-sequence-diagrams.md)
 
 ## 2. Project Management Approach
 

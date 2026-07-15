@@ -1,0 +1,193 @@
+# Use-Case Sequence Diagrams
+
+Diagrams below describe the API-first flow. Vue is a client of the API; it is never the authority for identity, authorization, score, or durable exam state.
+
+## UC-AUTH-01 — Login
+
+```mermaid
+sequenceDiagram
+    actor U as User
+    participant UI as Vue Login
+    participant API as Auth API
+    participant DB as SQLite
+    U->>UI: Submit username/password
+    UI->>API: POST /auth/login
+    API->>DB: Find active account and verify hash
+    DB-->>API: Account + role
+    API->>DB: Create AuthSession
+    API-->>UI: User profile + HttpOnly cookie
+    UI-->>U: Redirect to role-allowed page
+```
+
+## UC-AUTH-02 — Logout
+
+```mermaid
+sequenceDiagram
+    actor U as User
+    participant UI as Vue App
+    participant M as ConfirmModal
+    participant API as Auth API
+    participant DB as SQLite
+    U->>UI: Click Logout
+    UI->>M: Open confirmation
+    U->>M: Confirm
+    M-->>UI: confirm event
+    UI->>API: POST /auth/logout
+    API->>DB: Revoke AuthSession
+    API-->>UI: 200 + delete cookie
+    UI->>UI: Clear current user
+    UI-->>U: Redirect /login
+```
+
+## UC-ORG-01 — Import personnel CSV snapshot
+
+```mermaid
+sequenceDiagram
+    actor A as super_admin
+    participant UI as Import UI
+    participant API as Import API
+    participant S as Staging/Domain
+    participant DB as SQLite
+    A->>UI: Select CSV and import
+    UI->>API: Upload CSV + idempotency key
+    API->>S: Parse, validate, reconcile snapshot
+    S-->>API: Add/change/missing/warning result
+    API->>DB: Transactionally apply current-state rows
+    API-->>UI: Summary + row errors
+    UI-->>A: Show non-blocking result and audit reference
+```
+
+## UC-ADMIN-01 — Manage system settings
+
+```mermaid
+sequenceDiagram
+    actor A as super_admin
+    participant UI as Settings UI
+    participant API as Settings API
+    participant DB as SQLite
+    A->>UI: Change typed control
+    UI->>API: PUT /settings
+    API->>API: Authenticate and authorize role
+    API->>DB: Validate and persist before/after
+    API-->>UI: Saved settings
+    UI-->>A: DaisyUI toast, no browser alert
+```
+
+## UC-QBANK-01 — Author question bank
+
+```mermaid
+sequenceDiagram
+    actor E as exam_author
+    participant UI as Authoring UI
+    participant API as Question API
+    participant DB as SQLite
+    E->>UI: Create/edit draft question
+    UI->>API: POST/PUT question draft
+    API->>API: Check author scope and validate choices
+    API->>DB: Save new immutable version
+    API-->>UI: Draft/version status
+    E->>UI: Request publish
+    UI->>API: POST /question-banks/{id}/publish
+    API->>DB: Mark version active + audit
+    API-->>UI: Published bank
+```
+
+## UC-PAPER-01 — Create and publish exam paper
+
+```mermaid
+sequenceDiagram
+    actor E as exam_author
+    participant UI as Paper UI
+    participant API as Paper API
+    participant DB as SQLite
+    E->>UI: Select active questions and rules
+    UI->>API: POST /papers
+    API->>DB: Save paper, questions, variant seed
+    API-->>UI: Draft paper
+    E->>UI: Publish paper
+    UI->>API: POST /papers/{id}/publish
+    API->>DB: Validate invariants and publish
+    API-->>UI: Published paper ready for exam window
+```
+
+## UC-EXAM-01 — Start or resume exam
+
+```mermaid
+sequenceDiagram
+    actor X as examinee
+    participant UI as Exam UI
+    participant API as Exam API
+    participant DB as SQLite
+    X->>UI: Open exam
+    UI->>API: GET current user and resume session
+    API->>DB: Find in-progress session for user/window
+    alt Existing session
+        DB-->>API: Session + saved answers
+    else New session
+        API->>DB: Create session with server timestamps
+    end
+    API-->>UI: Questions, status, expires_at, answered map
+    UI-->>X: Show progress and navigator
+```
+
+## UC-EXAM-02 — Answer and autosave/recover
+
+```mermaid
+sequenceDiagram
+    actor X as examinee
+    participant UI as Exam UI
+    participant Local as Browser recovery store
+    participant API as Exam API
+    participant DB as SQLite
+    X->>UI: Select answer
+    UI->>Local: Persist answer immediately
+    UI->>API: PUT answer (retry-safe)
+    alt Online
+        API->>DB: Upsert answer and update activity
+        DB-->>API: Saved timestamp
+        API-->>UI: synced
+    else Offline/API unavailable
+        API-->>UI: network error
+        UI-->>X: Show offline/pending state
+        UI->>Local: Keep pending mutation
+    end
+    X->>UI: Refresh or reopen later
+    UI->>API: Load session
+    UI->>API: Retry pending mutations
+```
+
+## UC-EXAM-03 — Submit exam and reveal result
+
+```mermaid
+sequenceDiagram
+    actor X as examinee
+    participant UI as Exam UI
+    participant API as Exam API
+    participant DB as SQLite
+    X->>UI: Click submit
+    UI-->>X: Show unanswered summary and confirm modal
+    X->>UI: Confirm
+    UI->>API: Sync pending answers
+    UI->>API: POST /exam-sessions/{id}/submit
+    API->>DB: Transaction: validate, calculate score, mark submitted
+    DB-->>API: Immutable result
+    API-->>UI: Score/result
+    UI-->>X: Show score, answers, and rationales
+```
+
+## UC-REPORT-01 — View scoped report
+
+```mermaid
+sequenceDiagram
+    actor V as viewer
+    participant UI as Report UI
+    participant API as Reporting API
+    participant DB as SQLite
+    V->>UI: Open report
+    UI->>API: GET /reports
+    API->>API: Authenticate, authorize, apply scope
+    API->>DB: Query read-only aggregates
+    DB-->>API: Scoped rows/summary
+    API-->>UI: Report data without secrets
+    UI-->>V: Render table/chart/export action
+```

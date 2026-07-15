@@ -33,6 +33,7 @@
 | ADMIN-001 | Admin Settings POC and settings API persistence | Medium | Verify | Frontend/Backend | requirements/administration-settings.md | POC uses local state; GitHub Issue linkage pending |
 | FE-UX-001 | Dashboard and employee-centered UI preview | Medium | Verify | Frontend/AI | frontend-architecture.md | Real employee API and CSV import endpoint pending |
 | EXAM-POC-001 | Examinee PDPA practice flow with answer rationale | High | Verify | Frontend/Backend | question-bank.md, exam-session.md | Authentication and durable exam session wiring pending |
+| UC-001 | Actor/use-case catalog and sequence diagrams | High | Verify | PM/Tech Lead | use-cases/actor-use-case-catalog.md | Human review of scope and authorization matrix |
 
 ## Ticket Acceptance
 
