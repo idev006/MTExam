@@ -32,6 +32,7 @@
 - AUTH-001 (#12) tracked in GitHub Project as Verify; current commit contains session foundation
 - POC GitHub Actions run 29413533674 passed at session implementation commit a3e2cc2
 - Frontend UX foundation implemented: `PageContainer`, `PageHeader`, reusable daisyUI feedback, and user-selectable daisyUI themes.
+- Dashboard preview implemented and verified locally: employee summary cards, searchable employee table, CSV import entry point, theme selection, and API health status.
 
 ## In Progress
 
