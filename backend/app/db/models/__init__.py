@@ -26,6 +26,7 @@ from backend.app.db.models.questions import (
     QuestionChoice,
     QuestionTag,
     QuestionVersion,
+    Subject,
     Tag,
 )
 
@@ -52,6 +53,7 @@ __all__ = [
     "QuestionChoice",
     "QuestionTag",
     "QuestionVersion",
+    "Subject",
     "Tag",
     "UserAccount",
     "PracticeExamSession",

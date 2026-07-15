@@ -62,3 +62,7 @@
 - Permission และ organization ownership
 - Archived content
 - Unicode และ search
+# Subject ownership
+
+Every question bank belongs to one active `Subject`. Authors select the subject when creating
+the bank; the subject is required for new banks and is used as the reporting dimension.

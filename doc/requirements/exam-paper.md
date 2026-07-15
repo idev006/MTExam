@@ -63,3 +63,8 @@
 - Correctness invariant
 - Lifecycle transition
 - Permission และ organization scope
+# Exam Creation and sets
+
+Each paper creation is an independent `Exam Creation` record (the `ExamPaper` aggregate). It
+belongs to one subject and may create one or more `ExamVariant` sets. Scores, participation,
+completion and averages must be grouped by this creation and never merged across creations.

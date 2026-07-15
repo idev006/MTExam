@@ -29,6 +29,7 @@ class ExamPaper(Base):
     __tablename__ = "exam_papers"
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    subject_id: Mapped[UUID | None] = mapped_column(Uuid, ForeignKey("subjects.id"), index=True)
     title: Mapped[str] = mapped_column(String(255))
     question_selection_mode: Mapped[str] = mapped_column(String(30))
     pool_criteria_text: Mapped[str | None] = mapped_column(Text)

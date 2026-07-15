@@ -13,7 +13,14 @@ from sqlalchemy.orm import Session
 
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import Employee, PracticeExamSession, UserAccount
+from backend.app.db.models import (
+    Employee,
+    ExamPaper,
+    ExamSession,
+    ExamVariant,
+    PracticeExamSession,
+    UserAccount,
+)
 from backend.app.domain.enums import UserRole
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -25,6 +32,17 @@ class SystemReport(BaseModel):
     employee_inactive: int
     exam_in_progress: int
     exam_submitted: int
+    average_score: float | None
+
+
+class ExamCreationStats(BaseModel):
+    paper_id: str
+    title: str
+    subject_id: str | None
+    variant_count: int
+    session_total: int
+    submitted_total: int
+    in_progress_total: int
     average_score: float | None
 
 
@@ -64,6 +82,26 @@ def get_summary(
         exam_submitted=submitted,
         average_score=float(average) if average is not None else None,
     )
+
+
+@router.get("/exam-creations", response_model=list[ExamCreationStats])
+def list_exam_creation_stats(
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.EXAM_AUTHOR))],
+    subject_id: str | None = None,
+) -> list[ExamCreationStats]:
+    """Statistics are scoped to each ExamPaper creation, never combined globally."""
+    query = select(ExamPaper).order_by(ExamPaper.created_at.desc())
+    if subject_id:
+        query = query.where(ExamPaper.subject_id == subject_id)
+    result: list[ExamCreationStats] = []
+    for paper in db.scalars(query):
+        # ExamSession references a variant, and each variant references its paper.
+        sessions = list(db.scalars(select(ExamSession).join(ExamVariant, ExamSession.exam_variant_id == ExamVariant.id).where(ExamVariant.exam_paper_id == paper.id)))
+        submitted = [session for session in sessions if session.status == "submitted"]
+        scores = [float(session.score) for session in submitted if session.score is not None]
+        result.append(ExamCreationStats(paper_id=str(paper.id), title=paper.title, subject_id=str(paper.subject_id) if paper.subject_id else None, variant_count=paper.variant_count, session_total=len(sessions), submitted_total=len(submitted), in_progress_total=sum(session.status == "in_progress" for session in sessions), average_score=sum(scores) / len(scores) if scores else None))
+    return result
 
 
 @router.get("/employees.csv")

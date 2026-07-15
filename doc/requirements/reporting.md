@@ -57,3 +57,8 @@
 - Export permission
 - Audit event coverage
 - Sensitive data redaction
+# Exam Creation statistics
+
+Reports expose statistics by `Exam Creation`: subject, creation title, number of variants,
+participants, submitted/in-progress counts and average score. A subject filter may narrow the
+list, but statistics from different creations remain separate.

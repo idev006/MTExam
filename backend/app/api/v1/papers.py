@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.base import utc_now
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import ExamPaper, ExamPaperQuestion, Question, UserAccount
+from backend.app.db.models import ExamPaper, ExamPaperQuestion, Question, Subject, UserAccount
 from backend.app.domain.enums import PaperStatus, UserRole
 from backend.app.services.audit import record_audit
 
@@ -25,6 +25,7 @@ class PaperCreate(BaseModel):
     org_unit_id: UUID
     question_ids: list[UUID] = Field(min_length=1, max_length=200)
     variant_count: int = Field(default=1, ge=1, le=20)
+    subject_id: UUID | None = None
 
 
 class PaperResponse(BaseModel):
@@ -32,6 +33,7 @@ class PaperResponse(BaseModel):
     title: str
     status: str
     question_count: int
+    subject_id: UUID | None = None
 
 
 @router.get("", response_model=list[PaperResponse])
@@ -52,14 +54,16 @@ def create_paper(
     questions = list(db.scalars(select(Question).where(Question.id.in_(payload.question_ids))))
     if len(questions) != len(set(payload.question_ids)):
         raise HTTPException(status_code=422, detail="One or more questions do not exist")
-    paper = ExamPaper(title=payload.title, question_selection_mode="fixed_set", variant_count=payload.variant_count, status=PaperStatus.DRAFT, org_unit_id=payload.org_unit_id, created_by=account.person_id)
+    if payload.subject_id is not None and db.get(Subject, payload.subject_id) is None:
+        raise HTTPException(status_code=422, detail="Subject not found")
+    paper = ExamPaper(title=payload.title, question_selection_mode="fixed_set", variant_count=payload.variant_count, status=PaperStatus.DRAFT, org_unit_id=payload.org_unit_id, subject_id=payload.subject_id, created_by=account.person_id)
     db.add(paper)
     db.flush()
     db.add_all([ExamPaperQuestion(exam_paper_id=paper.id, question_id=question.id, base_order_index=index, score_weight=question.default_score_weight) for index, question in enumerate(questions)])
     db.commit()
     record_audit(db, actor_person_id=account.person_id, event_type="paper.create", subject_type="exam_paper", subject_id=paper.id)
     db.commit()
-    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=len(questions))
+    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=len(questions), subject_id=paper.subject_id)
 
 
 @router.post("/{paper_id}/publish", response_model=PaperResponse)
@@ -81,7 +85,7 @@ def publish_paper(
     db.commit()
     record_audit(db, actor_person_id=account.person_id, event_type="paper.publish", subject_type="exam_paper", subject_id=paper.id)
     db.commit()
-    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=count)
+    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=count, subject_id=paper.subject_id)
 
 
 @router.get("/{paper_id}/validate")

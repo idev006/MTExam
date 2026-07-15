@@ -25,6 +25,7 @@ class QuestionBank(Base):
     __tablename__ = "question_banks"
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    subject_id: Mapped[UUID | None] = mapped_column(Uuid, ForeignKey("subjects.id"), index=True)
     name: Mapped[str] = mapped_column(String(255))
     owner_org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"), index=True)
     is_shared: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -32,6 +33,17 @@ class QuestionBank(Base):
     created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("persons.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
+
+
+class Subject(Base):
+    __tablename__ = "subjects"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    code: Mapped[str] = mapped_column(String(50), unique=True)
+    name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(30), default=ContentStatus.ACTIVE, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 
 class Question(Base):

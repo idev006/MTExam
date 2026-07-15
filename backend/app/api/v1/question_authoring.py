@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import Question, QuestionBank, QuestionChoice, UserAccount
+from backend.app.db.models import Question, QuestionBank, QuestionChoice, Subject, UserAccount
 from backend.app.domain.enums import ContentStatus, UserRole
 from backend.app.services.audit import record_audit
 
@@ -22,6 +22,21 @@ class BankCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     owner_org_unit_id: UUID
     is_shared: bool = False
+    subject_id: UUID | None = None
+
+
+class SubjectCreate(BaseModel):
+    code: str = Field(min_length=1, max_length=50)
+    name: str = Field(min_length=1, max_length=255)
+    description: str | None = None
+
+
+class SubjectResponse(BaseModel):
+    id: UUID
+    code: str
+    name: str
+    description: str | None
+    status: str
 
 
 class ChoiceInput(BaseModel):
@@ -43,6 +58,32 @@ class BankResponse(BaseModel):
     id: UUID
     name: str
     status: str
+    subject_id: UUID | None = None
+
+
+@router.get("/subjects", response_model=list[SubjectResponse])
+def list_subjects(
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+) -> list[SubjectResponse]:
+    return [SubjectResponse.model_validate(row, from_attributes=True) for row in db.scalars(select(Subject).order_by(Subject.name))]
+
+
+@router.post("/subjects", response_model=SubjectResponse, status_code=201)
+def create_subject(
+    payload: SubjectCreate,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+) -> SubjectResponse:
+    if db.scalar(select(Subject).where(Subject.code == payload.code.strip())):
+        raise HTTPException(status_code=409, detail="Subject code already exists")
+    subject = Subject(code=payload.code.strip(), name=payload.name.strip(), description=payload.description)
+    db.add(subject)
+    db.flush()
+    record_audit(db, actor_person_id=account.person_id, event_type="subject.create", subject_type="subject", subject_id=subject.id, metadata={"code": subject.code})
+    db.commit()
+    db.refresh(subject)
+    return SubjectResponse.model_validate(subject, from_attributes=True)
 
 
 @router.get("", response_model=list[BankResponse])
@@ -67,6 +108,7 @@ def create_bank(
         name=payload.name,
         owner_org_unit_id=payload.owner_org_unit_id,
         is_shared=payload.is_shared,
+        subject_id=payload.subject_id,
         created_by=account.person_id,
     )
     db.add(bank)

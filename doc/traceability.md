@@ -63,6 +63,8 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | USER-ADMIN-API | requirements/authentication.md | user list/create/deactivate API | API authorization smoke | Implemented minimal slice |
 | EXAM-WINDOW-API | requirements/exam-session.md | exam window list/create/open API | API authorization smoke | Implemented minimal slice; timer integration pending |
 | AUDIT-API | requirements/reporting.md | audit list and mutation events | API authorization smoke | Implemented baseline; full mutation coverage pending |
+| SUBJECT-001 | requirements/question-bank.md | subjects and subject-bound question banks | API/frontend build | Implemented |
+| EXAM-CREATION-STATS-001 | requirements/exam-paper.md, requirements/reporting.md | per-paper Exam Creation statistics | API/frontend build | Implemented baseline |
 
 ## Use-case interaction traceability
 
