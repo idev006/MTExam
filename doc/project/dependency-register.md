@@ -32,7 +32,12 @@ package-lock.json ต้องเป็น lock SSOT หลังสร้าง
 | EXT-005 | Production database choice | Tech Lead/Operations | Load test | R-003 |
 | EXT-006 | Data retention policy | Sponsor/Security | Production | R-007 |
 | EXT-007 | Acceptance representatives | Product Owner | Each milestone | Delivery |
-| EXT-008 | GitHub Project for shared Kanban | Project Manager | M0 acceptance | Delivery |
+
+## Resolved External Dependencies
+
+| ID | Dependency | Resolution | Date |
+|---|---|---|---|
+| EXT-008 | GitHub Project for shared Kanban | [MTExam Delivery](https://github.com/users/idev006/projects/3/views/1) created with 10 linked Issues | 2026-07-15 |
 
 ## Dependency Approval
 

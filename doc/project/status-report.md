@@ -21,6 +21,9 @@
 - pytest, Ruff, file-size architecture tests and CI workflow implemented
 - Technical verification: 14 pytest passed; frontend type-check/build passed
 - Baseline commit d85a799 pushed to GitHub main
+- GitHub CI run 29407299728 passed at ef8752c
+- GitHub Project `MTExam Delivery` created as status SSOT
+- 10 tracked GitHub Issues migrated: Done 3, Verify 5, Blocked 2
 
 ## In Progress
 
@@ -28,7 +31,6 @@
 
 ## Not Started
 
-- GitHub Issues/Project Board migration
 - MySQL/PostgreSQL CI execution
 - M1 Personnel and Identity implementation
 
@@ -37,17 +39,16 @@
 | ID | Blocker | Needed action | Owner |
 |---|---|---|---|
 | B-001 | ไม่มี approved sample CSV | ส่งไฟล์ตัวอย่างและนิยาม identifier | Data owner |
-| B-002 | ยังไม่มี GitHub Project | สร้าง Project แล้ว migrate repo-native Kanban | Project Manager |
 | B-003 | SSO/local final decision | ตัดสินก่อน production integration | Product Owner |
 | B-004 | ไม่มี MySQL/PostgreSQL test services | เชื่อม CI/containers ใน portability verification | Technical Lead |
 
 ## Next Recommended Tickets
 
 1. REVIEW-001 Human review/accept M0 implementation
-2. PM-002 Create GitHub Project and migrate Kanban
-3. PER-IMP-001 Approve CSV contract
-4. AUTH-001 Implement local authentication baseline
-5. DB-VERIFY-001 Run migrations/integration suite on MySQL and PostgreSQL
+2. PER-IMP-001 Approve CSV contract
+3. SEC-001 Confirm SSO/OIDC provider
+4. DB-VERIFY-001 Run migrations/integration suite on MySQL and PostgreSQL
+5. AUTH-001 Implement the approved authentication approach
 
 ## Release Readiness
 
@@ -56,5 +57,5 @@ database matrix and load testing remain.
 
 ## Notes
 
-สถานะในไฟล์นี้เป็นรายงาน snapshot เท่านั้น เมื่อ GitHub Project พร้อม Board เป็น SSOT ของ current
-task status และไฟล์นี้ใช้สรุป periodic report
+สถานะในไฟล์นี้เป็นรายงาน snapshot เท่านั้น [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
+เป็น SSOT ของ current task status และไฟล์นี้ใช้สรุป periodic report

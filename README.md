@@ -6,7 +6,8 @@
 
 เริ่มจาก [Document Index](doc/index.md) และ [Master Blueprint](doc/exam-app-master-blueprint.md)
 
-Project tracking ใช้ [Kanban Board](doc/project/kanban-board.md)
+Project tracking ใช้ [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1) เป็น status SSOT
+และ [Kanban Board Snapshot](doc/project/kanban-board.md) สำหรับรายงานใน repository
 
 ## Backend environment
 

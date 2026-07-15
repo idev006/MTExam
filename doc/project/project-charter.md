@@ -49,7 +49,7 @@ To be assigned; Project Manager owns delivery tracking, cadence, risk and releas
 
 ## Project Tracking
 
-Default recommendation: GitHub Issues + GitHub Projects เมื่อ repository ถูก initialize
+Active tracker: [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1) พร้อม GitHub Issues ของ repository
 
 Rules:
 

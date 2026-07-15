@@ -47,8 +47,9 @@ Executable OpenAPI is generated from FastAPI after the application exists ห้
 
 ## Project Management
 
+- [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1) — current status SSOT
 - [Project Management Plan](project/project-management-plan.md)
-- [Kanban Board](project/kanban-board.md)
+- [Kanban Board Snapshot](project/kanban-board.md)
 - [Project Charter](project/project-charter.md)
 - [Roadmap](project/roadmap.md)
 - [Backlog Policy](project/backlog-policy.md)

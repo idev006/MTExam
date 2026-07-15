@@ -1,6 +1,6 @@
 # MTExam Kanban Board
 
-**Status SSOT:** ไฟล์นี้เป็น board ชั่วคราวจนกว่าจะมี GitHub Project
+**Status SSOT:** [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
 **Last updated:** 2026-07-15
 **Owner:** Project Manager (TBD)
 **Current milestone:** M0 — Documentation and Foundation
@@ -10,23 +10,24 @@
     Backlog → Analysis → Ready → In Progress → Review → Verify → Done
 
 - WIP In Progress เริ่มต้นไม่เกิน 1
-- Blocked เป็น flag พร้อมเหตุผลและ owner
-- ทุกการย้ายสถานะต้องอัปเดตไฟล์นี้
-- เมื่อ GitHub Project พร้อม ให้ migrate ticket/history และเปลี่ยน status SSOT
+- Blocked เป็นสถานะพร้อมเหตุผล, owner และ next action
+- ทุกการย้ายสถานะต้องอัปเดต GitHub Project; ไฟล์นี้เป็น periodic snapshot
+- Ticket detail และ acceptance อยู่ใน GitHub Issue ที่เชื่อมกับ Project
 
 ## Board
 
 | Ticket | Outcome | Priority | Status | Owner | Requirement/Doc | Blocker |
 |---|---|---|---|---|---|---|
-| PM-001 | Initialize Git และ Project Tracking | High | Done | Project Manager/AI | Project Management Plan | GitHub migration tracked separately |
-| PM-002 | Configure Git remote และ migrate Kanban | High | In Progress | Project Manager | Project Management Plan | GitHub Project ยังไม่สร้าง |
-| PM-003 | Confirm Git identity และสร้าง baseline commit | High | Done | Project Manager | Project Management Plan | None |
-| DOC-001 | Review documentation baseline | High | Verify | PO/PM | doc/index.md | ผู้อนุมัติยังไม่ระบุ |
-| FOUNDATION-001 | FastAPI/config/database foundation | High | Verify | Developer/AI | Architecture docs | Human review/acceptance |
-| FOUNDATION-002 | Vite/Vue frontend foundation | High | Verify | Developer/AI | Frontend architecture | Human review/acceptance |
-| FOUNDATION-003 | pytest/Ruff/800-line/CI quality gates | High | Verify | Developer/AI | Testing strategy | GitHub CI result pending |
-| DATA-001 | Portable initial database schema/migration | High | Verify | Developer/AI | Data model | MySQL/PostgreSQL CI not connected |
-| PER-IMP-001 | Approve personnel CSV contract | High | Blocked | Data Owner | PER-IMP-001 | Approved sample CSV |
+| [PM-001](https://github.com/idev006/MTExam/issues/1) | Initialize Git และ Project Tracking | High | Done | Project Manager/AI | Project Management Plan | None |
+| [PM-002](https://github.com/idev006/MTExam/issues/2) | Configure Git remote และ migrate Kanban | High | Done | Project Manager | Project Management Plan | None |
+| [PM-003](https://github.com/idev006/MTExam/issues/3) | Confirm Git identity และสร้าง baseline commit | High | Done | Project Manager | Project Management Plan | None |
+| [DOC-001](https://github.com/idev006/MTExam/issues/4) | Review documentation baseline | High | Verify | PO/PM | doc/index.md | ผู้อนุมัติยังไม่ระบุ |
+| [FOUNDATION-001](https://github.com/idev006/MTExam/issues/5) | FastAPI/config/database foundation | High | Verify | Developer/AI | Architecture docs | Human review/acceptance |
+| [FOUNDATION-002](https://github.com/idev006/MTExam/issues/6) | Vite/Vue frontend foundation | High | Verify | Developer/AI | Frontend architecture | Human review/acceptance |
+| [FOUNDATION-003](https://github.com/idev006/MTExam/issues/7) | pytest/Ruff/800-line/CI quality gates | High | Verify | Developer/AI | Testing strategy | Human review/acceptance |
+| [DATA-001](https://github.com/idev006/MTExam/issues/8) | Portable initial database schema/migration | High | Verify | Developer/AI | Data model | MySQL/PostgreSQL CI not connected |
+| [PER-IMP-001](https://github.com/idev006/MTExam/issues/9) | Approve personnel CSV contract | High | Blocked | Data Owner | PER-IMP-001 | Approved sample CSV |
+| [SEC-001](https://github.com/idev006/MTExam/issues/10) | Confirm SSO/OIDC provider | High | Blocked | Product Owner | Authentication architecture | Provider decision and metadata |
 
 ## Ticket Acceptance
 
@@ -74,18 +75,19 @@
 - Impact: M1 import implementation เริ่ม schema staging ได้ แต่ acceptance contract ยังปิดไม่ได้
 - Next action: ส่ง anonymized sample CSV และยืนยัน stable person identifier
 
-### GitHub Project Migration
+### GitHub Project Migration — Resolved
 
-- Condition: Git remote พร้อมแล้ว แต่ไม่มี GitHub CLI/authenticated Project context
-- Owner: Project Manager
-- Impact: ใช้ Markdown board ชั่วคราว; ไม่มี shared web board
-- Next action: สร้าง GitHub Project แล้ว migrate tickets
+- Project: [MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
+- Migrated: 10 GitHub Issues covering Done, Verify และ Blocked work
+- Columns: Backlog, Analysis, Ready, In progress, In review, Verify, Done และ Blocked
+- Current status changes must be made on GitHub Project
 
 ## Resolved Delivery Dependencies
 
 - Git identity: idev006 / thaipoliceregion6@gmail.com
 - Remote: https://github.com/idev006/MTExam.git
 - Baseline commit: d85a799
+- Current verified head: ef8752c
 - Branch: main tracking origin/main
 
 ## Verification Evidence
@@ -117,6 +119,7 @@
 ### Governance
 
 - Git repository initialized on main
-- Kanban board and ticket acceptance tracked
+- GitHub Project is the current status SSOT with 10 linked Issues
+- GitHub CI run [29407299728](https://github.com/idev006/MTExam/actions/runs/29407299728) passed at ef8752c
 - Source file 800-line architectural test: passed
 - Requirement IDs unique and fully present in traceability: passed
