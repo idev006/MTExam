@@ -24,13 +24,16 @@
 | UC-AUTH-01 | Login | ทุก role | ทุก role | authenticated browser session |
 | UC-AUTH-02 | Logout | ทุก role | ทุก role | session revoked and redirect to login |
 | UC-ORG-01 | Import personnel CSV snapshot | Super Admin | `super_admin` | validated employee current-state |
+| UC-SUBJECT-01 | Manage/select subject | Exam Author | `exam_author`, `super_admin`, `viewer` (read) | subject-bound content |
 | UC-ADMIN-01 | Manage system settings | Super Admin | `super_admin` | typed settings persisted and audited |
 | UC-QBANK-01 | Author question bank | Exam Author | `exam_author`, `super_admin` | versioned question bank |
 | UC-PAPER-01 | Create and publish exam paper | Exam Author | `exam_author`, `super_admin` | published paper/variant |
+| UC-PAPER-02 | Create Exam Creation and sets | Exam Author | `exam_author`, `super_admin` | independent subject-bound creation and variants |
 | UC-EXAM-01 | Start or resume exam | Examinee | `examinee`, controlled `super_admin` preview | durable exam session |
 | UC-EXAM-02 | Answer and autosave | Examinee | `examinee`, controlled `super_admin` preview | server/local recovery state |
 | UC-EXAM-03 | Submit exam | Examinee | `examinee`, controlled `super_admin` preview | immutable score/result |
 | UC-REPORT-01 | View report | Viewer | `viewer`, `super_admin` | read-only report within scope |
+| UC-REPORT-02 | View Exam Creation statistics | Viewer | `viewer`, `super_admin`, `exam_author` | statistics never merged across creations |
 
 ## Cross-cutting rules
 

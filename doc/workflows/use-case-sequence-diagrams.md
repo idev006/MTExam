@@ -92,7 +92,7 @@ sequenceDiagram
     API-->>UI: Published bank
 ```
 
-## UC-PAPER-01 — Create and publish exam paper
+## UC-PAPER-01 — Publish an Exam Creation
 
 ```mermaid
 sequenceDiagram
@@ -108,6 +108,60 @@ sequenceDiagram
     UI->>API: POST /papers/{id}/publish
     API->>DB: Validate invariants and publish
     API-->>UI: Published paper ready for exam window
+```
+
+## UC-SUBJECT-01 — Select/create subject
+
+```mermaid
+sequenceDiagram
+    actor E as exam_author
+    participant UI as Authoring UI
+    participant API as Question API
+    participant DB as SQLite
+    E->>UI: Open subject selector
+    UI->>API: GET /question-banks/subjects
+    API->>DB: Read active subjects
+    DB-->>API: Subject list
+    API-->>UI: Subject options
+    E->>UI: Create subject when authorized
+    UI->>API: POST /question-banks/subjects
+    API->>DB: Save unique subject code + audit
+    API-->>UI: Subject
+```
+
+## UC-PAPER-02 — Create Exam Creation and sets
+
+```mermaid
+sequenceDiagram
+    actor E as exam_author
+    participant UI as Paper UI
+    participant API as Paper API
+    participant DB as SQLite
+    E->>UI: Select subject, questions and variant count
+    UI->>API: POST /papers with subject_id and variant_count
+    API->>DB: Save independent ExamPaper creation
+    API->>DB: Generate/attach ExamVariant sets
+    API-->>UI: Draft Exam Creation and set count
+    E->>UI: Publish creation
+    UI->>API: POST /papers/{id}/publish
+    API->>DB: Validate and publish
+    API-->>UI: Published creation ready for exam window
+```
+
+## UC-REPORT-02 — View statistics for one Exam Creation
+
+```mermaid
+sequenceDiagram
+    actor V as viewer/exam_author
+    participant UI as Report UI
+    participant API as Reporting API
+    participant DB as SQLite
+    V->>UI: Choose subject or Exam Creation
+    UI->>API: GET /reports/exam-creations?subject_id=...
+    API->>DB: Query ExamPaper to ExamVariant to ExamSession
+    DB-->>API: Counts and scores scoped to one creation
+    API-->>UI: Per-creation statistics
+    UI-->>V: Show variants, participants, submitted and average score
 ```
 
 ## UC-EXAM-01 — Start or resume exam
