@@ -6,6 +6,7 @@ withDefaults(
     message: string;
     confirmLabel?: string;
     cancelLabel?: string;
+    busy?: boolean;
   }>(),
   { confirmLabel: "ยืนยัน", cancelLabel: "ยกเลิก" },
 );
@@ -25,7 +26,8 @@ defineEmits<{
         <button class="btn btn-ghost" type="button" @click="$emit('cancel')">
           {{ cancelLabel }}
         </button>
-        <button class="btn btn-primary" type="button" @click="$emit('confirm')">
+        <button class="btn btn-primary" type="button" :disabled="busy" @click="$emit('confirm')">
+          <span v-if="busy" class="loading loading-spinner loading-sm"></span>
           {{ confirmLabel }}
         </button>
       </div>
