@@ -6,10 +6,38 @@ import PracticeExamView from "@/views/PracticeExamView.vue";
 import LoginView from "@/views/LoginView.vue";
 import { useAuth } from "@/stores/auth";
 import ReportsView from "@/views/ReportsView.vue";
+import UserAdminView from "@/views/UserAdminView.vue";
+import AuthoringView from "@/views/AuthoringView.vue";
+import PaperBuilderView from "@/views/PaperBuilderView.vue";
+import AuditView from "@/views/AuditView.vue";
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: "/audit",
+      name: "audit",
+      component: AuditView,
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer"] },
+    },
+    {
+      path: "/admin/users",
+      name: "user-admin",
+      component: UserAdminView,
+      meta: { requiresAuth: true, allowedRoles: ["super_admin"] },
+    },
+    {
+      path: "/authoring",
+      name: "authoring",
+      component: AuthoringView,
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "exam_author"] },
+    },
+    {
+      path: "/papers",
+      name: "paper-builder",
+      component: PaperBuilderView,
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "exam_author"] },
+    },
     {
       path: "/reports",
       name: "reports",

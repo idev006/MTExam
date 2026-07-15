@@ -54,3 +54,50 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+  database-portability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - name: postgres
+            image: postgres:16
+            port: 5432
+            url: postgresql+psycopg://mtexam:mtexam@127.0.0.1:5432/mtexam
+            health: pg_isready -U mtexam -d mtexam
+          - name: mysql
+            image: mysql:8.4
+            port: 3306
+            url: mysql+pymysql://mtexam:mtexam@127.0.0.1:3306/mtexam
+            health: mysqladmin ping -h 127.0.0.1 -uroot -proot
+    services:
+      database:
+        image: ${{ matrix.image }}
+        env:
+          POSTGRES_USER: mtexam
+          POSTGRES_PASSWORD: mtexam
+          POSTGRES_DB: mtexam
+          MYSQL_USER: mtexam
+          MYSQL_PASSWORD: mtexam
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: mtexam
+        ports:
+          - ${{ matrix.port }}:${{ matrix.port }}
+        options: >-
+          --health-cmd "${{ matrix.health }}"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Upgrade schema and check drift
+        env:
+          DATABASE_URL: ${{ matrix.url }}
+          APP_SECRET_KEY: ci-only-secret
+        run: |
+          python -m alembic upgrade head
+          python -m alembic check

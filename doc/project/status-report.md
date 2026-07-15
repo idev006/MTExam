@@ -75,6 +75,8 @@ Recent vertical slices added: personnel read/import API, scoped report summary A
 
 ## Release Readiness
 
+Latest implementation slice includes user administration, question authoring, paper builder, import preview/apply, exam windows, report CSV/filtering, audit API/UI, and load-smoke tooling.
+
 M0 technical baseline is ready for review. Production is not ready; product features, security review,
 database matrix and load testing remain.
 

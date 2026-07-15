@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# ruff: noqa: E501
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,6 +13,7 @@ from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import Employee, UserAccount
 from backend.app.domain.employee_import import parse_employee_csv
 from backend.app.domain.enums import ActiveStatus, UserRole
+from backend.app.services.audit import record_audit
 
 router = APIRouter(prefix="/personnel", tags=["personnel"])
 
@@ -42,6 +44,10 @@ class ImportResponse(BaseModel):
     added_count: int
     changed_count: int
     missing_count: int
+
+
+class ImportPreviewResponse(ImportResponse):
+    errors: list[dict[str, object]] = []
 
 
 @router.get("", response_model=list[EmployeeResponse])
@@ -100,6 +106,8 @@ def import_snapshot(
             row.emp_status = ActiveStatus.INACTIVE
             missing += 1
     db.commit()
+    record_audit(db, actor_person_id=_account.person_id, event_type="personnel.import", subject_type="employee_snapshot", metadata={"filename": payload.filename, "added": added, "changed": changed, "missing": missing})
+    db.commit()
     return ImportResponse(
         filename=payload.filename,
         status="applied",
@@ -110,3 +118,42 @@ def import_snapshot(
         changed_count=changed,
         missing_count=missing,
     )
+
+
+@router.post("/import/preview", response_model=ImportPreviewResponse)
+def preview_snapshot(
+    payload: ImportRequest,
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
+) -> ImportPreviewResponse:
+    try:
+        parsed = parse_employee_csv(payload.content.encode("utf-8-sig"))
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    return ImportPreviewResponse(
+        filename=payload.filename,
+        status="valid" if parsed.is_valid else "validation_failed",
+        total_rows=len(parsed.records) + len(parsed.errors),
+        valid_rows=len(parsed.records),
+        invalid_rows=len(parsed.errors),
+        added_count=0,
+        changed_count=0,
+        missing_count=0,
+        errors=[
+            {
+                "row_number": error.row_number,
+                "field": error.field,
+                "code": error.code,
+                "message": error.message,
+            }
+            for error in parsed.errors
+        ],
+    )
+
+
+@router.post("/import/apply", response_model=ImportResponse)
+def apply_snapshot(
+    payload: ImportRequest,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
+) -> ImportResponse:
+    return import_snapshot(payload, db, account)

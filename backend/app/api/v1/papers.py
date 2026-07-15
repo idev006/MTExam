@@ -15,6 +15,7 @@ from backend.app.db.base import utc_now
 from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import ExamPaper, ExamPaperQuestion, Question, UserAccount
 from backend.app.domain.enums import PaperStatus, UserRole
+from backend.app.services.audit import record_audit
 
 router = APIRouter(prefix="/papers", tags=["papers"])
 
@@ -56,6 +57,8 @@ def create_paper(
     db.flush()
     db.add_all([ExamPaperQuestion(exam_paper_id=paper.id, question_id=question.id, base_order_index=index, score_weight=question.default_score_weight) for index, question in enumerate(questions)])
     db.commit()
+    record_audit(db, actor_person_id=account.person_id, event_type="paper.create", subject_type="exam_paper", subject_id=paper.id)
+    db.commit()
     return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=len(questions))
 
 
@@ -63,7 +66,7 @@ def create_paper(
 def publish_paper(
     paper_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
 ) -> PaperResponse:
     paper = db.get(ExamPaper, paper_id)
     if paper is None:
@@ -73,5 +76,7 @@ def publish_paper(
         raise HTTPException(status_code=409, detail="Paper must contain questions")
     paper.status = PaperStatus.PUBLISHED
     paper.published_at = utc_now()
+    db.commit()
+    record_audit(db, actor_person_id=account.person_id, event_type="paper.publish", subject_type="exam_paper", subject_id=paper.id)
     db.commit()
     return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=1)

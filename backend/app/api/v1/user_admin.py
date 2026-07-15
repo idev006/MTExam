@@ -15,6 +15,7 @@ from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import Person, UserAccount
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.domain.security import hash_password
+from backend.app.services.audit import record_audit
 
 router = APIRouter(prefix="/admin/users", tags=["user-admin"])
 
@@ -57,6 +58,7 @@ def create_user(
     db.flush()
     account = UserAccount(person_id=person.id, username_normalized=username, password_hash=hash_password(payload.password), role=payload.role, status=ActiveStatus.ACTIVE)
     db.add(account)
+    record_audit(db, actor_person_id=_account.person_id, event_type="user.create", subject_type="user_account", subject_id=account.id, metadata={"username": username, "role": payload.role.value})
     db.commit()
     db.refresh(account)
     return UserResponse(id=account.id, username=username, full_name=person.full_name, role=payload.role, status=account.status)
@@ -75,5 +77,6 @@ def deactivate_user(
     person = db.get(Person, account.person_id)
     if person:
         person.status = ActiveStatus.INACTIVE
+    record_audit(db, actor_person_id=_account.person_id, event_type="user.deactivate", subject_type="user_account", subject_id=account.id)
     db.commit()
     return UserResponse(id=account.id, username=account.username_normalized, full_name=person.full_name if person else "", role=UserRole(account.role), status=account.status)

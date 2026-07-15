@@ -32,6 +32,7 @@
 - [Security](architecture/security.md)
 - [Testing Strategy](architecture/testing-strategy.md)
 - [Deployment](architecture/deployment.md)
+- [Database and Performance Verification](architecture/database-verification.md)
 
 ## Workflows
 

@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+# ruff: noqa: E501
+import csv
+import io
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -28,8 +32,12 @@ class SystemReport(BaseModel):
 def get_summary(
     db: Annotated[Session, Depends(get_db_session)],
     _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    employee_status: str | None = None,
 ) -> SystemReport:
-    total = db.scalar(select(func.count()).select_from(Employee)) or 0
+    employee_query = select(func.count()).select_from(Employee)
+    if employee_status:
+        employee_query = employee_query.where(Employee.emp_status == employee_status)
+    total = db.scalar(employee_query) or 0
     active = db.scalar(
         select(func.count()).select_from(Employee).where(Employee.emp_status == "active")
     ) or 0
@@ -56,3 +64,16 @@ def get_summary(
         exam_submitted=submitted,
         average_score=float(average) if average is not None else None,
     )
+
+
+@router.get("/employees.csv")
+def export_employees_csv(
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+) -> StreamingResponse:
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["emp_cid", "emp_fname", "emp_lname", "emp_position", "emp_bh", "emp_bk", "emp_kk", "emp_status"])
+    for employee in db.scalars(select(Employee).order_by(Employee.emp_cid)):
+        writer.writerow([employee.emp_cid, employee.emp_fname, employee.emp_lname, employee.emp_position or "", employee.emp_bh or "", employee.emp_bk or "", employee.emp_kk or "", employee.emp_status])
+    return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=employees.csv"})
