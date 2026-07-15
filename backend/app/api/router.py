@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from backend.app.api.v1.audit import router as audit_router
 from backend.app.api.v1.auth import router as auth_router
+from backend.app.api.v1.exam_sessions import router as exam_sessions_router
 from backend.app.api.v1.exam_windows import router as exam_windows_router
 from backend.app.api.v1.health import router as health_router
 from backend.app.api.v1.org_units import router as org_units_router
@@ -26,3 +27,4 @@ api_router.include_router(user_admin_router)
 api_router.include_router(papers_router)
 api_router.include_router(audit_router)
 api_router.include_router(exam_windows_router)
+api_router.include_router(exam_sessions_router)

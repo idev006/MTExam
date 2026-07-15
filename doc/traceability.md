@@ -66,6 +66,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | SUBJECT-001 | requirements/question-bank.md | subjects and subject-bound question banks | API/frontend build | Implemented |
 | EXAM-CREATION-STATS-001 | requirements/exam-paper.md, requirements/reporting.md | per-paper Exam Creation statistics | API/frontend build | Implemented baseline |
 | PAPER-SCOPE-001 | requirements/exam-paper.md | desired question count and allowed bureau units | API/frontend build | Implemented |
+| EXAM-SESSION-API-001 | requirements/exam-session.md | start/resume, answer, timeout and submit endpoints | tests/api/test_system_api.py; API smoke | Implemented |
 
 ## Use-case interaction traceability
 

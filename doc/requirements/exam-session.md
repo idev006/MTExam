@@ -6,6 +6,14 @@
 
 ## Requirements
 
+### Implemented durable exam lifecycle
+
+- `POST /exam-sessions/windows/{window_id}/start` creates or resumes one session per person/window
+- `GET /exam-sessions/{session_id}` returns questions, saved answers and server deadline
+- `PUT /exam-sessions/{session_id}/answers` upserts a validated answer
+- `POST /exam-sessions/{session_id}/submit` calculates and stores the immutable score
+- The server changes an overdue in-progress session to `timed_out`; the browser clock is display-only
+
 The current development preview is available at `/exam/pdpa`. An administrator selects the number of questions per page (1, 5, 10, 20, or 50), and the examinee can navigate directly to any page. The recovery POC creates a durable SQLite `practice_exam_sessions` row, autosaves each answer through the API, keeps a local browser recovery copy, and resumes the same session after refresh, browser restart, or temporary network loss. Score plus stored rationales are revealed only after the complete paper is submitted. Cookie-based authentication now protects the practice and settings routes; formal authenticated exam windows remain pending.
 
 ### Recovery acceptance criteria

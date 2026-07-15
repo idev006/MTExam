@@ -184,6 +184,10 @@ sequenceDiagram
     UI-->>X: Show progress and navigator
 ```
 
+The production session endpoints are `POST /exam-sessions/windows/{window_id}/start` and
+`GET /exam-sessions/{session_id}`. The API creates the immutable question-version snapshot and
+returns the server `ends_at` deadline.
+
 ## UC-EXAM-02 — Answer and autosave/recover
 
 ```mermaid
@@ -228,6 +232,9 @@ sequenceDiagram
     API-->>UI: Score/result
     UI-->>X: Show score, answers, and rationales
 ```
+
+Submission is idempotent: repeating the submit request returns the stored result rather than
+recalculating a different score.
 
 ## UC-REPORT-01 — View scoped report
 
