@@ -35,6 +35,8 @@
 - Dashboard preview implemented and verified locally: employee summary cards, searchable employee table, CSV import entry point, theme selection, and API health status.
 - Admin Settings POC implemented at `/settings`: radio, range slider, switch, theme selector, and DaisyUI toast; persistence API remains the next integration slice.
 - Project tracking snapshot now includes ADMIN-001 and FE-UX-001 for the new UI work; both remain Verify until API wiring and human review.
+- Examinee practice page implemented at `/exam/pdpa`: 50-question PDPA bank, progress, radio choices, score, and answer rationale after submission.
+- EXAM-POC-001 is Verify: browser interaction tested through first answer and rationale display; production exam session/auth remains pending.
 
 ## In Progress
 

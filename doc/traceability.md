@@ -19,6 +19,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | AUTH-003 | requirements/authentication.md | auth session policy + auth_sessions | tests/integration/test_auth_sessions.py | Implemented baseline |
 | ADMIN-001 | requirements/administration-settings.md | settings view + future settings API | frontend type-check/build; API tests pending | POC implemented |
 | ADMIN-002 | requirements/administration-settings.md | theme store and daisyUI selector | frontend architecture test | Implemented client baseline |
+| EXAM-POC-001 | requirements/exam-session.md, requirements/question-bank.md | practice bank API + examinee practice view | tests/api/test_system_api.py; browser smoke verification | POC implemented |
 | AUTH-004 | requirements/authentication.md | permission dependency | TBD | Planned |
 | AUTH-005 | requirements/authentication.md | scope service | TBD | Planned |
 | AUTH-006 | requirements/authentication.md | account lifecycle | TBD | Planned |

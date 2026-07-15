@@ -28,6 +28,16 @@ def test_public_config_exposes_only_public_values(client: TestClient) -> None:
     assert "app_secret_key" not in body
 
 
+def test_pdpa_practice_bank_is_available_for_examinee_preview(client: TestClient) -> None:
+    response = client.get("/api/v1/practice/banks/pdpa-50")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["bank_code"] == "PDPA-TH-50"
+    assert len(body["questions"]) == 50
+    assert body["questions"][0]["explanation"]
+
+
 def test_not_found_uses_standard_error_envelope(client: TestClient) -> None:
     response = client.get("/api/v1/not-a-route")
 
