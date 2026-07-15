@@ -13,7 +13,15 @@ from sqlalchemy.orm import Session
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.base import utc_now
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import ExamPaper, ExamPaperQuestion, Question, Subject, UserAccount
+from backend.app.db.models import (
+    ExamPaper,
+    ExamPaperOrgUnit,
+    ExamPaperQuestion,
+    OrgUnit,
+    Question,
+    Subject,
+    UserAccount,
+)
 from backend.app.domain.enums import PaperStatus, UserRole
 from backend.app.services.audit import record_audit
 
@@ -24,6 +32,8 @@ class PaperCreate(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     org_unit_id: UUID
     question_ids: list[UUID] = Field(min_length=1, max_length=200)
+    desired_question_count: int = Field(ge=1, le=200)
+    allowed_org_unit_ids: list[UUID] = Field(min_length=1, max_length=100)
     variant_count: int = Field(default=1, ge=1, le=20)
     subject_id: UUID | None = None
 
@@ -34,6 +44,8 @@ class PaperResponse(BaseModel):
     status: str
     question_count: int
     subject_id: UUID | None = None
+    desired_question_count: int = 1
+    allowed_org_unit_count: int = 0
 
 
 @router.get("", response_model=list[PaperResponse])
@@ -51,19 +63,26 @@ def create_paper(
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
 ) -> PaperResponse:
-    questions = list(db.scalars(select(Question).where(Question.id.in_(payload.question_ids))))
+    if len(payload.question_ids) < payload.desired_question_count:
+        raise HTTPException(status_code=422, detail="question_ids must contain at least desired_question_count items")
+    org_units = list(db.scalars(select(OrgUnit).where(OrgUnit.id.in_(payload.allowed_org_unit_ids), OrgUnit.level == "bureau", OrgUnit.status == "active")))
+    if len(org_units) != len(set(payload.allowed_org_unit_ids)):
+        raise HTTPException(status_code=422, detail="All allowed units must be active bureau-level organization units")
+    selected_ids = payload.question_ids[:payload.desired_question_count]
+    questions = list(db.scalars(select(Question).where(Question.id.in_(selected_ids))))
     if len(questions) != len(set(payload.question_ids)):
         raise HTTPException(status_code=422, detail="One or more questions do not exist")
     if payload.subject_id is not None and db.get(Subject, payload.subject_id) is None:
         raise HTTPException(status_code=422, detail="Subject not found")
-    paper = ExamPaper(title=payload.title, question_selection_mode="fixed_set", variant_count=payload.variant_count, status=PaperStatus.DRAFT, org_unit_id=payload.org_unit_id, subject_id=payload.subject_id, created_by=account.person_id)
+    paper = ExamPaper(title=payload.title, question_selection_mode="fixed_set", variant_count=payload.variant_count, desired_question_count=payload.desired_question_count, status=PaperStatus.DRAFT, org_unit_id=payload.org_unit_id, subject_id=payload.subject_id, created_by=account.person_id)
     db.add(paper)
     db.flush()
     db.add_all([ExamPaperQuestion(exam_paper_id=paper.id, question_id=question.id, base_order_index=index, score_weight=question.default_score_weight) for index, question in enumerate(questions)])
+    db.add_all([ExamPaperOrgUnit(exam_paper_id=paper.id, org_unit_id=org_unit.id) for org_unit in org_units])
     db.commit()
     record_audit(db, actor_person_id=account.person_id, event_type="paper.create", subject_type="exam_paper", subject_id=paper.id)
     db.commit()
-    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=len(questions), subject_id=paper.subject_id)
+    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=len(questions), subject_id=paper.subject_id, desired_question_count=paper.desired_question_count, allowed_org_unit_count=len(org_units))
 
 
 @router.post("/{paper_id}/publish", response_model=PaperResponse)

@@ -34,11 +34,21 @@ class ExamPaper(Base):
     question_selection_mode: Mapped[str] = mapped_column(String(30))
     pool_criteria_text: Mapped[str | None] = mapped_column(Text)
     variant_count: Mapped[int] = mapped_column(Integer, default=1)
+    desired_question_count: Mapped[int] = mapped_column(Integer, default=1)
     status: Mapped[str] = mapped_column(String(30), default=PaperStatus.DRAFT, index=True)
     org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"), index=True)
     created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("persons.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     published_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class ExamPaperOrgUnit(Base):
+    __tablename__ = "exam_paper_org_units"
+    __table_args__ = (UniqueConstraint("exam_paper_id", "org_unit_id", name="uq_paper_org_unit"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    exam_paper_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("exam_papers.id"), index=True)
+    org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"), index=True)
 
 
 class ExamPaperQuestion(Base):

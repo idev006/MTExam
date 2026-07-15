@@ -137,8 +137,8 @@ sequenceDiagram
     participant UI as Paper UI
     participant API as Paper API
     participant DB as SQLite
-    E->>UI: Select subject, questions and variant count
-    UI->>API: POST /papers with subject_id and variant_count
+    E->>UI: Select subject, question count, allowed bureaus and variants
+    UI->>API: POST /papers with subject_id, desired_question_count and allowed_org_unit_ids
     API->>DB: Save independent ExamPaper creation
     API->>DB: Generate/attach ExamVariant sets
     API-->>UI: Draft Exam Creation and set count

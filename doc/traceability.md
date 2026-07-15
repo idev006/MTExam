@@ -65,6 +65,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | AUDIT-API | requirements/reporting.md | audit list and mutation events | API authorization smoke | Implemented baseline; full mutation coverage pending |
 | SUBJECT-001 | requirements/question-bank.md | subjects and subject-bound question banks | API/frontend build | Implemented |
 | EXAM-CREATION-STATS-001 | requirements/exam-paper.md, requirements/reporting.md | per-paper Exam Creation statistics | API/frontend build | Implemented baseline |
+| PAPER-SCOPE-001 | requirements/exam-paper.md | desired question count and allowed bureau units | API/frontend build | Implemented |
 
 ## Use-case interaction traceability
 

@@ -3,6 +3,7 @@ from backend.app.db.models.employee import Employee
 from backend.app.db.models.exams import (
     ExamAnswer,
     ExamPaper,
+    ExamPaperOrgUnit,
     ExamPaperQuestion,
     ExamPaperSelectedQuestion,
     ExamSession,
@@ -37,6 +38,7 @@ __all__ = [
     "ExamAnswer",
     "ExamPaper",
     "ExamPaperQuestion",
+    "ExamPaperOrgUnit",
     "ExamPaperSelectedQuestion",
     "ExamSession",
     "ExamVariant",
