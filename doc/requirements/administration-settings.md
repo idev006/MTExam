@@ -28,3 +28,7 @@ Feature-specific business configuration remains in its owning module. This page 
 - API remains the authority; Vue only presents and submits settings.
 - Settings must be covered by pytest API/authorization tests and frontend type-check/build gates.
 - No Redis or additional configuration service is required for the initial release.
+
+## Current implementation status
+
+The Vue POC is available at `/settings` with local component state. It deliberately does not claim server persistence until the settings API and authorization endpoint are implemented.

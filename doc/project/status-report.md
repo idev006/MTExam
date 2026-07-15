@@ -33,6 +33,7 @@
 - POC GitHub Actions run 29413533674 passed at session implementation commit a3e2cc2
 - Frontend UX foundation implemented: `PageContainer`, `PageHeader`, reusable daisyUI feedback, and user-selectable daisyUI themes.
 - Dashboard preview implemented and verified locally: employee summary cards, searchable employee table, CSV import entry point, theme selection, and API health status.
+- Admin Settings POC implemented at `/settings`: radio, range slider, switch, theme selector, and DaisyUI toast; persistence API remains the next integration slice.
 
 ## In Progress
 
