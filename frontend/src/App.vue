@@ -4,8 +4,10 @@ import { RouterLink, RouterView } from "vue-router";
 
 import ThemeSelector from "@/components/settings/ThemeSelector.vue";
 import { useThemeStore } from "@/stores/theme";
+import { useAuth } from "@/stores/auth";
 
 const themeStore = useThemeStore();
+const { user, logout } = useAuth();
 
 onMounted(themeStore.initialize);
 </script>
@@ -17,6 +19,8 @@ onMounted(themeStore.initialize);
         <div class="flex items-center gap-3"><RouterLink class="flex items-center gap-3" to="/"><div class="grid size-10 place-items-center rounded-xl bg-primary font-black text-primary-content">M</div><div><p class="font-bold leading-none">MTExam</p><p class="text-xs text-base-content/50">ระบบบริหารการสอบ</p></div></RouterLink><nav class="hidden gap-1 sm:flex"><RouterLink class="btn btn-ghost btn-sm" active-class="btn-active" to="/">ภาพรวม</RouterLink><RouterLink class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam/pdpa">ทำข้อสอบ</RouterLink><RouterLink class="btn btn-ghost btn-sm" active-class="btn-active" to="/settings">ตั้งค่าระบบ</RouterLink></nav></div>
         <div class="flex items-center gap-2"><span class="hidden text-xs text-base-content/50 sm:inline">โหมดผู้ดูแลระบบ</span>
         <ThemeSelector />
+        <RouterLink v-if="!user" class="btn btn-primary btn-sm" to="/login">เข้าสู่ระบบ</RouterLink>
+        <div v-else class="flex items-center gap-2"><span class="hidden text-xs sm:inline">{{ user.full_name }}</span><button class="btn btn-ghost btn-sm" type="button" @click="logout">ออกจากระบบ</button></div>
         </div>
       </div>
     </header>

@@ -39,6 +39,9 @@ def test_pdpa_practice_bank_is_available_for_examinee_preview(client: TestClient
 
 
 def test_practice_session_recovers_answers_and_submit_is_idempotent(client: TestClient) -> None:
+    assert client.post(
+        "/api/v1/auth/login", json={"username": "demo", "password": "demo1234"}
+    ).status_code == 200
     created = client.post("/api/v1/practice/sessions").json()
     session_id = created["session_id"]
     saved = client.put(

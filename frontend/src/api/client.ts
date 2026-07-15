@@ -16,6 +16,7 @@ export class ApiClientError extends Error {
 
 export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(API_BASE_URL + path, {
+    credentials: "include",
     headers: { Accept: "application/json" },
   });
 
@@ -35,6 +36,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiRequest<T>(path: string, method: "POST" | "PUT", body?: unknown): Promise<T> {
   const response = await fetch(API_BASE_URL + path, {
     method,
+    credentials: "include",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });

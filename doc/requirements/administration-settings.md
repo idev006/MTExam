@@ -7,6 +7,7 @@ Provide a small, role-protected settings area for operational configuration with
 ## Requirements
 
 - **ADMIN-001** — Only authorized administrators can access system settings.
+- **ADMIN-008** — Login uses a database-backed HttpOnly session cookie; JWT is not required for the initial release.
 - **ADMIN-002** — Settings are typed, validated, and persisted through the API; `config/app.toml` remains the non-secret baseline.
 - **ADMIN-003** — The UI uses daisyUI controls such as radio, switch, slider, and select where they make choices clearer.
 - **ADMIN-004** — The user can choose any enabled daisyUI theme; theme preference is client-side UI state and never changes server authority.

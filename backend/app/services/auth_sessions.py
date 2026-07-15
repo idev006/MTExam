@@ -92,6 +92,8 @@ def get_active_session(
     policy: SessionPolicy,
     now: datetime,
 ) -> ActiveSession | None:
+    if not raw_token:
+        return None
     entity = db_session.scalar(
         select(AuthSession).where(AuthSession.token_hash == hash_session_token(raw_token))
     )
