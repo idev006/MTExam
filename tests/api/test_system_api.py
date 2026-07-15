@@ -1,5 +1,8 @@
 from fastapi.testclient import TestClient
 
+from backend.app.config import Settings
+from backend.app.main import create_app
+
 
 def test_health_reports_database_and_version(client: TestClient) -> None:
     response = client.get("/api/v1/health")
@@ -33,8 +36,16 @@ def test_not_found_uses_standard_error_envelope(client: TestClient) -> None:
     assert response.json()["error"]["correlation_id"]
 
 
-def test_built_frontend_is_served_by_application(client: TestClient) -> None:
-    response = client.get("/")
+def test_built_frontend_is_served_by_application(
+    test_settings: Settings,
+    tmp_path,
+) -> None:
+    frontend_dist = tmp_path / "dist"
+    frontend_dist.mkdir()
+    (frontend_dist / "index.html").write_text("<title>MTExam</title>", encoding="utf-8")
+
+    with TestClient(create_app(test_settings, frontend_dist=frontend_dist)) as static_client:
+        response = static_client.get("/")
 
     assert response.status_code == 200
     assert "MTExam" in response.text

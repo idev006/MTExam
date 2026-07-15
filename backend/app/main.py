@@ -15,7 +15,10 @@ from backend.app.config import PROJECT_ROOT, Settings, get_settings
 from backend.app.db.database import Database
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None,
+    frontend_dist: Path | None = None,
+) -> FastAPI:
     resolved_settings = settings or get_settings()
     database = Database(resolved_settings)
 
@@ -44,7 +47,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     register_exception_handlers(app)
     app.include_router(api_router, prefix=resolved_settings.app.api_prefix)
-    _mount_frontend_if_built(app, PROJECT_ROOT / "frontend" / "dist")
+    static_path = frontend_dist or PROJECT_ROOT / "frontend" / "dist"
+    _mount_frontend_if_built(app, static_path)
     return app
 
 
