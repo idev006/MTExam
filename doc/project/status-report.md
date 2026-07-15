@@ -26,11 +26,12 @@
 - 10 tracked GitHub Issues migrated: Done 3, Verify 5, Blocked 2
 - SQLite employee table contract, model และ migration 0002 verified
 - Executable technology POC implemented for API/config/database/CSV/security/exam rules/frontend
-- POC runner passed: 34 POC + 18 existing tests, Ruff, Vue type-check and Vite build
+- POC runner passed: 34 POC + 19 existing tests, Ruff, Vue type-check and Vite build
 - All 24 metadata tables compile for SQLite, MySQL and PostgreSQL dialects
 - Database-backed browser session policy implemented: Examinee 1 session, admin 3 sessions, oldest revoke
 - AUTH-001 (#12) tracked in GitHub Project as Verify; current commit contains session foundation
 - POC GitHub Actions run 29413533674 passed at session implementation commit a3e2cc2
+- Frontend UX foundation implemented: `PageContainer`, `PageHeader`, reusable daisyUI feedback, and user-selectable daisyUI themes.
 
 ## In Progress
 

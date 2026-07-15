@@ -40,6 +40,8 @@
 - Composables/Pinia ที่มี logic
 - Critical component interactions
 - Business rule หลักยังอยู่ใน Backend pytest
+- Architecture checks prohibit browser `alert`/`confirm`/`prompt` and verify required page-template boundaries.
+- `npm run type-check` and `npm run build` are required frontend gates.
 
 ### E2E
 

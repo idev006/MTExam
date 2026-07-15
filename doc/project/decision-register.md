@@ -22,6 +22,7 @@
 | D-018 | 2026-07-15 | ใช้ SQLite เป็นฐานข้อมูลเริ่มต้น | Approved | Database portability |
 | D-019 | 2026-07-15 | Employee table/header ใช้ชื่อ `emp_*` ตาม contract | Approved | Personnel import requirement |
 | D-020 | 2026-07-15 | Browser ใช้ DB-backed session; Examinee 1/admin 3; JWT เป็น future adapter | Approved | ADR-0007 |
+| D-021 | 2026-07-15 | Vue container/page template, daisyUI feedback, and daisyUI theme store | Approved | ADR-0008 |
 
 ## Open Decisions
 

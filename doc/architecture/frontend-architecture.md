@@ -22,6 +22,9 @@
         assets/
           main.css
         components/
+          layout/
+          feedback/
+          settings/
         composables/
         router/
         stores/
@@ -50,6 +53,26 @@ Frontend ห้ามตัดสิน:
 - Reusable behavior อยู่ใน composable
 - View orchestration ไม่ควรอัด logic ทั้งหมดใน component เดียว
 - Component และ composable อยู่ภายใต้ 800-line limit
+
+## Container Component Convention
+
+Use the following page composition as the default:
+
+    App.vue (application shell and global initialization)
+      PageContainer (width, spacing, responsive padding)
+        PageHeader (title, description, page actions)
+          page/container view (API, composables, route and state orchestration)
+            presentational components (props in, events out)
+
+Page/container views may coordinate API modules, local state, composables, and selected Pinia stores. They must not duplicate global layout or embed large reusable UI blocks. Presentational components must remain API-agnostic and business-rule-agnostic.
+
+## Feedback and Theme
+
+- Use daisyUI-first reusable components for alerts, toasts, and confirmation dialogs.
+- Do not call browser `window.alert`, `window.confirm`, or `window.prompt`.
+- Themes are daisyUI themes applied through `document.documentElement.dataset.theme`.
+- `stores/theme.ts` is the single client-side owner of the selected theme; persistence uses localStorage only.
+- Add a Pinia store only when state is shared across pages or represents a global UI concern.
 
 ## State Decision
 

@@ -105,7 +105,7 @@
 ### Backend and API
 
 - Ruff: passed
-- pytest: 52 passed, no warning (34 POC + 18 existing)
+- pytest: 53 passed, no warning (34 POC + 19 existing)
 - Health API: verified with in-memory SQLite
 - Public config: verified no secret/database URL exposure
 - Standard error envelope and correlation ID: verified
@@ -133,5 +133,6 @@
 - GitHub Project is the current status SSOT with 11 linked Issues
 - GitHub CI run [29407299728](https://github.com/idev006/MTExam/actions/runs/29407299728) passed at ef8752c
 - POC GitHub CI run [29413533674](https://github.com/idev006/MTExam/actions/runs/29413533674) passed at a3e2cc2
+- Frontend container/page template, reusable daisyUI feedback, and theme selector implemented; local POC runner passed.
 - Source file 800-line architectural test: passed
 - Requirement IDs unique and fully present in traceability: passed

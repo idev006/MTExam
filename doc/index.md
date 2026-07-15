@@ -74,6 +74,7 @@ Executable OpenAPI is generated from FastAPI after the application exists ห้
 - [ADR-0005 Database Portability](adr/0005-database-portability.md)
 - [ADR-0006 Document-Driven Delivery](adr/0006-document-driven-delivery.md)
 - [ADR-0007 Database-Backed Browser Sessions](adr/0007-database-backed-browser-sessions.md)
+- [ADR-0008 Vue Container Component and DaisyUI UX Standard](adr/0008-vue-container-component-standard.md)
 
 ## Required Reading by Work Type
 
