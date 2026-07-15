@@ -61,6 +61,14 @@ class BankResponse(BaseModel):
     subject_id: UUID | None = None
 
 
+class QuestionResponse(BaseModel):
+    id: UUID
+    content: str
+    difficulty: str | None
+    status: str
+    choices: list[dict[str, object]]
+
+
 @router.get("/subjects", response_model=list[SubjectResponse])
 def list_subjects(
     db: Annotated[Session, Depends(get_db_session)],
@@ -149,6 +157,18 @@ def create_question(
     record_audit(db, actor_person_id=account.person_id, event_type="question.create", subject_type="question", subject_id=question.id)
     db.commit()
     return {"id": str(question.id), "status": "draft"}
+
+
+@router.get("/{bank_id}/questions", response_model=list[QuestionResponse])
+def list_questions(
+    bank_id: UUID,
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+) -> list[QuestionResponse]:
+    if db.get(QuestionBank, bank_id) is None:
+        raise HTTPException(status_code=404, detail="Question bank not found")
+    questions = db.scalars(select(Question).where(Question.bank_id == bank_id).order_by(Question.created_at))
+    return [QuestionResponse(id=question.id, content=question.content, difficulty=question.difficulty, status=question.status, choices=[{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order))]) for question in questions]
 
 
 @router.post("/{bank_id}/publish", response_model=BankResponse)

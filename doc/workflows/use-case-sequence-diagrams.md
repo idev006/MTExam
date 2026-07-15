@@ -92,6 +92,30 @@ sequenceDiagram
     API-->>UI: Published bank
 ```
 
+## UC-QBANK-02 — Manage questions inside a bank
+
+```mermaid
+sequenceDiagram
+    actor E as exam_author
+    participant UI as Question Bank UI
+    participant API as Question API
+    participant DB as SQLite
+    E->>UI: Select subject and draft bank
+    UI->>API: GET /question-banks/{bank_id}/questions
+    API->>DB: Load questions and choices
+    DB-->>API: Question list
+    API-->>UI: Render question cards
+    E->>UI: Enter question, choices and one correct answer
+    UI->>API: POST /question-banks/{bank_id}/questions
+    API->>API: Validate 2-10 choices and exactly one correct
+    API->>DB: Save question, choices and audit event
+    API-->>UI: Draft question id
+    E->>UI: Publish bank
+    UI->>API: POST /question-banks/{bank_id}/publish
+    API->>DB: Verify questions and choices; set bank active
+    API-->>UI: Published bank
+```
+
 ## UC-PAPER-01 — Publish an Exam Creation
 
 ```mermaid
