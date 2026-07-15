@@ -56,6 +56,9 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | AUDIT-001 | requirements/reporting.md | audit events | TBD | Planned |
 | AUDIT-002 | requirements/reporting.md | audit schema | TBD | Planned |
 | AUDIT-003 | requirements/reporting.md | audit authorization | TBD | Planned |
+| PER-IMP-API | requirements/personnel-import.md | GET/POST personnel snapshot API | API smoke test | Implemented minimal slice |
+| REPORT-API | requirements/reporting.md | GET reports/summary | API smoke test | Implemented minimal slice |
+| QBANK-API | requirements/question-bank.md | question-banks authoring API | API authorization smoke | Implemented minimal slice |
 
 ## Use-case interaction traceability
 

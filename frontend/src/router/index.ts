@@ -5,10 +5,17 @@ import SettingsView from "@/views/SettingsView.vue";
 import PracticeExamView from "@/views/PracticeExamView.vue";
 import LoginView from "@/views/LoginView.vue";
 import { useAuth } from "@/stores/auth";
+import ReportsView from "@/views/ReportsView.vue";
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: "/reports",
+      name: "reports",
+      component: ReportsView,
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer"] },
+    },
     {
       path: "/login",
       name: "login",

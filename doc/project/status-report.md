@@ -63,6 +63,8 @@
 
 ## Next Recommended Tickets
 
+Recent vertical slices added: personnel read/import API, scoped report summary API, question-bank authoring API, and viewer report page.
+
 1. REVIEW-001 Human review/accept M0 implementation and POC-001 evidence
 2. ADMIN-001 Connect settings page to authorized settings API
 3. PER-IMP-001 Provide representative CSV and implement staging/import

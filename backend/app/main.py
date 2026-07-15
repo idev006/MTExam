@@ -15,7 +15,7 @@ from backend.app.api.router import api_router
 from backend.app.config import PROJECT_ROOT, Settings, get_settings
 from backend.app.db.base import Base
 from backend.app.db.database import Database
-from backend.app.db.models import Person, UserAccount
+from backend.app.db.models import OrgUnit, Person, UserAccount
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.domain.security import hash_password
 
@@ -56,6 +56,16 @@ def create_app(settings: Settings | None = None, frontend_dist: Path | None = No
 
 
 def _seed_development_accounts(db) -> None:
+    if db.scalar(select(OrgUnit).where(OrgUnit.code == "DEV")) is None:
+        db.add(
+            OrgUnit(
+                code="DEV",
+                name="หน่วยงานสาธิต",
+                level="division",
+                status=ActiveStatus.ACTIVE,
+            )
+        )
+        db.flush()
     accounts = (
         ("demo", "demo1234", "ผู้เข้าสอบสาธิต", UserRole.EXAMINEE),
         ("superadmin", "super1234", "ผู้ดูแลระบบสาธิต", UserRole.SUPER_ADMIN),
