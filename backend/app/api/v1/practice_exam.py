@@ -11,12 +11,13 @@ from fastapi import Path as RoutePath
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
-from backend.app.api.v1.auth import get_current_account
+from backend.app.api.v1.auth import require_roles
 from backend.app.config import PROJECT_ROOT
 from backend.app.db.base import utc_now
 from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import UserAccount
 from backend.app.db.models.practice import PracticeExamSession
+from backend.app.domain.enums import UserRole
 
 router = APIRouter(prefix="/practice", tags=["practice"])
 
@@ -90,7 +91,7 @@ def _session_response(entity: PracticeExamSession) -> PracticeSessionResponse:
 )
 def create_practice_session(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(get_current_account)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
 ) -> PracticeSessionResponse:
     entity = PracticeExamSession(bank_code="pdpa-50")
     db.add(entity)
@@ -103,7 +104,7 @@ def create_practice_session(
 def get_practice_session(
     session_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(get_current_account)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
 ) -> PracticeSessionResponse:
     entity = db.get(PracticeExamSession, session_id)
     if entity is None:
@@ -116,7 +117,7 @@ def save_practice_answer(
     session_id: UUID,
     request: AnswerRequest,
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(get_current_account)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
 ) -> PracticeSessionResponse:
     entity = db.get(PracticeExamSession, session_id)
     if entity is None or entity.status != "in_progress":
@@ -141,7 +142,7 @@ def save_practice_answer(
 def submit_practice_session(
     session_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(get_current_account)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
 ) -> PracticeSessionResponse:
     entity = db.get(PracticeExamSession, session_id)
     if entity is None:

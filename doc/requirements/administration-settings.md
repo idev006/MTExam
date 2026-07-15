@@ -8,6 +8,17 @@ Provide a small, role-protected settings area for operational configuration with
 
 - **ADMIN-001** — Only authorized administrators can access system settings.
 - **ADMIN-008** — Login uses a database-backed HttpOnly session cookie; JWT is not required for the initial release.
+
+## Initial role matrix
+
+| Role | System dashboard | Settings | Real exam session | Question authoring/preview |
+|---|---:|---:|---:|---:|
+| `super_admin` | yes | yes | yes (controlled override) | yes |
+| `exam_author` | yes | no | no | yes (future module) |
+| `examinee` | yes | no | yes | no |
+| `viewer` | yes | no | no | read-only modules only |
+
+The API is authoritative: frontend route guards are only a usability layer.
 - **ADMIN-002** — Settings are typed, validated, and persisted through the API; `config/app.toml` remains the non-secret baseline.
 - **ADMIN-003** — The UI uses daisyUI controls such as radio, switch, slider, and select where they make choices clearer.
 - **ADMIN-004** — The user can choose any enabled daisyUI theme; theme preference is client-side UI state and never changes server authority.

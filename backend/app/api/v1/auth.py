@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -66,6 +67,18 @@ def get_current_account(
         raise HTTPException(status_code=401, detail="กรุณาเข้าสู่ระบบ")
     db.commit()
     return account
+
+
+def require_roles(*allowed_roles: UserRole) -> Callable:
+    def dependency(
+        account: Annotated[UserAccount, Depends(get_current_account)],
+    ) -> UserAccount:
+        role = UserRole(account.role)
+        if role is not UserRole.SUPER_ADMIN and role not in allowed_roles:
+            raise HTTPException(status_code=403, detail="คุณไม่มีสิทธิ์ใช้งานส่วนนี้")
+        return account
+
+    return dependency
 
 
 @router.post("/login", response_model=UserResponse)

@@ -37,6 +37,7 @@
 - Project tracking snapshot now includes ADMIN-001 and FE-UX-001 for the new UI work; both remain Verify until API wiring and human review.
 - Examinee practice page implemented at `/exam/pdpa`: 50-question PDPA bank, configurable questions-per-page setting, direct page navigation, durable SQLite practice session, API autosave, browser recovery copy, idempotent submit, and score/answer rationales revealed only after submission.
 - Cookie-based Login/Logout and `/auth/me` are implemented; exam and settings routes require an authenticated session. Development account: `demo` / `demo1234`.
+- Initial RBAC enforcement is implemented for `super_admin`, `exam_author`, `examinee`, and `viewer`; only `examinee` (plus the controlled `super_admin` override) may call practice exam session endpoints, while settings is `super_admin` only.
 - EXAM-POC-001 is Verify: browser interaction tested through first answer and rationale display; production exam session/auth remains pending.
 
 ## In Progress

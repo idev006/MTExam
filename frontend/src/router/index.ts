@@ -23,13 +23,13 @@ export const router = createRouter({
       path: "/settings",
       name: "settings",
       component: SettingsView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, allowedRoles: ["super_admin"] },
     },
     {
       path: "/exam/pdpa",
       name: "practice-exam-pdpa",
       component: PracticeExamView,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "examinee"] },
     },
   ],
 });
@@ -38,6 +38,8 @@ router.beforeEach(async (to) => {
   const auth = useAuth();
   if (!auth.initialized.value) await auth.loadUser();
   if (to.meta.requiresAuth && !auth.isAuthenticated.value) return { name: "login", query: { redirect: to.fullPath } };
+  const allowedRoles = to.meta.allowedRoles as string[] | undefined;
+  if (allowedRoles && auth.user.value && auth.user.value.role !== "super_admin" && !allowedRoles.includes(auth.user.value.role)) return { name: "home" };
   if (to.name === "login" && auth.isAuthenticated.value) return { name: "home" };
   return true;
 });
