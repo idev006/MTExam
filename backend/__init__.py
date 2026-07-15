@@ -1,0 +1,1 @@
+"""MTExam backend package."""

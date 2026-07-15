@@ -1,0 +1,46 @@
+[app]
+name = "MTExam"
+version = "0.1.0"
+environment = "development"
+api_prefix = "/api/v1"
+timezone = "Asia/Bangkok"
+cors_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
+[database]
+pool_size = 10
+max_overflow = 10
+pool_timeout_seconds = 30
+
+[exam]
+default_duration_minutes = 60
+minimum_questions = 1
+maximum_questions = 200
+allow_answer_revision = true
+show_result_after_submit = true
+
+[exam.batch]
+allow_late_entry = true
+minimum_remaining_minutes = 5
+
+[personnel_import]
+mode = "full_snapshot"
+encoding = "utf-8-sig"
+delimiter = ","
+maximum_file_size_mb = 20
+reject_duplicate_file = true
+missing_person_warning_percent = 10
+
+[personnel_import.columns]
+person_identifier = "person_id"
+full_name = "full_name"
+rank = "rank"
+org_unit_code = "org_unit_code"
+org_unit_name = "org_unit_name"
+org_unit_level = "org_unit_level"
+parent_org_unit_code = "parent_org_unit_code"
+status = "status"
+
+[audit]
+enabled = true
+record_ip_address = true
+record_user_agent = true

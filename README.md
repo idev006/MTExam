@@ -1,0 +1,43 @@
+# MTExam
+
+ระบบสอบออนไลน์แบบเลือกตอบและจับเวลา พัฒนาแบบ API-first Modular Monolith
+
+## Documentation
+
+เริ่มจาก [Document Index](doc/index.md) และ [Master Blueprint](doc/exam-app-master-blueprint.md)
+
+Project tracking ใช้ [Kanban Board](doc/project/kanban-board.md)
+
+## Backend environment
+
+Python ทุกคำสั่งต้องใช้:
+
+    F:\programming\python\MTExam\.venv\Scripts\python.exe
+
+ติดตั้ง dependencies:
+
+    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+## Commands
+
+คำสั่งเหล่านี้จะพร้อมหลัง M0 foundation เสร็จ:
+
+    .\.venv\Scripts\python.exe -m pytest
+    .\.venv\Scripts\python.exe -m ruff check .
+    .\.venv\Scripts\python.exe -m alembic upgrade head
+    .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
+
+Frontend:
+
+    Set-Location frontend
+    npm install
+    npm run dev
+
+## Rules
+
+- No Ticket, No Development
+- API เป็น System Core
+- ไม่มี Personnel CRUD; ข้อมูลมาจาก CSV import
+- Source code file ไม่เกิน 800 บรรทัด
+- Runtime stack ต้อง minimal
+- Core database logic รองรับ SQLite, MySQL และ PostgreSQL

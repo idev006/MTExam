@@ -1,0 +1,25 @@
+# Core API
+fastapi==0.139.0
+uvicorn==0.51.0
+pydantic==2.13.4
+pydantic-settings==2.14.2
+python-multipart==0.0.32
+
+# Database and migrations
+SQLAlchemy==2.0.51
+alembic==1.18.5
+
+# Database drivers
+# SQLite is included with Python.
+psycopg[binary]==3.3.4
+PyMySQL==1.2.0
+
+# Authentication
+pwdlib[argon2]==0.3.0
+PyJWT==2.13.0
+
+# Testing and code quality
+pytest==9.1.1
+pytest-cov==7.1.0
+httpx2==2.7.0
+ruff==0.15.21
