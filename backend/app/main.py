@@ -66,6 +66,7 @@ def _seed_development_accounts(db) -> None:
             )
         )
         db.flush()
+    _seed_region6_org_units(db)
     accounts = (
         ("demo", "demo1234", "ผู้เข้าสอบสาธิต", UserRole.EXAMINEE),
         ("superadmin", "super1234", "ผู้ดูแลระบบสาธิต", UserRole.SUPER_ADMIN),
@@ -92,6 +93,45 @@ def _seed_development_accounts(db) -> None:
             )
         )
     db.commit()
+
+
+def _seed_region6_org_units(db) -> None:
+    parent = db.scalar(select(OrgUnit).where(OrgUnit.code == "POLICE_REGION_6"))
+    if parent is None:
+        parent = OrgUnit(
+            code="POLICE_REGION_6",
+            name="ตำรวจภูธรภาค 6",
+            level="division",
+            status=ActiveStatus.ACTIVE,
+        )
+        db.add(parent)
+        db.flush()
+    units = (
+        ("BAG_อำนวยการ_ภ6", "กองบังคับการอำนวยการตำรวจภูธรภาค 6 (บก.อก.ภ.6)"),
+        ("BSS_ภ6", "กองบังคับการสืบสวนสอบสวนตำรวจภูธรภาค 6 (บก.สส.ภ.6)"),
+        ("BKC_ภ6", "กองบังคับการกฎหมายและคดีตำรวจภูธรภาค 6 (บก.กค.ภ.6)"),
+        ("ศฝร_ภ6", "ศูนย์ฝึกอบรมตำรวจภูธรภาค 6 (ศฝร.ภ.6)"),
+        ("ภจว_กำแพงเพชร", "ตำรวจภูธรจังหวัดกำแพงเพชร (ภ.จว.กำแพงเพชร)"),
+        ("ภจว_ตาก", "ตำรวจภูธรจังหวัดตาก (ภ.จว.ตาก)"),
+        ("ภจว_นครสวรรค์", "ตำรวจภูธรจังหวัดนครสวรรค์ (ภ.จว.นครสวรรค์)"),
+        ("ภจว_พิจิตร", "ตำรวจภูธรจังหวัดพิจิตร (ภ.จว.พิจิตร)"),
+        ("ภจว_พิษณุโลก", "ตำรวจภูธรจังหวัดพิษณุโลก (ภ.จว.พิษณุโลก)"),
+        ("ภจว_เพชรบูรณ์", "ตำรวจภูธรจังหวัดเพชรบูรณ์ (ภ.จว.เพชรบูรณ์)"),
+        ("ภจว_สุโขทัย", "ตำรวจภูธรจังหวัดสุโขทัย (ภ.จว.สุโขทัย)"),
+        ("ภจว_อุตรดิตถ์", "ตำรวจภูธรจังหวัดอุตรดิตถ์ (ภ.จว.อุตรดิตถ์)"),
+        ("ภจว_อุทัยธานี", "ตำรวจภูธรจังหวัดอุทัยธานี (ภ.จว.อุทัยธานี)"),
+    )
+    for code, name in units:
+        if db.scalar(select(OrgUnit).where(OrgUnit.code == code)) is None:
+            db.add(
+                OrgUnit(
+                    code=code,
+                    name=name,
+                    level="bureau",
+                    parent_id=parent.id,
+                    status=ActiveStatus.ACTIVE,
+                )
+            )
 
 
 def _mount_frontend_if_built(app: FastAPI, frontend_dist: Path) -> None:

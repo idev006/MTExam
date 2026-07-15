@@ -191,3 +191,6 @@ id, actor_person_id, event_type, subject_type, subject_id, occurred_at, ip_addre
 - import_batches checksum unique
 
 Index จริงต้องยืนยันด้วย query/load test ไม่สร้าง index ทุก column
+`OrgUnit` stores the hierarchy `ตำรวจภูธรภาค 6` (division) → bureau-level units. The 13 ภ.6
+units supplied by the data owner are seeded for development/test and can be selected by
+Question Bank and Exam Paper creation.

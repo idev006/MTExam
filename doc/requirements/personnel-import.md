@@ -167,3 +167,8 @@ Acceptance criteria:
 - Missing threshold safety gate
 - Unicode ภาษาไทย
 - ประวัติ exam session ไม่เปลี่ยนหลัง import
+## ภ.6 organization seed
+
+Development/test environments include the ภ.6 division and its 13 bureau-level child units
+from the approved list. The seed is idempotent and uses stable codes; production data remains
+managed through the CSV import workflow.
