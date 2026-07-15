@@ -57,7 +57,7 @@ Persistent state อยู่ใน database; ไม่มี Redis requirement.
 | POC-FE-01 | Vue 3 Composition API + Router + Pinia | existing app registration ผ่าน Vue type-check และ Vite production build | Passed |
 | POC-FE-02 | Tailwind CSS + daisyUI | Vite build transform stylesheet และ daisyUI plugin สำเร็จ | Passed |
 | POC-QA-01 | Test-friendly architecture | pure domain modules, pytest marker, Ruff, layer boundary และ source ≤ 800 lines | Passed |
-| POC-CI-01 | CI-compatible verification | full pytest suiteและ existing GitHub Actions gates ใช้ commands เดียวกัน | Passed locally; remote run pending current commit |
+| POC-CI-01 | CI-compatible verification | full pytest suite และ GitHub Actions gates ใช้ commandsเดียวกัน | [Run 29412132325](https://github.com/idev006/MTExam/actions/runs/29412132325) passed |
 
 `Pinia` ถูก register แล้วแต่ยังไม่สร้าง global store ตัวอย่างที่ไม่มี use case จริง เมื่อเริ่ม auth/session
 จึงค่อยสร้าง store เท่าที่จำเป็น ส่วน page/form state ให้เป็น local state ตามหลัก minimal stack
@@ -81,6 +81,7 @@ Persistent state อยู่ใน database; ไม่มี Redis requirement.
 | Vue TypeScript | Passed |
 | Vite production build | Passed; 40 modules transformed |
 | Largest new source file | 287 lines; below 800-line rule |
+| GitHub Actions | [Run 29412132325](https://github.com/idev006/MTExam/actions/runs/29412132325) passed at `2b82892` |
 
 Test source:
 
@@ -124,4 +125,4 @@ production-ready
 - POC tests, existing tests, Ruff, Vue type-check และ Vite build ผ่าน
 - ผลและ limitation ถูกบันทึกในเอกสาร/Project tracking
 - GitHub Project item ย้ายจาก In progress ไป Verify
-- GitHub Actions ของ commit ปัจจุบันผ่านก่อนพิจารณาปิด ticket
+- GitHub Actions ของ implementation commit ผ่าน; ticket รอ human review ก่อน Done

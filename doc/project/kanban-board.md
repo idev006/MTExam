@@ -28,7 +28,7 @@
 | [DATA-001](https://github.com/idev006/MTExam/issues/8) | Portable schema/migration รวม SQLite employee table | High | Verify | Developer/AI | Data model, DATA-EMP-001 | MySQL/PostgreSQL CI not connected |
 | [PER-IMP-001](https://github.com/idev006/MTExam/issues/9) | Implement personnel CSV staging/import | High | Blocked | Data Owner/Developer | PER-IMP-001 | Representative sample CSV |
 | [SEC-001](https://github.com/idev006/MTExam/issues/10) | Confirm SSO/OIDC provider | High | Blocked | Product Owner | Authentication architecture | Provider decision and metadata |
-| [POC-001](https://github.com/idev006/MTExam/issues/11) | Executable proof of project technology stack | High | Verify | Technical Lead/AI | Technology POC | Human review and current CI run |
+| [POC-001](https://github.com/idev006/MTExam/issues/11) | Executable proof of project technology stack | High | Verify | Technical Lead/AI | Technology POC | Human review/acceptance |
 
 ## Ticket Acceptance
 
@@ -131,5 +131,6 @@
 - Git repository initialized on main
 - GitHub Project is the current status SSOT with 11 linked Issues
 - GitHub CI run [29407299728](https://github.com/idev006/MTExam/actions/runs/29407299728) passed at ef8752c
+- POC GitHub CI run [29412132325](https://github.com/idev006/MTExam/actions/runs/29412132325) passed at 2b82892
 - Source file 800-line architectural test: passed
 - Requirement IDs unique and fully present in traceability: passed

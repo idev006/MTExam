@@ -28,11 +28,12 @@
 - Executable technology POC implemented for API/config/database/CSV/security/exam rules/frontend
 - POC runner passed: 26 POC + 18 existing tests, Ruff, Vue type-check and Vite build
 - All 23 metadata tables compile for SQLite, MySQL and PostgreSQL dialects
+- POC GitHub Actions run 29412132325 passed at implementation commit 2b82892
 
 ## In Progress
 
 - M0 human review and acceptance
-- POC-001 review and current GitHub Actions verification
+- POC-001 human review and acceptance
 
 ## Not Started
 
