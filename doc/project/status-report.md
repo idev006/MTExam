@@ -29,7 +29,7 @@
 - POC runner passed: 34 POC + 18 existing tests, Ruff, Vue type-check and Vite build
 - All 24 metadata tables compile for SQLite, MySQL and PostgreSQL dialects
 - Database-backed browser session policy implemented: Examinee 1 session, admin 3 sessions, oldest revoke
-- AUTH-001 (#12) tracked in GitHub Project as In progress; current commit contains session foundation
+- AUTH-001 (#12) tracked in GitHub Project as Verify; current commit contains session foundation
 - POC GitHub Actions run 29413533674 passed at session implementation commit a3e2cc2
 
 ## In Progress
@@ -57,7 +57,7 @@
 2. PER-IMP-001 Provide representative CSV and implement staging/import
 3. SEC-001 Confirm SSO/OIDC provider
 4. DB-VERIFY-001 Run migrations/integration suite on live MySQL and PostgreSQL
-5. AUTH-001 Complete login/API wiring on the session foundation
+5. AUTH-001 Complete login/API wiring on the verified session foundation
 6. PERF-001 Define workload and verify the 500-user target before production
 
 ## Release Readiness

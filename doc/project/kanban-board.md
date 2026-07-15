@@ -29,7 +29,7 @@
 | [PER-IMP-001](https://github.com/idev006/MTExam/issues/9) | Implement personnel CSV staging/import | High | Blocked | Data Owner/Developer | PER-IMP-001 | Representative sample CSV |
 | [SEC-001](https://github.com/idev006/MTExam/issues/10) | Confirm SSO/OIDC provider | High | Blocked | Product Owner | Authentication architecture | Provider decision and metadata |
 | [POC-001](https://github.com/idev006/MTExam/issues/11) | Executable proof of project technology stack | High | Verify | Technical Lead/AI | Technology POC | Human review/acceptance |
-| [AUTH-001](https://github.com/idev006/MTExam/issues/12) | Implement DB-backed browser sessions and concurrent-session policy | High | In progress | Backend/AI | ADR-0007, AUTH-003 | Full login/API wiring |
+| [AUTH-001](https://github.com/idev006/MTExam/issues/12) | Implement DB-backed browser sessions and concurrent-session policy | High | Verify | Backend/AI | ADR-0007, AUTH-003 | Full login/API wiring is next slice |
 
 ## Ticket Acceptance
 
