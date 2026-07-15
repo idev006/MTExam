@@ -25,10 +25,14 @@
 - GitHub Project `MTExam Delivery` created as private status SSOT
 - 10 tracked GitHub Issues migrated: Done 3, Verify 5, Blocked 2
 - SQLite employee table contract, model และ migration 0002 verified
+- Executable technology POC implemented for API/config/database/CSV/security/exam rules/frontend
+- POC runner passed: 26 POC + 18 existing tests, Ruff, Vue type-check and Vite build
+- All 23 metadata tables compile for SQLite, MySQL and PostgreSQL dialects
 
 ## In Progress
 
 - M0 human review and acceptance
+- POC-001 review and current GitHub Actions verification
 
 ## Not Started
 
@@ -45,11 +49,12 @@
 
 ## Next Recommended Tickets
 
-1. REVIEW-001 Human review/accept M0 implementation
+1. REVIEW-001 Human review/accept M0 implementation and POC-001 evidence
 2. PER-IMP-001 Provide representative CSV and implement staging/import
 3. SEC-001 Confirm SSO/OIDC provider
-4. DB-VERIFY-001 Run migrations/integration suite on MySQL and PostgreSQL
+4. DB-VERIFY-001 Run migrations/integration suite on live MySQL and PostgreSQL
 5. AUTH-001 Implement the approved authentication approach
+6. PERF-001 Define workload and verify the 500-user target before production
 
 ## Release Readiness
 

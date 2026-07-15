@@ -2,6 +2,9 @@
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra --strict-markers"
+markers = [
+    "poc: executable proof of the project architecture and technology choices",
+]
 
 [tool.coverage.run]
 branch = true

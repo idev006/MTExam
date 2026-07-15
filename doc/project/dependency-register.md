@@ -37,7 +37,7 @@ package-lock.json ต้องเป็น lock SSOT หลังสร้าง
 
 | ID | Dependency | Resolution | Date |
 |---|---|---|---|
-| EXT-008 | GitHub Project for web Kanban | Private [MTExam Delivery](https://github.com/users/idev006/projects/3/views/1) created with 10 linked Issues; public/team access requires owner approval | 2026-07-15 |
+| EXT-008 | GitHub Project for web Kanban | Private [MTExam Delivery](https://github.com/users/idev006/projects/3/views/1) created with 11 linked Issues; public/team access requires owner approval | 2026-07-15 |
 
 ## Dependency Approval
 

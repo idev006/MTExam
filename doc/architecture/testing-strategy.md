@@ -59,6 +59,7 @@
       integration/
       api/
       architecture/
+      poc/
       factories/
       conftest.py
 
@@ -80,9 +81,14 @@
 ## Required Commands
 
     F:\programming\python\MTExam\.venv\Scripts\python.exe -m pytest
+    F:\programming\python\MTExam\.venv\Scripts\python.exe -m pytest -m poc
     F:\programming\python\MTExam\.venv\Scripts\python.exe -m pytest tests\unit
     F:\programming\python\MTExam\.venv\Scripts\python.exe -m pytest --cov=backend\app
     F:\programming\python\MTExam\.venv\Scripts\python.exe -m ruff check .
+    .\poc\run-poc.ps1
+
+`poc` marker ใช้กับ executable technology proof ที่ต้องรันซ้ำใน local/CI ได้ ไม่ใช้แทน
+requirement tests ของ feature จริง และผลที่ต้องพึ่ง external service ต้องบันทึกเป็น deferred verification
 
 ## Coverage
 

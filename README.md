@@ -28,6 +28,12 @@ Python ทุกคำสั่งต้องใช้:
     .\.venv\Scripts\python.exe -m alembic upgrade head
     .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
 
+Technology POC และ quality gates ทั้ง backend/frontend:
+
+    .\poc\run-poc.ps1
+
+รายละเอียดผลและข้อจำกัดอยู่ที่ [Technology POC](doc/poc/technology-poc.md)
+
 Frontend:
 
     Set-Location frontend

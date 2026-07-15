@@ -28,6 +28,7 @@
 | [DATA-001](https://github.com/idev006/MTExam/issues/8) | Portable schema/migration รวม SQLite employee table | High | Verify | Developer/AI | Data model, DATA-EMP-001 | MySQL/PostgreSQL CI not connected |
 | [PER-IMP-001](https://github.com/idev006/MTExam/issues/9) | Implement personnel CSV staging/import | High | Blocked | Data Owner/Developer | PER-IMP-001 | Representative sample CSV |
 | [SEC-001](https://github.com/idev006/MTExam/issues/10) | Confirm SSO/OIDC provider | High | Blocked | Product Owner | Authentication architecture | Provider decision and metadata |
+| [POC-001](https://github.com/idev006/MTExam/issues/11) | Executable proof of project technology stack | High | Verify | Technical Lead/AI | Technology POC | Human review and current CI run |
 
 ## Ticket Acceptance
 
@@ -66,6 +67,13 @@
 - No dialect-specific types/imports in core
 - Migration test passes
 
+### POC-001
+
+- 26 executable POC tests cover API/config/database/CSV/security/exam rules
+- Existing 18 tests, Ruff, Vue type-check and Vite production build pass
+- All 23 tables compile for SQLite, MySQL and PostgreSQL dialects
+- External/live verification gaps are explicitly recorded and not claimed as passed
+
 ## Blocked Detail
 
 ### PER-IMP-001
@@ -78,7 +86,7 @@
 ### GitHub Project Migration — Resolved
 
 - Project: [MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
-- Migrated: 10 GitHub Issues covering Done, Verify และ Blocked work
+- Migrated: 11 GitHub Issues covering Done, In progress, Verify และ Blocked work
 - Columns: Backlog, Analysis, Ready, In progress, In review, Verify, Done และ Blocked
 - Visibility: Private; การเปิด Public หรือเพิ่ม team access ต้องได้รับอนุมัติจาก owner
 - Current status changes must be made on GitHub Project
@@ -96,7 +104,7 @@
 ### Backend and API
 
 - Ruff: passed
-- pytest: 14 passed, no warning
+- pytest: 44 passed, no warning (26 POC + 18 existing)
 - Health API: verified with in-memory SQLite
 - Public config: verified no secret/database URL exposure
 - Standard error envelope and correlation ID: verified
@@ -109,6 +117,7 @@
 - Alembic schema check: no new operations
 - SQLite foreign key enforcement: verified
 - MySQL/PostgreSQL execution: pending connected CI services
+- Portable DDL compile: all 23 tables passed SQLite/MySQL/PostgreSQL dialect compilation
 
 ### Frontend
 
@@ -120,7 +129,7 @@
 ### Governance
 
 - Git repository initialized on main
-- GitHub Project is the current status SSOT with 10 linked Issues
+- GitHub Project is the current status SSOT with 11 linked Issues
 - GitHub CI run [29407299728](https://github.com/idev006/MTExam/actions/runs/29407299728) passed at ef8752c
 - Source file 800-line architectural test: passed
 - Requirement IDs unique and fully present in traceability: passed

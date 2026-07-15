@@ -45,6 +45,11 @@
 
 Executable OpenAPI is generated from FastAPI after the application exists ห้ามแก้ generated OpenAPI ด้วยมือ
 
+## Proof of Concept
+
+- [Technology POC and Evidence](poc/technology-poc.md)
+- One-command runner: `poc/run-poc.ps1`
+
 ## Project Management
 
 - [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1) — current status SSOT
