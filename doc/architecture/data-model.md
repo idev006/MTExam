@@ -84,6 +84,8 @@ id, name, owner_org_unit_id, is_shared, status, created_by, created_at
 
 ### questions
 
+Question content should retain an optional `explanation`/answer rationale for learning and review screens. It must be present before a training question is published; scoring uses the stable choice identity and never derives correctness from the explanation text.
+
 id, bank_id, content, difficulty, default_score_weight, status, created_at, updated_at
 
 ### question_choices

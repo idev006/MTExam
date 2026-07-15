@@ -17,6 +17,7 @@ def test_demo_data_is_deterministic_and_pdpa_bank_is_complete() -> None:
     assert len(questions) == 50
     assert len({question["id"] for question in questions}) == 50
     assert all(len(question["choices"]) == 4 for question in questions)
+    assert all(question["explanation"].strip() for question in questions)
     assert all(
         sum(index == question["correct_index"] for index in range(4)) == 1
         for question in questions

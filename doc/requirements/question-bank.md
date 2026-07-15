@@ -18,6 +18,7 @@
 - คำถามเป็นข้อความ
 - มีตัวเลือก 4-5 ตัวเลือก
 - Initial release รองรับคำตอบถูกหนึ่งตัวเลือก
+- ทุกข้อที่ใช้เพื่อการเรียนรู้ต้องมีคำอธิบายเหตุผลของคำตอบที่ถูก เพื่อให้ผู้สอบเข้าใจหลักการ ไม่ใช่เพียงรับคะแนน
 - กำหนด difficulty, tags และ default score weight ได้
 - ต้องมีคำตอบถูก exactly one ก่อน publish
 
@@ -50,7 +51,7 @@
 ## Seeded Training Bank
 
 - `data/question_banks/pdpa_50.json` contains 50 Thai multiple-choice questions for development and training verification about the Personal Data Protection Act B.E. 2562.
-- Each question has a stable ID, four choices, exactly one `correct_index`, topic, and explanation.
+- Each question has a stable ID, four choices, exactly one `correct_index`, topic, and non-empty explanation.
 - The bank is a development fixture; legal review is required before using it for a formal examination.
 
 ## Required Tests
