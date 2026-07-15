@@ -13,17 +13,10 @@ function themeLabel(theme: DaisyTheme): string {
 </script>
 
 <template>
-  <label class="form-control w-full max-w-xs">
-    <span class="label-text text-xs font-medium">ธีม</span>
-    <select
-      class="select select-bordered select-sm"
-      :value="themeStore.theme"
-      aria-label="เลือกธีม"
-      @change="selectTheme"
-    >
-      <option v-for="theme in DAISYUI_THEMES" :key="theme" :value="theme">
-        {{ themeLabel(theme) }}
-      </option>
+  <label class="form-control w-24 sm:w-36 md:w-40">
+    <span class="label-text hidden text-xs font-medium sm:block">ธีม</span>
+    <select class="select select-bordered select-sm w-full" :value="themeStore.theme" aria-label="เลือกธีม" @change="selectTheme">
+      <option v-for="theme in DAISYUI_THEMES" :key="theme" :value="theme">{{ themeLabel(theme) }}</option>
     </select>
   </label>
 </template>

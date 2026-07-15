@@ -138,3 +138,9 @@ src/assets/main.css:
 - Development ใช้ Vite
 - Production ใช้ static files จาก vite build
 - Node.js ไม่ต้องอยู่ใน runtime container หลัง build
+## Responsive navigation standard
+
+The application header uses responsive breakpoints for smartphone, tablet, notebook and desktop:
+desktop navigation is visible at `lg`, while smaller screens use a DaisyUI/Tailwind hamburger
+menu. User greeting and role are shown in a compact responsive block; role labels use
+`whitespace-nowrap` so they remain on one line. All navigation actions remain keyboard accessible.
