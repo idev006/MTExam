@@ -34,6 +34,7 @@
 - Frontend UX foundation implemented: `PageContainer`, `PageHeader`, reusable daisyUI feedback, and user-selectable daisyUI themes.
 - Dashboard preview implemented and verified locally: employee summary cards, searchable employee table, CSV import entry point, theme selection, and API health status.
 - Admin Settings POC implemented at `/settings`: radio, range slider, switch, theme selector, and DaisyUI toast; persistence API remains the next integration slice.
+- Project tracking snapshot now includes ADMIN-001 and FE-UX-001 for the new UI work; both remain Verify until API wiring and human review.
 
 ## In Progress
 
@@ -57,11 +58,12 @@
 ## Next Recommended Tickets
 
 1. REVIEW-001 Human review/accept M0 implementation and POC-001 evidence
-2. PER-IMP-001 Provide representative CSV and implement staging/import
-3. SEC-001 Confirm SSO/OIDC provider
-4. DB-VERIFY-001 Run migrations/integration suite on live MySQL and PostgreSQL
-5. AUTH-001 Complete login/API wiring on the verified session foundation
-6. PERF-001 Define workload and verify the 500-user target before production
+2. ADMIN-001 Connect settings page to authorized settings API
+3. PER-IMP-001 Provide representative CSV and implement staging/import
+4. SEC-001 Confirm SSO/OIDC provider
+5. DB-VERIFY-001 Run migrations/integration suite on live MySQL and PostgreSQL
+6. AUTH-001 Complete login/API wiring on the verified session foundation
+7. PERF-001 Define workload and verify the 500-user target before production
 
 ## Release Readiness
 

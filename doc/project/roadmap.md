@@ -18,12 +18,14 @@ Outcome:
 - Database connection and initial migration
 - pytest/Ruff/800-line architecture test
 - CI baseline
+- Dashboard and Admin Settings POC for review
 
 Exit:
 
 - Health API runs through .venv
 - Vue Vite shell calls API
 - Tests pass
+- `/settings` UI controls render without browser modal APIs
 
 ## M1 — Personnel and Identity
 
