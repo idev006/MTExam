@@ -22,7 +22,7 @@
 - Technical verification: 14 pytest passed; frontend type-check/build passed
 - Baseline commit d85a799 pushed to GitHub main
 - GitHub CI run 29407299728 passed at ef8752c
-- GitHub Project `MTExam Delivery` created as status SSOT
+- GitHub Project `MTExam Delivery` created as private status SSOT
 - 10 tracked GitHub Issues migrated: Done 3, Verify 5, Blocked 2
 
 ## In Progress
@@ -59,3 +59,4 @@ database matrix and load testing remain.
 
 สถานะในไฟล์นี้เป็นรายงาน snapshot เท่านั้น [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
 เป็น SSOT ของ current task status และไฟล์นี้ใช้สรุป periodic report
+Project visibility ปัจจุบันเป็น Private; owner ต้องอนุมัติก่อนเปิด Public หรือเพิ่ม team access

@@ -80,6 +80,7 @@
 - Project: [MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
 - Migrated: 10 GitHub Issues covering Done, Verify และ Blocked work
 - Columns: Backlog, Analysis, Ready, In progress, In review, Verify, Done และ Blocked
+- Visibility: Private; การเปิด Public หรือเพิ่ม team access ต้องได้รับอนุมัติจาก owner
 - Current status changes must be made on GitHub Project
 
 ## Resolved Delivery Dependencies
@@ -87,7 +88,7 @@
 - Git identity: idev006 / thaipoliceregion6@gmail.com
 - Remote: https://github.com/idev006/MTExam.git
 - Baseline commit: d85a799
-- Current verified head: ef8752c
+- Implementation verification commit: ef8752c
 - Branch: main tracking origin/main
 
 ## Verification Evidence
