@@ -40,6 +40,7 @@ MTExam เป็น API-first Modular Monolith แบบ Multi-tier แยกค
 | Scoring | Deterministic grading |
 | Reporting | Results and aggregation |
 | Audit | Security and business events |
+| Administration and Settings | Role-protected operational settings and system health |
 
 โมดูลอยู่ใน process และ database เดียวกัน ไม่ใช่ microservices
 

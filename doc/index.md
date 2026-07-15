@@ -15,6 +15,7 @@
 - [Personnel and Organization Import](requirements/personnel-import.md)
 - [Authentication and Authorization](requirements/authentication.md)
 - [Question Bank](requirements/question-bank.md)
+- [Administration and Settings](requirements/administration-settings.md)
 - [Exam Paper and Variant](requirements/exam-paper.md)
 - [Exam Session](requirements/exam-session.md)
 - [Scoring](requirements/scoring.md)
