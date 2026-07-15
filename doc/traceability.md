@@ -1,6 +1,6 @@
 # Requirements Traceability Matrix
 
-**Status:** Baseline; product requirements implementation not started
+**Status:** Updated 2026-07-15; MVP vertical slices implemented, production hardening remains
 
 Test path และ ticket จะเติมเมื่อสร้าง repository/application งานจะ Done ไม่ได้หาก row ที่เกี่ยวข้องยังไม่มี evidence
 
@@ -59,6 +59,10 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | PER-IMP-API | requirements/personnel-import.md | GET/POST personnel snapshot API | API smoke test | Implemented minimal slice |
 | REPORT-API | requirements/reporting.md | GET reports/summary | API smoke test | Implemented minimal slice |
 | QBANK-API | requirements/question-bank.md | question-banks authoring API | API authorization smoke | Implemented minimal slice |
+| PAPER-API | requirements/exam-paper.md | exam paper list/create/publish API | API authorization smoke | Implemented minimal slice |
+| USER-ADMIN-API | requirements/authentication.md | user list/create/deactivate API | API authorization smoke | Implemented minimal slice |
+| EXAM-WINDOW-API | requirements/exam-session.md | exam window list/create/open API | API authorization smoke | Implemented minimal slice; timer integration pending |
+| AUDIT-API | requirements/reporting.md | audit list and mutation events | API authorization smoke | Implemented baseline; full mutation coverage pending |
 
 ## Use-case interaction traceability
 

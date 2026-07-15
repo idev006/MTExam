@@ -37,6 +37,20 @@
 
 ## Ticket Acceptance
 
+### Latest vertical-slice tickets (2026-07-15)
+
+| Ticket | Outcome | Priority | Status | Blocker |
+|---|---|---|---|---|
+| PER-IMP-API | Personnel list and CSV preview/apply API | High | Verify | Persistent staging, rollback and row audit |
+| REPORT-API | Report summary and CSV export | Medium | Verify | Product filters and acceptance |
+| QBANK-API | Question-bank authoring API/UI slice | High | Verify | Complete choice editing/versioning |
+| PAPER-API-001 | Paper builder list/create/publish slice | High | Verify | Snapshot and variant validation |
+| USER-ADMIN-001 | Role-aware user administration slice | High | Verify | Lifecycle/security acceptance |
+| EXAM-WINDOW-001 | Exam window management API | High | Verify | Server-authoritative timer integration |
+| AUDIT-API-001 | Audit API/UI and mutation events | High | Verify | Full mutation coverage/retention |
+| DB-VERIFY-001 | Live MySQL/PostgreSQL migration verification | High | Ready | CI services configured; execution pending |
+| PERF-001 | Authenticated load verification | Medium | Ready | 500-user workload and environment |
+
 ### PM-001
 
 - Git repository initialized on main

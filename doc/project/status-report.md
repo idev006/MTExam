@@ -1,9 +1,14 @@
 # Project Status Report
 
 **As of:** 2026-07-15
+**Overall:** MVP vertical slices — Verify; Production readiness — Not ready
 **Overall:** M0 Foundation — Verify
 
 ## Completed
+
+Current verification evidence supersedes older baseline counts below: full pytest currently
+passes 56 tests, Ruff passes, and Vue type-check/build pass. Historical commit and CI entries
+are retained as audit history.
 
 - Master Blueprint v4.0 aligned with current decisions
 - Requirements baseline
@@ -44,16 +49,27 @@
 
 ## In Progress
 
-- M0 human review and acceptance
-- POC-001 human review and acceptance
+Current implementation is in MVP human-review and production-readiness verification. The latest
+vertical slices include personnel import preview/apply, reports/CSV, question authoring, paper
+builder, user administration, exam windows, audit API/UI and load-smoke tooling.
+
+- MVP vertical-slice human review and acceptance
+- Production-readiness verification against `release-readiness-checklist.md`
 
 ## Not Started
 
-- MySQL/PostgreSQL CI execution
-- M1 personnel import service and identity implementation
-- Full login/API wiring remains next step; session storage/policy foundation is ready
+- Server-authoritative timer and complete exam-window/session integration
+- Persistent import staging with row review, rollback and complete audit trail
+- Full authoring/paper-builder validation and versioning workflows
+- MySQL/PostgreSQL live integration execution, authenticated load test, security review and backup/restore
 
 ## Current Blockers
+
+Production is not ready. The detailed gate and owners are maintained in
+[release-readiness-checklist.md](release-readiness-checklist.md). Open work includes the
+server-authoritative timer, persistent import staging/rollback, complete authoring and paper
+validation, full mutation audit coverage, live MySQL/PostgreSQL execution, authenticated load,
+security review and backup/restore.
 
 | ID | Blocker | Needed action | Owner |
 |---|---|---|---|

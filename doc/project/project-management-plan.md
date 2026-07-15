@@ -394,6 +394,13 @@ Escalation:
 
 ## 21. Release Management
 
+### Current implementation gate
+
+The repository currently delivers an MVP/POC with verified vertical slices. The authoritative
+production decision is maintained in [Release Readiness Checklist](release-readiness-checklist.md).
+`Verify` is not production approval. Before a ticket moves to `Done`, update its requirement row,
+test evidence, use-case documentation when behavior changes, Kanban status and status report.
+
 ### Release readiness
 
 - Scope/acceptance ผ่าน

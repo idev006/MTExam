@@ -4,6 +4,11 @@ Roadmap เป็น outcome-based และปรับผ่าน Kanban repl
 
 ## Current Status
 
+MVP vertical slices are implemented and in Verify. Production release remains blocked by the
+hardening items in [Release Readiness Checklist](release-readiness-checklist.md): authoritative
+timer, persistent import staging, complete authoring/paper workflows, audit coverage, live DB
+verification, authenticated load and operational security evidence.
+
 M0 technical implementation complete and in Verify. M1 is not Ready until personnel CSV contract
 and M0 acceptance are addressed.
 
