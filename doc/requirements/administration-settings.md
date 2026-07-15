@@ -19,6 +19,8 @@ Provide a small, role-protected settings area for operational configuration with
 | `viewer` | yes | no | no | read-only modules only |
 
 The API is authoritative: frontend route guards are only a usability layer.
+
+Development role accounts are test fixtures only and must not be created by the production startup path.
 - **ADMIN-002** — Settings are typed, validated, and persisted through the API; `config/app.toml` remains the non-secret baseline.
 - **ADMIN-003** — The UI uses daisyUI controls such as radio, switch, slider, and select where they make choices clearer.
 - **ADMIN-004** — The user can choose any enabled daisyUI theme; theme preference is client-side UI state and never changes server authority.

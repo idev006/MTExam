@@ -20,10 +20,7 @@ from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.domain.security import hash_password
 
 
-def create_app(
-    settings: Settings | None = None,
-    frontend_dist: Path | None = None,
-) -> FastAPI:
+def create_app(settings: Settings | None = None, frontend_dist: Path | None = None) -> FastAPI:
     resolved_settings = settings or get_settings()
     database = Database(resolved_settings)
 
@@ -32,25 +29,7 @@ def create_app(
         Base.metadata.create_all(database.engine)
         if resolved_settings.app.environment in {"development", "test"}:
             with database.session() as db:
-                account = db.scalar(
-                    select(UserAccount).where(UserAccount.username_normalized == "demo")
-                )
-                if account is None:
-                    person = Person(
-                        identifier_hash="demo-user", full_name="ผู้ใช้สาธิต", status=ActiveStatus.ACTIVE
-                    )
-                    db.add(person)
-                    db.flush()
-                    db.add(
-                        UserAccount(
-                            person_id=person.id,
-                            username_normalized="demo",
-                            password_hash=hash_password("demo1234"),
-                            role=UserRole.EXAMINEE,
-                            status=ActiveStatus.ACTIVE,
-                        )
-                    )
-                    db.commit()
+                _seed_development_accounts(db)
         yield
         database.dispose()
 
@@ -61,7 +40,6 @@ def create_app(
     )
     app.state.settings = resolved_settings
     app.state.database = database
-
     app.add_middleware(CorrelationIdMiddleware)
     if resolved_settings.app.cors_origins:
         app.add_middleware(
@@ -71,12 +49,39 @@ def create_app(
             allow_methods=["*"],
             allow_headers=["*"],
         )
-
     register_exception_handlers(app)
     app.include_router(api_router, prefix=resolved_settings.app.api_prefix)
-    static_path = frontend_dist or PROJECT_ROOT / "frontend" / "dist"
-    _mount_frontend_if_built(app, static_path)
+    _mount_frontend_if_built(app, frontend_dist or PROJECT_ROOT / "frontend" / "dist")
     return app
+
+
+def _seed_development_accounts(db) -> None:
+    accounts = (
+        ("demo", "demo1234", "ผู้เข้าสอบสาธิต", UserRole.EXAMINEE),
+        ("superadmin", "super1234", "ผู้ดูแลระบบสาธิต", UserRole.SUPER_ADMIN),
+        ("author", "author1234", "ผู้สร้างข้อสอบสาธิต", UserRole.EXAM_AUTHOR),
+        ("viewer", "viewer1234", "ผู้ตรวจสอบสาธิต", UserRole.VIEWER),
+    )
+    for username, password, full_name, role in accounts:
+        if db.scalar(select(UserAccount).where(UserAccount.username_normalized == username)):
+            continue
+        person = Person(
+            identifier_hash=f"development-{username}",
+            full_name=full_name,
+            status=ActiveStatus.ACTIVE,
+        )
+        db.add(person)
+        db.flush()
+        db.add(
+            UserAccount(
+                person_id=person.id,
+                username_normalized=username,
+                password_hash=hash_password(password),
+                role=role,
+                status=ActiveStatus.ACTIVE,
+            )
+        )
+    db.commit()
 
 
 def _mount_frontend_if_built(app: FastAPI, frontend_dist: Path) -> None:
