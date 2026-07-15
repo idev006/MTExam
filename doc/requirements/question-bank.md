@@ -47,6 +47,12 @@
 - Essay และ multiple-correct
 - AI-generated questions
 
+## Seeded Training Bank
+
+- `data/question_banks/pdpa_50.json` contains 50 Thai multiple-choice questions for development and training verification about the Personal Data Protection Act B.E. 2562.
+- Each question has a stable ID, four choices, exactly one `correct_index`, topic, and explanation.
+- The bank is a development fixture; legal review is required before using it for a formal examination.
+
 ## Required Tests
 
 - จำนวนตัวเลือกต่ำ/สูงกว่ากำหนด

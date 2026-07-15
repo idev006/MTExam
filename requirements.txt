@@ -23,3 +23,6 @@ pytest==9.1.1
 pytest-cov==7.1.0
 httpx2==2.7.0
 ruff==0.15.21
+
+# Deterministic development/demo data only
+Faker==37.5.3

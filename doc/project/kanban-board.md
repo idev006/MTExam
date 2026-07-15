@@ -105,7 +105,7 @@
 ### Backend and API
 
 - Ruff: passed
-- pytest: 53 passed, no warning (34 POC + 19 existing)
+- pytest: 54 passed, no warning (34 POC + 20 existing)
 - Health API: verified with in-memory SQLite
 - Public config: verified no secret/database URL exposure
 - Standard error envelope and correlation ID: verified

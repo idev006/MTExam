@@ -40,6 +40,7 @@
 - Composables/Pinia ที่มี logic
 - Critical component interactions
 - Business rule หลักยังอยู่ใน Backend pytest
+- Development fixtures use deterministic `Faker` seeds so test data is repeatable and never mixed with production records.
 - Architecture checks prohibit browser `alert`/`confirm`/`prompt` and verify required page-template boundaries.
 - `npm run type-check` and `npm run build` are required frontend gates.
 
