@@ -7,13 +7,13 @@ export function usePracticeExam() {
   const bank = ref<PracticeBank | null>(null);
   const currentIndex = ref(0);
   const selectedIndex = ref<number | null>(null);
-  const submittedIndex = ref<number | null>(null);
+  const answers = ref<Record<number, number>>({});
+  const isFinalSubmitted = ref(false);
   const score = ref(0);
   const isLoading = ref(false);
   const errorMessage = ref("");
 
   const currentQuestion = computed(() => bank.value?.questions[currentIndex.value] ?? null);
-  const isSubmitted = computed(() => submittedIndex.value !== null);
   const progress = computed(() => (bank.value ? Math.round(((currentIndex.value + 1) / bank.value.questions.length) * 100) : 0));
 
   async function load() {
@@ -28,18 +28,26 @@ export function usePracticeExam() {
     }
   }
 
-  function submitAnswer() {
-    if (selectedIndex.value === null || submittedIndex.value !== null || !currentQuestion.value) return;
-    submittedIndex.value = selectedIndex.value;
-    if (selectedIndex.value === currentQuestion.value.correct_index) score.value += 1;
+  function saveCurrentAnswer() {
+    if (selectedIndex.value === null) return false;
+    answers.value[currentIndex.value] = selectedIndex.value;
+    return true;
   }
 
   function nextQuestion() {
-    if (!bank.value || currentIndex.value >= bank.value.questions.length - 1) return;
+    if (!bank.value || !saveCurrentAnswer() || currentIndex.value >= bank.value.questions.length - 1) return;
     currentIndex.value += 1;
-    selectedIndex.value = null;
-    submittedIndex.value = null;
+    selectedIndex.value = answers.value[currentIndex.value] ?? null;
   }
 
-  return { bank, currentIndex, currentQuestion, selectedIndex, submittedIndex, score, isLoading, errorMessage, isSubmitted, progress, load, submitAnswer, nextQuestion };
+  function finishExam() {
+    if (!bank.value || !saveCurrentAnswer()) return;
+    score.value = bank.value.questions.reduce(
+      (total, question, index) => total + (answers.value[index] === question.correct_index ? 1 : 0),
+      0,
+    );
+    isFinalSubmitted.value = true;
+  }
+
+  return { bank, currentIndex, currentQuestion, selectedIndex, answers, score, isLoading, errorMessage, isFinalSubmitted, progress, load, nextQuestion, finishExam };
 }
