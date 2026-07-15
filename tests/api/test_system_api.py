@@ -38,6 +38,21 @@ def test_pdpa_practice_bank_is_available_for_examinee_preview(client: TestClient
     assert body["questions"][0]["explanation"]
 
 
+def test_exam_creation_subjects_are_loaded_from_database(client: TestClient) -> None:
+    assert client.post(
+        "/api/v1/auth/login", json={"username": "author", "password": "author1234"}
+    ).status_code == 200
+    response = client.get("/api/v1/question-banks/subjects")
+    assert response.status_code == 200
+    created = client.post(
+        "/api/v1/question-banks/subjects",
+        json={"code": "PDPA", "name": "พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล"},
+    )
+    assert created.status_code == 201
+    subjects = client.get("/api/v1/question-banks/subjects").json()
+    assert any(subject["id"] == created.json()["id"] for subject in subjects)
+
+
 def test_practice_session_recovers_answers_and_submit_is_idempotent(client: TestClient) -> None:
     assert client.post(
         "/api/v1/auth/login", json={"username": "demo", "password": "demo1234"}
