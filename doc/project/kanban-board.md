@@ -25,8 +25,8 @@
 | [FOUNDATION-001](https://github.com/idev006/MTExam/issues/5) | FastAPI/config/database foundation | High | Verify | Developer/AI | Architecture docs | Human review/acceptance |
 | [FOUNDATION-002](https://github.com/idev006/MTExam/issues/6) | Vite/Vue frontend foundation | High | Verify | Developer/AI | Frontend architecture | Human review/acceptance |
 | [FOUNDATION-003](https://github.com/idev006/MTExam/issues/7) | pytest/Ruff/800-line/CI quality gates | High | Verify | Developer/AI | Testing strategy | Human review/acceptance |
-| [DATA-001](https://github.com/idev006/MTExam/issues/8) | Portable initial database schema/migration | High | Verify | Developer/AI | Data model | MySQL/PostgreSQL CI not connected |
-| [PER-IMP-001](https://github.com/idev006/MTExam/issues/9) | Approve personnel CSV contract | High | Blocked | Data Owner | PER-IMP-001 | Approved sample CSV |
+| [DATA-001](https://github.com/idev006/MTExam/issues/8) | Portable schema/migration รวม SQLite employee table | High | Verify | Developer/AI | Data model, DATA-EMP-001 | MySQL/PostgreSQL CI not connected |
+| [PER-IMP-001](https://github.com/idev006/MTExam/issues/9) | Implement personnel CSV staging/import | High | Blocked | Data Owner/Developer | PER-IMP-001 | Representative sample CSV |
 | [SEC-001](https://github.com/idev006/MTExam/issues/10) | Confirm SSO/OIDC provider | High | Blocked | Product Owner | Authentication architecture | Provider decision and metadata |
 
 ## Ticket Acceptance
@@ -70,10 +70,10 @@
 
 ### PER-IMP-001
 
-- Condition: ไม่มี approved sample personnel CSV และ final column mapping
+- Condition: header mapping อนุมัติแล้ว แต่ยังไม่มี representative personnel CSV สำหรับยืนยัน encoding/value sets
 - Owner: Data Owner / Product Owner
 - Impact: M1 import implementation เริ่ม schema staging ได้ แต่ acceptance contract ยังปิดไม่ได้
-- Next action: ส่ง anonymized sample CSV และยืนยัน stable person identifier
+- Next action: ส่ง anonymized sample CSV ที่ใช้ header `emp_*` และตัวอย่างค่า gender/status
 
 ### GitHub Project Migration — Resolved
 

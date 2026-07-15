@@ -54,14 +54,20 @@ class ExamSettings(BaseModel):
 
 
 class PersonnelColumnSettings(BaseModel):
-    person_identifier: str = "person_id"
-    full_name: str = "full_name"
-    rank: str = "rank"
-    org_unit_code: str = "org_unit_code"
-    org_unit_name: str = "org_unit_name"
-    org_unit_level: str = "org_unit_level"
-    parent_org_unit_code: str = "parent_org_unit_code"
-    status: str = "status"
+    emp_cid: str = "emp_cid"
+    emp_yod: str = "emp_yod"
+    emp_fname: str = "emp_fname"
+    emp_lname: str = "emp_lname"
+    emp_position: str = "emp_position"
+    emp_position_rank: str = "emp_position_rank"
+    emp_yod_rank: str = "emp_yod_rank"
+    emp_gender: str = "emp_gender"
+    emp_tel: str = "emp_tel"
+    emp_bh: str = "emp_bh"
+    emp_bk: str = "emp_bk"
+    emp_kk: str = "emp_kk"
+    emp_status: str = "emp_status"
+    emp_descr: str = "emp_descr"
 
 
 class PersonnelImportSettings(BaseModel):

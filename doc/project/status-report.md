@@ -24,6 +24,7 @@
 - GitHub CI run 29407299728 passed at ef8752c
 - GitHub Project `MTExam Delivery` created as private status SSOT
 - 10 tracked GitHub Issues migrated: Done 3, Verify 5, Blocked 2
+- SQLite employee table contract, model และ migration 0002 verified
 
 ## In Progress
 
@@ -32,20 +33,20 @@
 ## Not Started
 
 - MySQL/PostgreSQL CI execution
-- M1 Personnel and Identity implementation
+- M1 personnel import service and identity implementation
 
 ## Current Blockers
 
 | ID | Blocker | Needed action | Owner |
 |---|---|---|---|
-| B-001 | ไม่มี approved sample CSV | ส่งไฟล์ตัวอย่างและนิยาม identifier | Data owner |
+| B-001 | ยังไม่มี representative sample CSV | ส่งไฟล์ตัวอย่างเพื่อยืนยัน encoding และค่า gender/status | Data owner |
 | B-003 | SSO/local final decision | ตัดสินก่อน production integration | Product Owner |
 | B-004 | ไม่มี MySQL/PostgreSQL test services | เชื่อม CI/containers ใน portability verification | Technical Lead |
 
 ## Next Recommended Tickets
 
 1. REVIEW-001 Human review/accept M0 implementation
-2. PER-IMP-001 Approve CSV contract
+2. PER-IMP-001 Provide representative CSV and implement staging/import
 3. SEC-001 Confirm SSO/OIDC provider
 4. DB-VERIFY-001 Run migrations/integration suite on MySQL and PostgreSQL
 5. AUTH-001 Implement the approved authentication approach

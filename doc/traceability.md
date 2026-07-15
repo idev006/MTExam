@@ -6,6 +6,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 
 | Requirement | Document | Planned API/Module | Test evidence | Status |
 |---|---|---|---|---|
+| DATA-EMP-001 | requirements/personnel-import.md | db.models.employee + migration 0002 | tests/integration/test_employee.py | Verified on SQLite |
 | PER-IMP-001 | requirements/personnel-import.md | POST personnel-imports | TBD | Planned |
 | PER-IMP-002 | requirements/personnel-import.md | import validation | TBD | Planned |
 | PER-IMP-003 | requirements/personnel-import.md | import preview | TBD | Planned |

@@ -38,6 +38,8 @@
 - Internal foreign key ใช้ person UUID
 - Identifier normalize แล้วเก็บ hash สำหรับ lookup
 - Reversible value ต้องเข้ารหัสเมื่อจำเป็นตาม integration
+- SQLite-first `employee.emp_cid` เก็บ source identifier ตรงตาม contract เพื่อ reconciliation เท่านั้น
+- ห้ามใช้ `employee.emp_cid` เป็น public API identifier หรือเขียนลง log; จำกัด file/database access และทบทวน encryption ก่อน production
 - Mask identifier ใน UI/log
 - กำหนด retention และ access ก่อน production
 

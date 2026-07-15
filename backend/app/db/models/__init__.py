@@ -1,4 +1,5 @@
 from backend.app.db.models.audit import AuditLog
+from backend.app.db.models.employee import Employee
 from backend.app.db.models.exams import (
     ExamAnswer,
     ExamPaper,
@@ -28,6 +29,7 @@ from backend.app.db.models.questions import (
 
 __all__ = [
     "AuditLog",
+    "Employee",
     "ExamAnswer",
     "ExamPaper",
     "ExamPaperQuestion",

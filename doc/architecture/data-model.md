@@ -2,7 +2,8 @@
 
 ## Conventions
 
-- Primary key ใช้ application-generated UUID ที่เก็บแบบ portable
+- Primary key ของ core domain ใช้ application-generated UUID ที่เก็บแบบ portable
+- Source-aligned master อาจใช้ stable source key เมื่อได้รับอนุมัติ; `employee.emp_cid` เป็นข้อยกเว้น
 - Date/time เก็บ UTC
 - Status/enum เก็บ String และ validate ใน application
 - Foreign keys และ unique constraints บังคับ integrity
@@ -10,6 +11,20 @@
 - Snapshot ที่ไม่ต้อง query ภายในเก็บ serialized JSON text
 
 ## Identity and Organization
+
+### employee
+
+Current-state personnel master ที่รับจาก CSV ใช้ชื่อ table/column ตรงกับระบบต้นทาง:
+
+emp_cid, emp_yod, emp_fname, emp_lname, emp_position, emp_position_rank, emp_yod_rank,
+emp_gender, emp_tel, emp_bh, emp_bk, emp_kk, emp_status, emp_descr, created_dt, updated_dt
+
+- `emp_cid` เป็น String(13) primary key และเป็นข้อมูลอ่อนไหว
+- rank scores เป็น nullable non-negative Integer
+- `emp_tel` เป็น String ไม่ใช่ตัวเลข
+- `created_dt`/`updated_dt` เก็บ naive UTC ตาม project convention
+- index initial: `emp_status` และ composite organization path (`emp_bh`, `emp_bk`, `emp_kk`)
+- ตารางนี้ไม่เป็น foreign key ของ exam history โดยตรง; `persons.id` ยังเป็น stable internal UUID
 
 ### persons
 
@@ -150,6 +165,9 @@ id, actor_person_id, event_type, subject_type, subject_id, occurred_at, ip_addre
 
 ## Index Baseline
 
+- employee.emp_cid primary key
+- employee.emp_status
+- employee emp_bh + emp_bk + emp_kk
 - persons.identifier_hash unique
 - org_units.code unique
 - person_unit_assignments person_id + effective_to

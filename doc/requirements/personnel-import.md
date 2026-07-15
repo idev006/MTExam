@@ -1,7 +1,7 @@
 # Personnel and Organization Import Requirements
 
 **Owner:** Product Owner / Project Manager
-**Status:** Baseline approved; CSV column contract pending sample file
+**Status:** Employee column contract approved; representative CSV values pending sample file
 
 ## Purpose
 
@@ -20,6 +20,21 @@
 - ไม่มี import batch อื่นกำลัง apply
 
 ## Requirements
+
+### DATA-EMP-001 — Employee current-state master
+
+ระบบต้องมีตาราง `employee` สำหรับ current state ที่มาจากข้อมูลต้นทาง โดยไม่มีหน้าจอ CRUD
+แก้ไข master data ด้วยมือ
+
+Acceptance criteria:
+
+- AC01 ตารางชื่อ `employee` และมี column ตาม Employee Table Contract
+- AC02 `emp_cid` เป็น primary key แบบ String(13) และห้ามซ้ำ
+- AC03 `emp_position_rank` และ `emp_yod_rank` เป็น integer ที่ไม่ติดลบเมื่อมีค่า
+- AC04 `emp_tel` เป็น string เพื่อรักษาเลขศูนย์นำหน้า
+- AC05 `created_dt` และ `updated_dt` เป็น UTC timestamp ที่ระบบจัดการ
+- AC06 ใช้ SQLAlchemy/Alembic type ที่รองรับ SQLite, MySQL และ PostgreSQL
+- AC07 ไม่มี API สำหรับแก้ employee โดยตรง
 
 ### PER-IMP-001 — Upload and stage
 
@@ -99,22 +114,33 @@ Acceptance criteria:
 - AC02 เก็บ row errors และ reconciliation summary
 - AC03 audit ไม่เปิดเผย identifier เต็มใน log
 
+## Employee Table Contract
+
+| Column | Type | Required | Description |
+|---|---|---:|---|
+| emp_cid | String(13), PK | Yes | เลขประจำตัวประชาชนและ stable source identifier |
+| emp_yod | String(100) | No | ยศ |
+| emp_fname | String(150) | Yes | ชื่อ |
+| emp_lname | String(150) | Yes | นามสกุล |
+| emp_position | String(255) | No | ตำแหน่ง |
+| emp_position_rank | Integer >= 0 | No | คะแนนระดับตำแหน่ง |
+| emp_yod_rank | Integer >= 0 | No | คะแนนระดับชั้นยศ |
+| emp_gender | String(20) | No | เพศ; รอชุดค่าจริงจาก sample |
+| emp_tel | String(20) | No | หมายเลขมือถือ |
+| emp_bh | String(255) | No | กองบัญชาการ |
+| emp_bk | String(255) | No | กองบังคับการ |
+| emp_kk | String(255) | No | กองกำกับการ |
+| emp_status | String(30) | Yes | สถานะ; default `active` |
+| emp_descr | Text | No | หมายเหตุ |
+| created_dt | DateTime UTC | System | วันที่สร้างรายการ |
+| updated_dt | DateTime UTC | System | วันที่ปรับปรุงรายการ |
+
 ## CSV Contract
 
-Required logical fields:
-
-| Field | Description |
-|---|---|
-| person_identifier | รหัสบุคคลที่เสถียร |
-| full_name | ชื่อเต็ม |
-| rank | ยศ |
-| org_unit_code | รหัสหน่วย |
-| org_unit_name | ชื่อหน่วย |
-| org_unit_level | division, bureau หรือ station |
-| parent_org_unit_code | รหัสหน่วยแม่ |
-| status | สถานะจากระบบต้นทางถ้ามี |
-
-ชื่อ header จริงรอ sample CSV และ map ผ่าน config/app.toml
+- Header SSOT อยู่ใน `[personnel_import.columns]` ของ `config/app.toml`
+- CSV initial ต้องมี `emp_cid`, `emp_fname`, `emp_lname` และ `emp_status`
+- `created_dt` และ `updated_dt` ไม่ใช่ input ที่บังคับ; ระบบเป็นผู้สร้าง/ปรับปรุง
+- Sample CSV ยังจำเป็นเพื่อยืนยัน encoding, รูปแบบเบอร์โทร และชุดค่าของ `emp_gender`/`emp_status`
 
 ## Business Rules
 
@@ -122,6 +148,7 @@ Required logical fields:
 - Delta import ยังไม่อยู่ใน initial scope
 - Identifier ต้อง normalize ก่อน hash และ match
 - ค่า sensitive ห้ามเขียนลง application log
+- `emp_cid` เป็นข้อมูลอ่อนไหว ต้อง mask ใน UI/log และจำกัดสิทธิ์ไฟล์ SQLite
 - ไม่มี API สำหรับแก้ person โดยตรง
 
 ## Out of Scope

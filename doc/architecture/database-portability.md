@@ -4,11 +4,13 @@
 
 | Database | Support profile |
 |---|---|
-| SQLite | Local development, tests, demo, small single-instance |
-| MySQL | Production |
-| PostgreSQL | Production |
+| SQLite | Initial active database; local development, tests, demo, small single-instance |
+| MySQL | Planned production option; verification pending |
+| PostgreSQL | Planned production option; verification pending |
 
 Support หมายถึง application behavior และ migrations ผ่าน test matrix ไม่ได้หมายถึง performance เท่ากัน
+
+Initial delivery ใช้ `sqlite:///./data/mtexam.db` จนกว่าจะมีการตัดสินใจและผ่าน test matrix ของฐานข้อมูลอื่น
 
 ## Connection Selection
 

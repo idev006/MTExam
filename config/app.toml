@@ -31,14 +31,20 @@ reject_duplicate_file = true
 missing_person_warning_percent = 10
 
 [personnel_import.columns]
-person_identifier = "person_id"
-full_name = "full_name"
-rank = "rank"
-org_unit_code = "org_unit_code"
-org_unit_name = "org_unit_name"
-org_unit_level = "org_unit_level"
-parent_org_unit_code = "parent_org_unit_code"
-status = "status"
+emp_cid = "emp_cid"
+emp_yod = "emp_yod"
+emp_fname = "emp_fname"
+emp_lname = "emp_lname"
+emp_position = "emp_position"
+emp_position_rank = "emp_position_rank"
+emp_yod_rank = "emp_yod_rank"
+emp_gender = "emp_gender"
+emp_tel = "emp_tel"
+emp_bh = "emp_bh"
+emp_bk = "emp_bk"
+emp_kk = "emp_kk"
+emp_status = "emp_status"
+emp_descr = "emp_descr"
 
 [audit]
 enabled = true

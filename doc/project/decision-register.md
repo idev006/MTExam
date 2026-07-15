@@ -19,6 +19,8 @@
 | D-015 | 2026-07-15 | Project Board เป็น status SSOT | Approved | Project charter |
 | D-016 | 2026-07-15 | Anti-cheat initial ใช้ shuffle เท่านั้น | Approved | Blueprint |
 | D-017 | 2026-07-15 | ประกาศผลทันทีหลัง finalization | Approved | Scoring requirement |
+| D-018 | 2026-07-15 | ใช้ SQLite เป็นฐานข้อมูลเริ่มต้น | Approved | Database portability |
+| D-019 | 2026-07-15 | Employee table/header ใช้ชื่อ `emp_*` ตาม contract | Approved | Personnel import requirement |
 
 ## Open Decisions
 
@@ -28,7 +30,6 @@
 | OD-002 | Shared question bank | false | M2 | PO |
 | OD-003 | Late entry policy | Allow with warning | M3 | PO |
 | OD-004 | Export PDF/Excel | CSV only | M4 | PO |
-| OD-005 | Final CSV columns | Draft logical contract | Before M1 implementation | Data owner |
 | OD-006 | Audit/data retention | No destructive cleanup | Before production | Sponsor/Security |
 
 ## Rule

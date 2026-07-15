@@ -10,6 +10,8 @@ def test_settings_load_committed_toml() -> None:
     assert settings.app.name == "MTExam"
     assert settings.app.api_prefix == "/api/v1"
     assert settings.personnel_import.mode == "full_snapshot"
+    assert settings.personnel_import.columns.emp_cid == "emp_cid"
+    assert settings.personnel_import.columns.emp_position_rank == "emp_position_rank"
     assert settings.exam.batch.allow_late_entry is True
 
 
