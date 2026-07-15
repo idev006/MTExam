@@ -15,7 +15,7 @@ from backend.app.api.router import api_router
 from backend.app.config import PROJECT_ROOT, Settings, get_settings
 from backend.app.db.base import Base
 from backend.app.db.database import Database
-from backend.app.db.models import OrgUnit, Person, UserAccount
+from backend.app.db.models import OrgUnit, Person, Subject, UserAccount
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.domain.security import hash_password
 
@@ -67,6 +67,7 @@ def _seed_development_accounts(db) -> None:
         )
         db.flush()
     _seed_region6_org_units(db)
+    _seed_development_subjects(db)
     accounts = (
         ("demo", "demo1234", "ผู้เข้าสอบสาธิต", UserRole.EXAMINEE),
         ("superadmin", "super1234", "ผู้ดูแลระบบสาธิต", UserRole.SUPER_ADMIN),
@@ -132,6 +133,16 @@ def _seed_region6_org_units(db) -> None:
                     status=ActiveStatus.ACTIVE,
                 )
             )
+
+
+def _seed_development_subjects(db) -> None:
+    subjects = (
+        ("PDPA", "พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล", "แบบทดสอบความรู้พื้นฐาน PDPA"),
+        ("GENERAL_POLICE", "ความรู้ทั่วไปสำหรับตำรวจ", "วิชาความรู้ทั่วไป"),
+    )
+    for code, name, description in subjects:
+        if db.scalar(select(Subject).where(Subject.code == code)) is None:
+            db.add(Subject(code=code, name=name, description=description, status="active"))
 
 
 def _mount_frontend_if_built(app: FastAPI, frontend_dist: Path) -> None:
