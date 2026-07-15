@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 # ruff: noqa: E501
+import json
+from dataclasses import asdict
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -10,8 +13,8 @@ from sqlalchemy.orm import Session
 
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import Employee, UserAccount
-from backend.app.domain.employee_import import parse_employee_csv
+from backend.app.db.models import Employee, PersonnelImportBatch, PersonnelImportRow, UserAccount
+from backend.app.domain.employee_import import EmployeeImportRecord, parse_employee_csv
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.services.audit import record_audit
 
@@ -36,6 +39,7 @@ class ImportRequest(BaseModel):
 
 
 class ImportResponse(BaseModel):
+    batch_id: str | None = None
     filename: str
     status: str
     total_rows: int
@@ -48,6 +52,12 @@ class ImportResponse(BaseModel):
 
 class ImportPreviewResponse(ImportResponse):
     errors: list[dict[str, object]] = []
+
+
+class ImportApplyRequest(BaseModel):
+    batch_id: UUID | None = None
+    filename: str | None = None
+    content: str | None = None
 
 
 @router.get("", response_model=list[EmployeeResponse])
@@ -83,7 +93,11 @@ def import_snapshot(
             changed_count=0,
             missing_count=0,
         )
-    incoming = {record.emp_cid: record for record in parsed.records}
+    return _apply_records(db, parsed.records, payload.filename, _account.person_id, parsed.errors)
+
+
+def _apply_records(db: Session, records: list, filename: str, actor_person_id, errors: list) -> ImportResponse:
+    incoming = {record.emp_cid: record for record in records}
     current = {row.emp_cid: row for row in db.scalars(select(Employee))}
     added = changed = 0
     for cid, record in incoming.items():
@@ -106,13 +120,14 @@ def import_snapshot(
             row.emp_status = ActiveStatus.INACTIVE
             missing += 1
     db.commit()
-    record_audit(db, actor_person_id=_account.person_id, event_type="personnel.import", subject_type="employee_snapshot", metadata={"filename": payload.filename, "added": added, "changed": changed, "missing": missing})
+    record_audit(db, actor_person_id=actor_person_id, event_type="personnel.import", subject_type="employee_snapshot", metadata={"filename": filename, "added": added, "changed": changed, "missing": missing})
     db.commit()
     return ImportResponse(
-        filename=payload.filename,
+        filename=filename,
+        batch_id=None,
         status="applied",
-        total_rows=len(parsed.records),
-        valid_rows=len(parsed.records),
+        total_rows=len(records),
+        valid_rows=len(records),
         invalid_rows=0,
         added_count=added,
         changed_count=changed,
@@ -123,13 +138,23 @@ def import_snapshot(
 @router.post("/import/preview", response_model=ImportPreviewResponse)
 def preview_snapshot(
     payload: ImportRequest,
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
 ) -> ImportPreviewResponse:
     try:
         parsed = parse_employee_csv(payload.content.encode("utf-8-sig"))
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+    batch = PersonnelImportBatch(filename=payload.filename, file_checksum=__import__("hashlib").sha256(payload.content.encode()).hexdigest(), uploaded_by=account.person_id, status="ready" if parsed.is_valid else "validation_failed", total_rows=len(parsed.records) + len(parsed.errors), valid_rows=len(parsed.records), invalid_rows=len(parsed.errors))
+    db.add(batch)
+    db.flush()
+    for index, record in enumerate(parsed.records, start=2):
+        db.add(PersonnelImportRow(batch_id=batch.id, row_number=index, raw_data_text=json.dumps(asdict(record), ensure_ascii=False), normalized_identifier_hash=__import__("hashlib").sha256(record.emp_cid.encode()).hexdigest(), validation_status="valid", action="pending"))
+    db.commit()
+    record_audit(db, actor_person_id=account.person_id, event_type="personnel.import.preview", subject_type="personnel_import_batch", subject_id=batch.id, metadata={"filename": payload.filename, "valid_rows": len(parsed.records), "invalid_rows": len(parsed.errors)})
+    db.commit()
     return ImportPreviewResponse(
+        batch_id=str(batch.id),
         filename=payload.filename,
         status="valid" if parsed.is_valid else "validation_failed",
         total_rows=len(parsed.records) + len(parsed.errors),
@@ -152,8 +177,23 @@ def preview_snapshot(
 
 @router.post("/import/apply", response_model=ImportResponse)
 def apply_snapshot(
-    payload: ImportRequest,
+    payload: ImportApplyRequest,
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
 ) -> ImportResponse:
-    return import_snapshot(payload, db, account)
+    if payload.batch_id is not None:
+        batch = db.get(PersonnelImportBatch, payload.batch_id)
+        if batch is None or batch.status not in {"ready", "ready_with_warning"}:
+            raise HTTPException(status_code=404, detail="Import batch is not ready")
+        rows = list(db.scalars(select(PersonnelImportRow).where(PersonnelImportRow.batch_id == batch.id).order_by(PersonnelImportRow.row_number)))
+        records = [EmployeeImportRecord(**json.loads(row.raw_data_text)) for row in rows if row.validation_status == "valid"]
+        result = _apply_records(db, records, batch.filename, account.person_id, [])
+        batch.status = "applied"
+        batch.applied_at = __import__("backend.app.db.base", fromlist=["utc_now"]).utc_now()
+        batch.added_count, batch.changed_count, batch.missing_count = result.added_count, result.changed_count, result.missing_count
+        db.commit()
+        result.batch_id = str(batch.id)
+        return result
+    if not payload.filename or not payload.content:
+        raise HTTPException(status_code=422, detail="batch_id or filename/content is required")
+    return import_snapshot(ImportRequest(filename=payload.filename, content=payload.content), db, account)

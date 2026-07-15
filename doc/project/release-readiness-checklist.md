@@ -14,25 +14,28 @@ it is not equivalent to `Done` or Production Ready.
 - [x] PDPA practice bank with 50 questions, pagination and post-submit rationales
 - [x] Role UI slices for administration, authoring, paper building, reports and audit
 - [x] Personnel list and CSV preview/apply API slice
+- [x] Persistent import batch/row staging with batch-id apply and idempotent review boundary
 - [x] Report summary and CSV export API
 - [x] Basic question-bank, paper and exam-window APIs
+- [x] Server-authoritative exam-window clock endpoint with expiry closure
 - [x] Audit API and baseline audit events for key mutations
 - [x] pytest, Ruff, Vue type-check and Vite build pass
 - [x] SQLite migration and portable DDL compilation evidence
 - [x] Dependency-free HTTP load smoke evidence
+- [x] Backup script and production operations runbook
 
 ## Production blockers
 
 | Area | Status | Required before production |
 |---|---|---|
-| Server-authoritative timer | Open | Integrate exam-window clock with durable sessions, timeout and reconnect |
-| Personnel import | Partial | Persistent staging batch, row review, confirmation, rollback and audit |
-| Question authoring | Partial | Complete choice editing, validation, versioning and publish workflow |
-| Paper builder | Partial | Fixed/random validation, snapshotting and variant generation |
+| Server-authoritative timer | Partial | Connect clock to full ExamSession start/answer/timeout lifecycle |
+| Personnel import | Partial | Add row-level correction and rollback transaction workflow |
+| Question authoring | Partial | Add version snapshots and complete publish history |
+| Paper builder | Partial | Add snapshotting and deterministic variant generation |
 | Audit | Partial | Cover every state-changing API, retention policy and admin filters |
 | Database portability | Configured | Execute integration suites against live MySQL and PostgreSQL services |
 | Performance | Smoke only | Authenticated load test at the agreed target (initially 500 users) |
-| Operations/security | Open | Security review, backup/restore drill, deployment and monitoring runbook |
+| Operations/security | Partial | Execute security review and backup/restore drill using the runbook |
 
 ## Go/no-go rule
 
@@ -47,4 +50,3 @@ linked from the status report, Kanban board and traceability matrix.
 npm.cmd run type-check
 npm.cmd run build
 ```
-

@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.api.v1.auth import require_roles
@@ -71,12 +71,28 @@ def publish_paper(
     paper = db.get(ExamPaper, paper_id)
     if paper is None:
         raise HTTPException(status_code=404, detail="Paper not found")
-    count = db.scalar(select(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id))
-    if count is None:
+    count = db.scalar(select(func.count()).select_from(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id)) or 0
+    if count < 1:
         raise HTTPException(status_code=409, detail="Paper must contain questions")
+    if paper.variant_count > 1 and paper.question_selection_mode != "fixed_set":
+        raise HTTPException(status_code=409, detail="Paper selection mode is not supported")
     paper.status = PaperStatus.PUBLISHED
     paper.published_at = utc_now()
     db.commit()
     record_audit(db, actor_person_id=account.person_id, event_type="paper.publish", subject_type="exam_paper", subject_id=paper.id)
     db.commit()
-    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=1)
+    return PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=count)
+
+
+@router.get("/{paper_id}/validate")
+def validate_paper(
+    paper_id: UUID,
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+) -> dict[str, object]:
+    paper = db.get(ExamPaper, paper_id)
+    if paper is None:
+        raise HTTPException(status_code=404, detail="Paper not found")
+    count = db.scalar(select(func.count()).select_from(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id)) or 0
+    errors = [] if count else ["paper must contain at least one question"]
+    return {"paper_id": str(paper.id), "valid": not errors, "question_count": count, "errors": errors}

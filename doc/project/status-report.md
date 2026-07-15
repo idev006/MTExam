@@ -53,6 +53,11 @@ Current implementation is in MVP human-review and production-readiness verificat
 vertical slices include personnel import preview/apply, reports/CSV, question authoring, paper
 builder, user administration, exam windows, audit API/UI and load-smoke tooling.
 
+This cycle added persistent personnel import batches/rows, server-authoritative exam-window clock
+and expiry closure, question editing/publish validation, paper validation, mutation audit events,
+and the SQLite backup/restore runbook. Full ExamSession timer integration, rollback UX, version
+snapshots, live database execution and authenticated load remain release-gate work.
+
 - MVP vertical-slice human review and acceptance
 - Production-readiness verification against `release-readiness-checklist.md`
 

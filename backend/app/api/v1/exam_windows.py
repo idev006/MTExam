@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 # ruff: noqa: E501
 from typing import Annotated
 from uuid import UUID
@@ -14,6 +16,7 @@ from backend.app.db.base import utc_now
 from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import ExamPaper, ExamWindow, UserAccount
 from backend.app.domain.enums import ExamWindowMode, ExamWindowStatus, PaperStatus, UserRole
+from backend.app.services.audit import record_audit
 
 router = APIRouter(prefix="/exam-windows", tags=["exam-windows"])
 
@@ -36,6 +39,14 @@ class WindowResponse(BaseModel):
     window_close_at: str | None
 
 
+class WindowClockResponse(BaseModel):
+    window_id: UUID
+    server_now: str
+    status: str
+    deadline: str | None
+    remaining_seconds: int | None
+
+
 @router.get("", response_model=list[WindowResponse])
 def list_windows(
     db: Annotated[Session, Depends(get_db_session)],
@@ -53,8 +64,14 @@ def create_window(
     paper = db.get(ExamPaper, payload.exam_paper_id)
     if paper is None or paper.status != PaperStatus.PUBLISHED:
         raise HTTPException(status_code=409, detail="Only published papers can open an exam window")
-    window = ExamWindow(exam_paper_id=paper.id, mode=payload.mode, duration_minutes=payload.duration_minutes, status=ExamWindowStatus.SCHEDULED, created_by=account.person_id)
+    close_at = _parse_datetime(payload.window_close_at)
+    open_at = _parse_datetime(payload.window_open_at)
+    if close_at and open_at and close_at <= open_at:
+        raise HTTPException(status_code=422, detail="window_close_at must be after window_open_at")
+    window = ExamWindow(exam_paper_id=paper.id, mode=payload.mode, duration_minutes=payload.duration_minutes, status=ExamWindowStatus.SCHEDULED, created_by=account.person_id, window_open_at=open_at, window_close_at=close_at)
     db.add(window)
+    db.commit()
+    record_audit(db, actor_person_id=account.person_id, event_type="exam_window.create", subject_type="exam_window", subject_id=window.id, metadata={"paper_id": str(paper.id), "duration_minutes": payload.duration_minutes})
     db.commit()
     db.refresh(window)
     return _response(window)
@@ -72,9 +89,39 @@ def open_window(
     window.status = ExamWindowStatus.OPEN
     window.window_open_at = window.window_open_at or utc_now()
     db.commit()
+    record_audit(db, actor_person_id=_account.person_id, event_type="exam_window.open", subject_type="exam_window", subject_id=window.id)
+    db.commit()
     db.refresh(window)
     return _response(window)
 
 
+@router.get("/{window_id}/clock", response_model=WindowClockResponse)
+def window_clock(
+    window_id: UUID,
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.EXAMINEE, UserRole.VIEWER))],
+) -> WindowClockResponse:
+    """Return a server-authoritative clock; close an expired open window atomically."""
+    window = db.get(ExamWindow, window_id)
+    if window is None:
+        raise HTTPException(status_code=404, detail="Exam window not found")
+    now = datetime.now(UTC).replace(tzinfo=None)
+    deadline = window.window_close_at
+    if window.status == ExamWindowStatus.OPEN and deadline and now >= deadline:
+        window.status = ExamWindowStatus.CLOSED
+        db.commit()
+    remaining = None if deadline is None else max(0, int((deadline - now).total_seconds()))
+    return WindowClockResponse(window_id=window.id, server_now=now.isoformat() + "Z", status=window.status, deadline=deadline.isoformat() + "Z" if deadline else None, remaining_seconds=remaining)
+
+
 def _response(window: ExamWindow) -> WindowResponse:
     return WindowResponse(id=window.id, exam_paper_id=window.exam_paper_id, mode=window.mode, duration_minutes=window.duration_minutes, status=window.status, window_open_at=window.window_open_at.isoformat() if window.window_open_at else None, window_close_at=window.window_close_at.isoformat() if window.window_close_at else None)
+
+
+def _parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC).replace(tzinfo=None)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail="Invalid ISO datetime") from error

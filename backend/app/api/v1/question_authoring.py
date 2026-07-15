@@ -35,6 +35,10 @@ class QuestionCreate(BaseModel):
     choices: list[ChoiceInput] = Field(min_length=2, max_length=10)
 
 
+class QuestionUpdate(QuestionCreate):
+    pass
+
+
 class BankResponse(BaseModel):
     id: UUID
     name: str
@@ -114,9 +118,35 @@ def publish_bank(
     bank = db.get(QuestionBank, bank_id)
     if bank is None:
         raise HTTPException(status_code=404, detail="Question bank not found")
+    questions = list(db.scalars(select(Question).where(Question.bank_id == bank.id)))
+    if not questions or any(not list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id))) for question in questions):
+        raise HTTPException(status_code=409, detail="Every published bank must contain questions with choices")
     bank.status = ContentStatus.ACTIVE
     db.commit()
     record_audit(db, actor_person_id=account.person_id, event_type="question_bank.publish", subject_type="question_bank", subject_id=bank.id)
     db.commit()
     db.refresh(bank)
     return BankResponse.model_validate(bank, from_attributes=True)
+
+
+@router.put("/{bank_id}/questions/{question_id}")
+def update_question(
+    bank_id: UUID,
+    question_id: UUID,
+    payload: QuestionUpdate,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
+) -> dict[str, str]:
+    question = db.scalar(select(Question).where(Question.id == question_id, Question.bank_id == bank_id))
+    if question is None or question.status != ContentStatus.DRAFT:
+        raise HTTPException(status_code=404, detail="Draft question not found")
+    if sum(choice.is_correct for choice in payload.choices) != 1:
+        raise HTTPException(status_code=422, detail="Exactly one choice must be correct")
+    question.content, question.difficulty = payload.content, payload.difficulty
+    for choice in list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id))):
+        db.delete(choice)
+    db.flush()
+    db.add_all([QuestionChoice(question_id=question.id, content=choice.content, is_correct=choice.is_correct, base_order=index) for index, choice in enumerate(payload.choices)])
+    record_audit(db, actor_person_id=account.person_id, event_type="question.update", subject_type="question", subject_id=question.id)
+    db.commit()
+    return {"id": str(question.id), "status": "draft"}
