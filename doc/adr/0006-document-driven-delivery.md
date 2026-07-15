@@ -1,6 +1,6 @@
 # ADR-0006: Document-Driven Agile/Kanban Delivery
 
-**Status:** Accepted  
+**Status:** Accepted
 **Date:** 2026-07-15
 
 ## Context

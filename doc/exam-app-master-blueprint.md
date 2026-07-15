@@ -2,10 +2,10 @@
 
 ## ระบบสอบออนไลน์แบบเลือกตอบและจับเวลา
 
-**Version:** 4.0  
-**Status:** Approved baseline  
-**Updated:** 2026-07-15  
-**Owner:** Project Manager  
+**Version:** 4.0
+**Status:** Approved baseline
+**Updated:** 2026-07-15
+**Owner:** Project Manager
 
 เอกสารนี้เป็นภาพรวมระดับสูงของโครงการ รายละเอียดเชิง requirement, architecture, workflow และการส่งมอบอยู่ในเอกสารที่เชื่อมจาก [Document Index](index.md)
 

@@ -1,7 +1,7 @@
 # MTExam Document Index
 
-**Document owner:** Project Manager  
-**Last reviewed:** 2026-07-15  
+**Document owner:** Project Manager
+**Last reviewed:** 2026-07-15
 
 หน้านี้เป็นจุดเริ่มต้นสำหรับคน ทีมพัฒนา ผู้ทดสอบ และ AI coder ทุกคน ต้องอ่าน Master Blueprint และเอกสารที่เกี่ยวข้องกับ ticket ก่อนเริ่มงาน
 

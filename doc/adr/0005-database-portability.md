@@ -1,6 +1,6 @@
 # ADR-0005: SQLite, MySQL and PostgreSQL Portability
 
-**Status:** Accepted  
+**Status:** Accepted
 **Date:** 2026-07-15
 
 ## Context

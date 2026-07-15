@@ -1,6 +1,6 @@
 # ADR-0004: Personnel Data by CSV Import
 
-**Status:** Accepted  
+**Status:** Accepted
 **Date:** 2026-07-15
 
 ## Context

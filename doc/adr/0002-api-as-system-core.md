@@ -1,6 +1,6 @@
 # ADR-0002: API as System Core
 
-**Status:** Accepted  
+**Status:** Accepted
 **Date:** 2026-07-15
 
 ## Context

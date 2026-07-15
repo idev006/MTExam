@@ -1,6 +1,6 @@
 # ADR-0003: Minimal Infrastructure
 
-**Status:** Accepted  
+**Status:** Accepted
 **Date:** 2026-07-15
 
 ## Context

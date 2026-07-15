@@ -1,6 +1,6 @@
 # Requirements Traceability Matrix
 
-**Status:** Baseline; implementation not started  
+**Status:** Baseline; product requirements implementation not started
 
 Test path และ ticket จะเติมเมื่อสร้าง repository/application งานจะ Done ไม่ได้หาก row ที่เกี่ยวข้องยังไม่มี evidence
 

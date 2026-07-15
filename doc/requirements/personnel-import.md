@@ -1,6 +1,6 @@
 # Personnel and Organization Import Requirements
 
-**Owner:** Product Owner / Project Manager  
+**Owner:** Product Owner / Project Manager
 **Status:** Baseline approved; CSV column contract pending sample file
 
 ## Purpose

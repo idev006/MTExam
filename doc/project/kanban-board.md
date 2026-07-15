@@ -1,9 +1,9 @@
 # MTExam Kanban Board
 
-**Status SSOT:** ไฟล์นี้เป็น board ชั่วคราวจนกว่าจะมี GitHub remote/Project  
-**Last updated:** 2026-07-15  
-**Owner:** Project Manager (TBD)  
-**Current milestone:** M0 — Documentation and Foundation  
+**Status SSOT:** ไฟล์นี้เป็น board ชั่วคราวจนกว่าจะมี GitHub Project
+**Last updated:** 2026-07-15
+**Owner:** Project Manager (TBD)
+**Current milestone:** M0 — Documentation and Foundation
 
 ## Policy
 
@@ -19,11 +19,12 @@
 | Ticket | Outcome | Priority | Status | Owner | Requirement/Doc | Blocker |
 |---|---|---|---|---|---|---|
 | PM-001 | Initialize Git และ Project Tracking | High | Done | Project Manager/AI | Project Management Plan | GitHub migration tracked separately |
-| PM-003 | Confirm Git identity และสร้าง baseline commit | High | Blocked | Project Manager | Project Management Plan | Existing identity ต้องยืนยัน |
+| PM-002 | Configure Git remote และ migrate Kanban | High | In Progress | Project Manager | Project Management Plan | GitHub Project ยังไม่สร้าง |
+| PM-003 | Confirm Git identity และสร้าง baseline commit | High | Done | Project Manager | Project Management Plan | None |
 | DOC-001 | Review documentation baseline | High | Verify | PO/PM | doc/index.md | ผู้อนุมัติยังไม่ระบุ |
 | FOUNDATION-001 | FastAPI/config/database foundation | High | Verify | Developer/AI | Architecture docs | Human review/acceptance |
 | FOUNDATION-002 | Vite/Vue frontend foundation | High | Verify | Developer/AI | Frontend architecture | Human review/acceptance |
-| FOUNDATION-003 | pytest/Ruff/800-line/CI quality gates | High | Verify | Developer/AI | Testing strategy | CI requires remote push |
+| FOUNDATION-003 | pytest/Ruff/800-line/CI quality gates | High | Verify | Developer/AI | Testing strategy | GitHub CI result pending |
 | DATA-001 | Portable initial database schema/migration | High | Verify | Developer/AI | Data model | MySQL/PostgreSQL CI not connected |
 | PER-IMP-001 | Approve personnel CSV contract | High | Blocked | Data Owner | PER-IMP-001 | Approved sample CSV |
 
@@ -75,17 +76,17 @@
 
 ### GitHub Project Migration
 
-- Condition: ไม่มี GitHub remote/repository URL หรือ authenticated project context
+- Condition: Git remote พร้อมแล้ว แต่ไม่มี GitHub CLI/authenticated Project context
 - Owner: Project Manager
 - Impact: ใช้ Markdown board ชั่วคราว; ไม่มี shared web board
-- Next action: สร้าง/ระบุ GitHub repository แล้ว migrate tickets
+- Next action: สร้าง GitHub Project แล้ว migrate tickets
 
-### Initial Git Commit
+## Resolved Delivery Dependencies
 
-- Condition: Git identity ปัจจุบันเป็นค่าเดิมจาก environment และยังไม่ได้รับการยืนยันสำหรับ MTExam
-- Owner: Project Manager / Repository Owner
-- Impact: Files อยู่ใน working tree และยังไม่มี baseline commit
-- Next action: ยืนยัน user.name/user.email ที่ต้องใช้ แล้วสร้าง reviewed baseline commit
+- Git identity: idev006 / thaipoliceregion6@gmail.com
+- Remote: https://github.com/idev006/MTExam.git
+- Baseline commit: d85a799
+- Branch: main tracking origin/main
 
 ## Verification Evidence
 

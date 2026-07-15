@@ -1,7 +1,7 @@
 # Project Status Report
 
-**As of:** 2026-07-15  
-**Overall:** M0 Foundation — Verify  
+**As of:** 2026-07-15
+**Overall:** M0 Foundation — Verify
 
 ## Completed
 
@@ -20,6 +20,7 @@
 - Portable initial schema and Alembic migration implemented
 - pytest, Ruff, file-size architecture tests and CI workflow implemented
 - Technical verification: 14 pytest passed; frontend type-check/build passed
+- Baseline commit d85a799 pushed to GitHub main
 
 ## In Progress
 
@@ -36,19 +37,17 @@
 | ID | Blocker | Needed action | Owner |
 |---|---|---|---|
 | B-001 | ไม่มี approved sample CSV | ส่งไฟล์ตัวอย่างและนิยาม identifier | Data owner |
-| B-002 | ยังไม่มี GitHub Project/remote | ระบุ remote แล้ว migrate repo-native Kanban | Project Manager |
+| B-002 | ยังไม่มี GitHub Project | สร้าง Project แล้ว migrate repo-native Kanban | Project Manager |
 | B-003 | SSO/local final decision | ตัดสินก่อน production integration | Product Owner |
 | B-004 | ไม่มี MySQL/PostgreSQL test services | เชื่อม CI/containers ใน portability verification | Technical Lead |
-| B-005 | Git identity สำหรับโครงการยังไม่ยืนยัน | ยืนยัน identity ก่อน baseline commit | Repository Owner |
 
 ## Next Recommended Tickets
 
 1. REVIEW-001 Human review/accept M0 implementation
-2. PM-002 Configure Git remote and migrate Kanban to Project Board
-3. PM-003 Confirm Git identity and create baseline commit
-4. PER-IMP-001 Approve CSV contract
-5. AUTH-001 Implement local authentication baseline
-6. DB-VERIFY-001 Run migrations/integration suite on MySQL and PostgreSQL
+2. PM-002 Create GitHub Project and migrate Kanban
+3. PER-IMP-001 Approve CSV contract
+4. AUTH-001 Implement local authentication baseline
+5. DB-VERIFY-001 Run migrations/integration suite on MySQL and PostgreSQL
 
 ## Release Readiness
 

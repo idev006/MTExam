@@ -9,7 +9,7 @@ Python versions pin ใน requirements.txt:
 - SQLAlchemy and Alembic
 - Psycopg and PyMySQL
 - pwdlib/Argon2 and PyJWT
-- pytest, pytest-cov, HTTPX and Ruff
+- pytest, pytest-cov, httpx2 and Ruff
 
 SQLite driver มากับ Python
 
@@ -32,7 +32,7 @@ package-lock.json ต้องเป็น lock SSOT หลังสร้าง
 | EXT-005 | Production database choice | Tech Lead/Operations | Load test | R-003 |
 | EXT-006 | Data retention policy | Sponsor/Security | Production | R-007 |
 | EXT-007 | Acceptance representatives | Product Owner | Each milestone | Delivery |
-| EXT-008 | Git remote and approved commit identity | Repository Owner | M0 acceptance | Delivery |
+| EXT-008 | GitHub Project for shared Kanban | Project Manager | M0 acceptance | Delivery |
 
 ## Dependency Approval
 
