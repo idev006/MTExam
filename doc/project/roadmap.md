@@ -113,3 +113,10 @@ Exit:
 - SSO/local decision
 - Hosting/database choice
 - Acceptance owner and production date
+
+## 2026-07-16 Delivery Refresh
+
+M0/MVP vertical slices are implemented and verified locally. The release remains blocked by the P0
+items in [Production Use-Case Backlog](production-use-case-backlog.md), especially organization-scope
+authorization, paper snapshot/variant rules, full exam-session recovery/result UI, live database/load
+verification and independent security testing. SSO is conditional on the police Identity Provider contract.

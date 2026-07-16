@@ -41,6 +41,10 @@ The detailed use-case inventory is maintained in [Use-Case Implementation Status
 
 ## Go/no-go rule
 
+The detailed current backlog is [Production Use-Case Backlog](production-use-case-backlog.md).
+No P0 row may be marked Done based on an API-only implementation; it must include UI, authorization,
+failure-path, automated-test and operational evidence.
+
 Release requires every Production blocker to be closed, acceptance-owner sign-off, and evidence
 linked from the status report, Kanban board and traceability matrix.
 

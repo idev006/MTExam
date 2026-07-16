@@ -433,6 +433,13 @@ operational acceptance are required. P0 items are release blockers and must be v
 
 ## 22. Status Reporting
 
+### Current production backlog (2026-07-16)
+
+The authoritative remaining-use-case list is [Production Use-Case Backlog](production-use-case-backlog.md).
+P0 items are release blockers; P1 items are required before broad rollout. The Project Manager must
+create or link one GitHub Project ticket per backlog row and attach acceptance evidence before moving
+the row to Done.
+
 Weekly/milestone status อย่างน้อยมี:
 
 - Overall RAG status

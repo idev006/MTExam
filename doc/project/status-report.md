@@ -111,6 +111,14 @@ database matrix and load testing remain.
 
 ## Notes
 
+## Delivery Refresh — 2026-07-16
+
+The current implementation status is maintained in [Use-Case Implementation Status](use-case-implementation-status.md)
+and the remaining production work is consolidated in [Production Use-Case Backlog](production-use-case-backlog.md).
+Authentication hardening, station/sub-unit organization seed, PDPA data and SQLite restore drill are complete.
+Production remains blocked by P0 organization-scope authorization, paper snapshots/variants, complete
+exam-session result/recovery UX, live database/load verification and independent penetration testing.
+
 สถานะในไฟล์นี้เป็นรายงาน snapshot เท่านั้น [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
 เป็น SSOT ของ current task status และไฟล์นี้ใช้สรุป periodic report
 Project visibility ปัจจุบันเป็น Private; owner ต้องอนุมัติก่อนเปิด Public หรือเพิ่ม team access

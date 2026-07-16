@@ -37,6 +37,12 @@
 
 ## Ticket Acceptance
 
+### 2026-07-16 production backlog refresh
+
+The current board must track the rows in [Production Use-Case Backlog](production-use-case-backlog.md):
+P0-ORG-IMPORT, P0-AUTH-SCOPE, P0-PAPER, P0-SESSION, P0-SCORE, P0-DB and P0-SEC are release blockers;
+P1-QBANK, P1-REPORT, P1-AUDIT and P1-ADMIN are broad-rollout work; SSO-001 is conditional.
+
 ### Latest vertical-slice tickets (2026-07-15)
 
 | Ticket | Outcome | Priority | Status | Blocker |
