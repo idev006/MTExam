@@ -14,7 +14,7 @@ The formal decision rationale and release gates are recorded in [Production Go/N
 | P0-PAPER | Exam Paper | Immutable snapshots and deterministic seeded variants are implemented; random-pool criteria and preview remain |
 | P0-SESSION | Exam Session | Result-detail UI, rationale display, pagination/page-size, offline retry queue and boundary acceptance tests |
 | P0-SCORE | Scoring | Configurable scoring policy, stable result API contract and rationale UI acceptance |
-| P0-DB | Operations | Live MySQL/PostgreSQL migration/integration verification and authenticated load test |
+| P0-DB | Operations | PostgreSQL 16 migration/startup smoke verified; MySQL execution and authenticated load test remain |
 | P0-SEC | Security | Independent penetration test and production security sign-off |
 
 ## P1 before broad rollout

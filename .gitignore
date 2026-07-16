@@ -11,6 +11,7 @@ htmlcov/
 .env
 .env.*
 !.env.example
+!.env.docker.example
 
 # Local databases and uploaded data
 data/

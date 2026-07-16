@@ -164,7 +164,7 @@ def _seed_demo_exam_data(db) -> None:
         for index in range(1, 11):
             db.add(
                 Employee(
-                    emp_cid=f"000000000000{index}",
+                    emp_cid=f"{index:013d}",
                     emp_fname=f"Demo{index}",
                     emp_lname="Examinee",
                     emp_position="ผู้เข้าสอบ",
