@@ -28,7 +28,7 @@ Production acceptance gate is closed.
 | Use-case area | Remaining acceptance work | Priority |
 |---|---|---|
 | Personnel import | Row correction, reconciliation history, rollback and per-row audit | P0 |
-| Authorization | Organization scope service for all modules, account lifecycle and permission matrix | P0 |
+| Authorization | Content/paper/window organization scope baseline implemented; personnel/report/audit scope, account lifecycle and permission-matrix acceptance remain | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
 | Exam Paper | Random pool, immutable snapshots, deterministic variants and preview | P0 |
 | Exam Session | Result-detail UI, rationale display, pagination/page-size setting, offline queue and complete acceptance testing | P0 |

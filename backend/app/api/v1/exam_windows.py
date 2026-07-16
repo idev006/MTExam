@@ -23,6 +23,7 @@ from backend.app.db.models import (
 )
 from backend.app.domain.enums import ExamWindowMode, ExamWindowStatus, PaperStatus, UserRole
 from backend.app.services.audit import record_audit
+from backend.app.services.org_authorization import active_org_unit_ids
 
 router = APIRouter(prefix="/exam-windows", tags=["exam-windows"])
 
@@ -62,7 +63,22 @@ def list_windows(
     db: Annotated[Session, Depends(get_db_session)],
     _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.VIEWER, UserRole.EXAMINEE))],
 ) -> list[WindowResponse]:
-    return [_response(window, db) for window in db.scalars(select(ExamWindow).order_by(ExamWindow.created_at.desc()))]
+    windows = list(db.scalars(select(ExamWindow).order_by(ExamWindow.created_at.desc())))
+    if _account.role != UserRole.SUPER_ADMIN:
+        allowed = active_org_unit_ids(db, _account)
+        windows = [
+            window
+            for window in windows
+            if set(
+                db.scalars(
+                    select(ExamWindowScope.org_unit_id).where(
+                        ExamWindowScope.exam_window_id == window.id
+                    )
+                )
+            )
+            & allowed
+        ]
+    return [_response(window, db) for window in windows]
 
 
 @router.post("", response_model=WindowResponse, status_code=201)
@@ -129,7 +145,7 @@ def window_clock(
 
 def _response(window: ExamWindow, db: Session) -> WindowResponse:
     allowed = list(db.scalars(select(ExamWindowScope.org_unit_id).where(ExamWindowScope.exam_window_id == window.id)))
-    return WindowResponse(id=window.id, exam_paper_id=window.exam_paper_id, mode=window.mode, duration_minutes=window.duration_minutes, late_entry_minutes=window.late_entry_minutes, allowed_org_unit_ids=allowed, window_open_at=window.window_open_at.isoformat() if window.window_open_at else None, window_close_at=window.window_close_at.isoformat() if window.window_close_at else None)
+    return WindowResponse(id=window.id, exam_paper_id=window.exam_paper_id, mode=window.mode, duration_minutes=window.duration_minutes, status=window.status, late_entry_minutes=window.late_entry_minutes, allowed_org_unit_ids=allowed, window_open_at=window.window_open_at.isoformat() if window.window_open_at else None, window_close_at=window.window_close_at.isoformat() if window.window_close_at else None)
 
 
 def _parse_datetime(value: str | None) -> datetime | None:

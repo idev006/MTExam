@@ -119,6 +119,29 @@ def _seed_development_accounts(db) -> None:
                 status=ActiveStatus.ACTIVE,
             )
         )
+    demo_bureau = db.scalar(select(OrgUnit).where(OrgUnit.level == "bureau"))
+    for username in ("demo", "author"):
+        seeded_account = db.scalar(
+            select(UserAccount).where(UserAccount.username_normalized == username)
+        )
+        if (
+            seeded_account is not None
+            and demo_bureau is not None
+            and db.scalar(
+                select(PersonUnitAssignment).where(
+                    PersonUnitAssignment.person_id == seeded_account.person_id,
+                    PersonUnitAssignment.org_unit_id == demo_bureau.id,
+                )
+            )
+            is None
+        ):
+            db.add(
+                PersonUnitAssignment(
+                    person_id=seeded_account.person_id,
+                    org_unit_id=demo_bureau.id,
+                    effective_from=date.today(),
+                )
+            )
     db.commit()
     _seed_pdpa_question_bank(db)
     _seed_demo_exam_data(db)

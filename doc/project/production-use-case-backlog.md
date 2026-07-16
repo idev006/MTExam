@@ -8,7 +8,7 @@
 | ID | Use-case area | Remaining acceptance outcome |
 |---|---|---|
 | P0-ORG-IMPORT | Personnel import | Row correction, reconciliation history, rollback and per-row audit |
-| P0-AUTH-SCOPE | Authorization | Organization scope service across every module, complete account lifecycle and permission matrix |
+| P0-AUTH-SCOPE | Authorization | Scope baseline now enforced for question banks, papers and exam windows; extend to personnel/reports/audit and complete account lifecycle and permission matrix |
 | P0-PAPER | Exam Paper | Random pool, immutable snapshots, deterministic variants and preview |
 | P0-SESSION | Exam Session | Result-detail UI, rationale display, pagination/page-size, offline retry queue and boundary acceptance tests |
 | P0-SCORE | Scoring | Configurable scoring policy, stable result API contract and rationale UI acceptance |

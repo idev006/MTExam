@@ -24,6 +24,7 @@ from backend.app.db.models import (
 )
 from backend.app.domain.enums import PaperStatus, UserRole
 from backend.app.services.audit import record_audit
+from backend.app.services.org_authorization import active_org_unit_ids, can_access_org_unit
 
 router = APIRouter(prefix="/papers", tags=["papers"])
 
@@ -51,10 +52,12 @@ class PaperResponse(BaseModel):
 @router.get("", response_model=list[PaperResponse])
 def list_papers(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
 ) -> list[PaperResponse]:
     papers = list(db.scalars(select(ExamPaper).order_by(ExamPaper.created_at.desc())))
-    return [PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=len(list(db.scalars(select(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id))))) for paper in papers]
+    allowed = active_org_unit_ids(db, account)
+    visible = [paper for paper in papers if paper.org_unit_id in allowed or paper.created_by == account.person_id]
+    return [PaperResponse(id=paper.id, title=paper.title, status=paper.status, question_count=len(list(db.scalars(select(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id))))) for paper in visible]
 
 
 @router.post("", response_model=PaperResponse, status_code=201)
@@ -63,11 +66,15 @@ def create_paper(
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
 ) -> PaperResponse:
+    if not can_access_org_unit(db, account, payload.org_unit_id):
+        raise HTTPException(status_code=403, detail="Paper owner organization scope is not allowed")
     if len(payload.question_ids) < payload.desired_question_count:
         raise HTTPException(status_code=422, detail="question_ids must contain at least desired_question_count items")
     org_units = list(db.scalars(select(OrgUnit).where(OrgUnit.id.in_(payload.allowed_org_unit_ids), OrgUnit.level == "bureau", OrgUnit.status == "active")))
     if len(org_units) != len(set(payload.allowed_org_unit_ids)):
         raise HTTPException(status_code=422, detail="All allowed units must be active bureau-level organization units")
+    if any(not can_access_org_unit(db, account, unit.id) for unit in org_units):
+        raise HTTPException(status_code=403, detail="One or more allowed organizations are outside your scope")
     selected_ids = payload.question_ids[:payload.desired_question_count]
     questions = list(db.scalars(select(Question).where(Question.id.in_(selected_ids))))
     if len(questions) != len(set(payload.question_ids)):

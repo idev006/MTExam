@@ -14,6 +14,7 @@ from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import Question, QuestionBank, QuestionChoice, Subject, UserAccount
 from backend.app.domain.enums import ContentStatus, UserRole
 from backend.app.services.audit import record_audit
+from backend.app.services.org_authorization import active_org_unit_ids, can_access_org_unit
 
 router = APIRouter(prefix="/question-banks", tags=["question-authoring"])
 
@@ -100,12 +101,20 @@ def create_subject(
 @router.get("", response_model=list[BankResponse])
 def list_banks(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[
+    account: Annotated[
         UserAccount,
         Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN)),
     ],
 ) -> list[BankResponse]:
-    rows = db.scalars(select(QuestionBank).order_by(QuestionBank.created_at.desc()))
+    allowed = active_org_unit_ids(db, account)
+    rows = db.scalars(
+        select(QuestionBank)
+        .where(
+            QuestionBank.is_shared.is_(True)
+            | QuestionBank.owner_org_unit_id.in_(allowed)
+        )
+        .order_by(QuestionBank.created_at.desc())
+    )
     return [BankResponse.model_validate(row, from_attributes=True) for row in rows]
 
 
@@ -127,6 +136,8 @@ def create_bank(
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
 ) -> BankResponse:
+    if not can_access_org_unit(db, account, payload.owner_org_unit_id):
+        raise HTTPException(status_code=403, detail="Organization scope is not allowed")
     bank = QuestionBank(
         name=payload.name,
         owner_org_unit_id=payload.owner_org_unit_id,
