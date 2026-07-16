@@ -21,6 +21,7 @@
 - [Decision Register](decision-register.md)
 - [Dependency Register](dependency-register.md)
 - [Authentication and Authorization Audit](security-auth-audit.md)
+- [Production Go/No-Go Decision Record](production-go-decision.md)
 - [Status Report](status-report.md)
 - [Traceability Matrix](../traceability.md)
 - Actor/use-case baseline: [Actor and Use-Case Catalog](../use-cases/actor-use-case-catalog.md)
@@ -398,8 +399,9 @@ Escalation:
 ### Current implementation gate
 
 The repository currently delivers an MVP/POC with verified vertical slices. The authoritative
-production decision is maintained in [Release Readiness Checklist](release-readiness-checklist.md).
-`Verify` is not production approval. Before a ticket moves to `Done`, update its requirement row,
+production decision is maintained in [Release Readiness Checklist](release-readiness-checklist.md)
+and [Production Go/No-Go Decision Record](production-go-decision.md). `Verify` is not production
+approval. Before a ticket moves to `Done`, update its requirement row,
 test evidence, use-case documentation when behavior changes, Kanban status and status report.
 
 ### Use-case completion governance

@@ -1,12 +1,13 @@
 # Release Readiness Checklist
 
-**As of:** 2026-07-15  
+**As of:** 2026-07-16  
 **Decision:** MVP/POC accepted for continued development; **Production release not approved**
 
 `Verify` means implementation and automated evidence exist and still require human acceptance;
 it is not equivalent to `Done` or Production Ready.
 
 The detailed use-case inventory is maintained in [Use-Case Implementation Status](use-case-implementation-status.md).
+The rationale for the current No-Go decision is maintained in [Production Go/No-Go Decision](production-go-decision.md).
 
 ## MVP evidence completed
 

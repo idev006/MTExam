@@ -3,6 +3,8 @@
 **Updated:** 2026-07-16  
 **Status:** MVP vertical slices are implemented; the following items remain before a production go/no-go decision.
 
+The formal decision rationale and release gates are recorded in [Production Go/No-Go Decision](production-go-decision.md).
+
 ## P0 release blockers
 
 | ID | Use-case area | Remaining acceptance outcome |
