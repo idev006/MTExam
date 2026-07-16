@@ -28,15 +28,16 @@ Production acceptance gate is closed.
 | Use-case area | Remaining acceptance work | Priority |
 |---|---|---|
 | Personnel import | Row correction, reconciliation history, rollback and per-row audit | P0 |
-| Authorization | Organization scope service, account lifecycle and permission matrix | P0 |
+| Authorization | Organization scope service for all modules, account lifecycle and permission matrix | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
 | Exam Paper | Random pool, immutable snapshots, deterministic variants and preview | P0 |
-| Exam Session | Weighted score, result API/rationale and complete acceptance testing | P0 |
-| Scoring | Weighted rules, result API and rationale flow for real sessions | P0 |
-| Reporting | Examinee result, organization/time filters, PDF detail and report CSV/Excel export | P1 |
+| Exam Session | Result-detail UI, rationale display, pagination/page-size setting, offline queue and complete acceptance testing | P0 |
+| Scoring | Configurable scoring policy, result API contract and rationale UI acceptance | P0 |
+| Reporting | Examinee result, organization/time filters, detailed PDF and Excel export | P1 |
 | Audit | 100% mutation coverage, before/after detail, retention and export | P1 |
 | Administration | Persistent settings API and complete user/role/scope UI | P1 |
-| Operations | Live MySQL/PostgreSQL, authenticated load, security review and restore drill | P0 |
+| SSO | Police identity-provider adapter, claims mapping and logout integration | P0 when SSO is approved |
+| Operations | Live MySQL/PostgreSQL, authenticated load and external penetration test | P0 |
 
 ## Delivery rule
 
