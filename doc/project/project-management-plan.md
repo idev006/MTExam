@@ -419,6 +419,8 @@ test evidence, use-case documentation when behavior changes, Kanban status and s
   dependency resolution are complete.
 - Verification baseline is now 59 pytest tests plus repeatable security smoke and authenticated
   load runners; measured load latency remains an open performance decision.
+- Production gate scripts now cover restore evidence, audit coverage, OIDC metadata validation and
+  device acceptance matrix generation; external sign-off remains a human approval step.
 
 The ordered work register is [Remaining Work Priority Register](remaining-work-priority.md);
 each item requires implementation, authorization, failure-path, test, sequence evidence and
