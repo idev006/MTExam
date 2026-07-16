@@ -401,6 +401,13 @@ production decision is maintained in [Release Readiness Checklist](release-readi
 `Verify` is not production approval. Before a ticket moves to `Done`, update its requirement row,
 test evidence, use-case documentation when behavior changes, Kanban status and status report.
 
+### Use-case completion governance
+
+The [Use-Case Implementation Status](use-case-implementation-status.md) document is the
+implementation status SSOT for use-case completeness. An API skeleton alone is not complete:
+authorization, UI path, persistence, failure path, automated test, sequence evidence and
+operational acceptance are required. P0 items are release blockers and must be visible on GitHub Project.
+
 ### Release readiness
 
 - Scope/acceptance ผ่าน

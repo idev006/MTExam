@@ -4,6 +4,9 @@ Roadmap เป็น outcome-based และปรับผ่าน Kanban repl
 
 ## Current Status
 
+Use-case completeness is tracked in [Use-Case Implementation Status](use-case-implementation-status.md).
+MVP vertical slices are available for review; P0 Production hardening remains before release.
+
 MVP vertical slices are implemented and in Verify. Production release remains blocked by the
 hardening items in [Release Readiness Checklist](release-readiness-checklist.md): authoritative
 timer, persistent import staging, complete authoring/paper workflows, audit coverage, live DB

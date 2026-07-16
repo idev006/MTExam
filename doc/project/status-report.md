@@ -2,6 +2,10 @@
 
 **As of:** 2026-07-15
 **Overall:** MVP vertical slices — Verify; Production readiness — Not ready
+
+Use-case completeness is tracked in [Use-Case Implementation Status](use-case-implementation-status.md).
+MVP coverage exists, while P0 gaps remain in import rollback, scope enforcement, paper snapshots,
+real exam UI integration, scoring/results and operations.
 **Overall:** M0 Foundation — Verify
 
 ## Completed

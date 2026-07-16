@@ -6,6 +6,8 @@
 `Verify` means implementation and automated evidence exist and still require human acceptance;
 it is not equivalent to `Done` or Production Ready.
 
+The detailed use-case inventory is maintained in [Use-Case Implementation Status](use-case-implementation-status.md).
+
 ## MVP evidence completed
 
 - [x] FastAPI API core, Vue/Vite UI, SQLite and Alembic baseline

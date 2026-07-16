@@ -70,6 +70,7 @@ Executable OpenAPI is generated from FastAPI after the application exists ห้
 - [Dependency Register](project/dependency-register.md)
 - [Status Report](project/status-report.md)
 - [Release Readiness Checklist](project/release-readiness-checklist.md)
+- [Use-Case Implementation Status](project/use-case-implementation-status.md)
 
 ## Architecture Decision Records
 
