@@ -8,7 +8,7 @@
 
 | ลำดับ | งาน | สถานะ | เหตุผลที่ต้องทำ |
 |---:|---|---|---|
-| 1 | Authenticated load test ระดับ 500 users | ค้าง | smoke ปัจจุบันยังไม่ครอบคลุม login, start, autosave, submit และ report พร้อมกัน |
+| 1 | Authenticated load test ระดับ 500 users | profile ผ่าน 0 failures / performance ค้าง | 500-request summary profile ผ่าน แต่ p95 11.20s; ยังไม่ครอบคลุม exam workflow และยังไม่มี production latency threshold |
 | 2 | Independent penetration test และ security sign-off | ค้าง | automated tests ไม่แทนการตรวจ OWASP, privilege escalation, session, CSRF และ data leakage |
 | 3 | Production restore sign-off | ค้าง | dev restore ผ่านแล้ว แต่ต้องกำหนด RPO/RTO, encrypted off-host backup และ recurring drill |
 | 4 | Permission matrix ครบทุก role/endpoint | ค้าง | ต้องยืนยันสิทธิ์ `super_admin`, `exam_author`, `examinee`, `viewer` และกรณีข้ามหน่วยงาน |

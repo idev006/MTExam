@@ -29,6 +29,11 @@ before any shared or production deployment.
 Authenticated load smoke against PostgreSQL (50 login + summary requests, 10 workers) completed
 without request failures: average `4147.58 ms`, p95 `7182.39 ms` on the development host. The
 latency is a signal for performance tuning, not a production acceptance result.
+
+The 500-request authenticated profile (one authenticated session, 50 workers) also completed
+without request failures: average `5015.61 ms`, p95 `11200.62 ms`, elapsed `63.768 s`. This is
+capacity evidence, but the latency is not yet an acceptable production target and requires query,
+connection-pool and authentication tuning before Go.
 - Summary report: `200`
 - Personnel API: `200`, 10 seeded employees
 - A SQLite-only seed defect was found and fixed: the tenth dummy `emp_cid` was 14 digits;

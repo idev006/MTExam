@@ -38,7 +38,7 @@ The ordered remaining work is maintained in [Remaining Work Priority Register](r
 | Paper builder | Partial | Random-pool mode, snapshot/variant baseline and preview endpoint implemented; complete criteria and UI acceptance |
 | Audit | Partial | Scope/update events added; cover every state-changing API, retention policy and admin filters |
 | Database portability | PostgreSQL 16 and MySQL 8.4 migration/startup smoke verified | Complete cross-database acceptance in target deployment |
-| Performance | Health smoke 100/10 (p95 1.38s); authenticated PostgreSQL smoke 50/10 (p95 7.18s) | Tune authentication workload and execute agreed 500-user profile |
+| Performance | Authenticated PostgreSQL 500-request/50-worker profile: 0 failures, p95 11.20s | Tune authentication/query/pool latency and agree production thresholds |
 | Operations/security | Restore drill passed in dev PostgreSQL/MySQL containers | Define RPO/RTO, encrypted off-host backups, recurring drill and independent security review |
 
 ## Go/no-go rule
