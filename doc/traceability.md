@@ -68,6 +68,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | EXAM-CREATION-STATS-001 | requirements/exam-paper.md, requirements/reporting.md | per-paper Exam Creation statistics | API/frontend build | Implemented baseline |
 | PAPER-SCOPE-001 | requirements/exam-paper.md | desired question count and allowed bureau units | API/frontend build | Implemented |
 | EXAM-SESSION-API-001 | requirements/exam-session.md | start/resume, answer, timeout and submit endpoints | tests/api/test_system_api.py; API smoke | Implemented |
+| USECASE-SEQ-COVERAGE-001 | use-cases/actor-use-case-catalog.md | sequence diagram for every catalog use case | tests/architecture/test_document_traceability.py | Verified |
 
 ## Use-case interaction traceability
 

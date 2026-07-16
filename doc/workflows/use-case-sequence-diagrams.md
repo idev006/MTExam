@@ -57,6 +57,25 @@ sequenceDiagram
     UI-->>A: Show non-blocking result and audit reference
 ```
 
+## UC-ORG-02 — Review and apply staged personnel import
+
+```mermaid
+sequenceDiagram
+    actor A as super_admin
+    participant UI as Import UI
+    participant API as Personnel API
+    participant DB as SQLite
+    A->>UI: Upload CSV
+    UI->>API: POST /personnel/import/preview
+    API->>DB: Create import batch and row staging
+    API-->>UI: Batch id, valid/invalid rows and reconciliation summary
+    A->>UI: Confirm apply
+    UI->>API: POST /personnel/import/apply {batch_id}
+    API->>DB: Apply valid snapshot in transaction
+    API->>DB: Mark batch applied and write audit event
+    API-->>UI: Added/changed/missing summary
+```
+
 ## UC-ADMIN-01 — Manage system settings
 
 ```mermaid
@@ -71,6 +90,40 @@ sequenceDiagram
     API->>DB: Validate and persist before/after
     API-->>UI: Saved settings
     UI-->>A: DaisyUI toast, no browser alert
+```
+
+## UC-ADMIN-02 — Manage user accounts and roles
+
+```mermaid
+sequenceDiagram
+    actor A as super_admin
+    participant UI as User Administration UI
+    participant API as User Admin API
+    participant DB as SQLite
+    A->>UI: Create, deactivate or change role
+    UI->>API: POST/PUT /admin/users
+    API->>API: Authenticate and authorize super_admin
+    API->>DB: Validate account and persist lifecycle change
+    API->>DB: Write audit before/after metadata
+    API-->>UI: Updated account and status
+    UI-->>A: Show DaisyUI success/error feedback
+```
+
+## UC-AUDIT-01 — Review audit events
+
+```mermaid
+sequenceDiagram
+    actor A as super_admin
+    participant UI as Audit UI
+    participant API as Audit API
+    participant DB as SQLite
+    A->>UI: Open audit log and set filters
+    UI->>API: GET /audit?event_type=...&subject_type=...
+    API->>API: Authenticate and authorize super_admin
+    API->>DB: Query immutable audit events
+    DB-->>API: Filtered events with actor and metadata
+    API-->>UI: Paginated audit rows
+    UI-->>A: Render read-only timeline/table
 ```
 
 ## UC-QBANK-01 — Author question bank

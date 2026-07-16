@@ -42,6 +42,7 @@
 - [Take Exam Flow](workflows/take-exam-flow.md)
 - [Actor and Use-Case Catalog](use-cases/actor-use-case-catalog.md)
 - [Use-Case Sequence Diagrams](workflows/use-case-sequence-diagrams.md)
+- [Use-Case Sequence Coverage](workflows/use-case-sequence-coverage.md)
 
 ## API
 
