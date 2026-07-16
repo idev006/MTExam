@@ -26,6 +26,9 @@
 
 Sequence evidence: [Remaining Work Sequences](diagrams/remaining-work-sequences.md)
 
+Automated gate scripts are under `poc/` and can be orchestrated with
+`scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
+
 ## Release rule
 
 Production Go ต้องรอรายการ 1–5 และ 7–10 มีหลักฐานครบ ส่วนรายการ 6 ต้องผ่าน acceptance ก่อนเปิดใช้

@@ -102,3 +102,20 @@ sequenceDiagram
     API-->>Viewer: downloadable report
 ```
 
+## Production gate orchestration
+
+```mermaid
+sequenceDiagram
+    participant PM as Release owner
+    participant Runner as Gate script
+    participant API as MTExam API
+    participant DB as Restore target
+    participant Reviewer as External reviewer
+    PM->>Runner: run-production-gates.ps1
+    Runner->>API: security smoke + authenticated load
+    Runner->>DB: restore evidence/checksum/RPO/RTO
+    Runner-->>PM: automated results
+    PM->>Reviewer: submit penetration/device/SSO evidence
+    Reviewer-->>PM: sign-off or findings
+    PM-->>PM: Go only when all gates pass
+```

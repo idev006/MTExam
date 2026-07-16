@@ -16,6 +16,7 @@ from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import LoginAttempt, Person, UserAccount
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.domain.security import hash_password, verify_password
+from backend.app.services.audit import record_audit
 from backend.app.services.auth_sessions import (
     build_session_policy,
     create_session,
@@ -167,6 +168,15 @@ def login(
         user_agent=request.headers.get("user-agent"),
     )
     db.commit()
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="auth.login",
+        subject_type="user_account",
+        subject_id=account.id,
+        metadata={"ip_address": client_ip},
+    )
+    db.commit()
     response.set_cookie(
         COOKIE_NAME,
         created.raw_token,
@@ -220,6 +230,14 @@ def change_password(
     account.password_hash = hash_password(payload.new_password)
     account.must_change_password = False
     db.commit()
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="auth.change_password",
+        subject_type="user_account",
+        subject_id=account.id,
+    )
+    db.commit()
     return _user_response(account, person)
 
 
@@ -235,6 +253,15 @@ def logout(
     )
     if active:
         revoke_session(db, session_id=active.session_id, now=utc_now())
+        account = db.get(UserAccount, active.user_account_id)
+        if account:
+            record_audit(
+                db,
+                actor_person_id=account.person_id,
+                event_type="auth.logout",
+                subject_type="auth_session",
+                subject_id=active.session_id,
+            )
         db.commit()
     response.delete_cookie(COOKIE_NAME, path="/")
     response.delete_cookie(CSRF_COOKIE_NAME, path="/")

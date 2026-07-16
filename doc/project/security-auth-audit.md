@@ -28,6 +28,8 @@
 - PostgreSQL/MySQL database startup and migration smoke pass; authenticated load smoke completed
   without request failures (50 requests/10 workers, development host).
 - Repeatable `poc/security_smoke.py` passes protected-route, public-route and 429 throttle checks.
+- `poc/audit_gate.py` verifies all state-changing handlers are directly or delegated to audited
+  mutation services (`26` handlers, `24` direct, `2` delegated, `0` unaccounted).
 
 ## Deployment requirements before go-live
 

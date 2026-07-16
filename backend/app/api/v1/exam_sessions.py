@@ -126,6 +126,8 @@ def save_answer(
     else:
         answer.selected_choice_id, answer.last_updated_at = choice.id, now
     db.commit()
+    record_audit(db, actor_person_id=account.person_id, event_type="exam_session.answer", subject_type="exam_session", subject_id=session.id, metadata={"variant_question_id": str(question.id)})
+    db.commit()
     return _response(session, db)
 
 

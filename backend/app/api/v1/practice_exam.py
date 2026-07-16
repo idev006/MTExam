@@ -18,6 +18,7 @@ from backend.app.db.dependencies import get_db_session
 from backend.app.db.models import UserAccount
 from backend.app.db.models.practice import PracticeExamSession
 from backend.app.domain.enums import UserRole
+from backend.app.services.audit import record_audit
 
 router = APIRouter(prefix="/practice", tags=["practice"])
 
@@ -91,12 +92,20 @@ def _session_response(entity: PracticeExamSession) -> PracticeSessionResponse:
 )
 def create_practice_session(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
 ) -> PracticeSessionResponse:
     entity = PracticeExamSession(bank_code="pdpa-50")
     db.add(entity)
     db.commit()
     db.refresh(entity)
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="practice_session.create",
+        subject_type="practice_exam_session",
+        subject_id=entity.id,
+    )
+    db.commit()
     return _session_response(entity)
 
 
@@ -117,7 +126,7 @@ def save_practice_answer(
     session_id: UUID,
     request: AnswerRequest,
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
 ) -> PracticeSessionResponse:
     entity = db.get(PracticeExamSession, session_id)
     if entity is None or entity.status != "in_progress":
@@ -135,6 +144,15 @@ def save_practice_answer(
     entity.updated_at = utc_now()
     db.commit()
     db.refresh(entity)
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="practice_session.answer",
+        subject_type="practice_exam_session",
+        subject_id=entity.id,
+        metadata={"question_index": request.question_index},
+    )
+    db.commit()
     return _session_response(entity)
 
 
@@ -142,7 +160,7 @@ def save_practice_answer(
 def submit_practice_session(
     session_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAMINEE))],
 ) -> PracticeSessionResponse:
     entity = db.get(PracticeExamSession, session_id)
     if entity is None:
@@ -162,4 +180,13 @@ def submit_practice_session(
     entity.updated_at = entity.submitted_at
     db.commit()
     db.refresh(entity)
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="practice_session.submit",
+        subject_type="practice_exam_session",
+        subject_id=entity.id,
+        metadata={"score": entity.score},
+    )
+    db.commit()
     return _session_response(entity)
