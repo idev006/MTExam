@@ -32,9 +32,9 @@ The rationale for the current No-Go decision is maintained in [Production Go/No-
 | Area | Status | Required before production |
 |---|---|---|
 | Server-authoritative timer | Partial | Connect clock to full ExamSession start/answer/timeout lifecycle |
-| Personnel import | Partial | Add row-level correction and rollback transaction workflow |
+| Personnel import | Partial | Add row-level correction UI and reconciliation acceptance; batch rollback endpoint is implemented |
 | Question authoring | Partial | Add version snapshots and complete publish history |
-| Paper builder | Partial | Add snapshotting and deterministic variant generation |
+| Paper builder | Partial | Add random-pool criteria and author preview acceptance; snapshot/variant baseline is implemented |
 | Audit | Partial | Cover every state-changing API, retention policy and admin filters |
 | Database portability | PostgreSQL 16 and MySQL 8.4 migration/startup smoke verified | Complete cross-database acceptance in target deployment |
 | Performance | Health smoke 100/10 (p95 1.38s); authenticated PostgreSQL smoke 50/10 (p95 7.18s) | Tune authentication workload and execute agreed 500-user profile |

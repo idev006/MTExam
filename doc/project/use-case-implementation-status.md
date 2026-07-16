@@ -24,6 +24,8 @@ Production acceptance gate is closed.
 - Authentication hardening: persistent login throttling, CSRF protection for production cookie requests, password change, fail-closed role validation and immediate session revocation on account lifecycle changes
 - Organization scope enforcement for personnel listing, question banks, papers, exam windows, reports and audit visibility
 - Paper snapshots: immutable question versions and deterministic seeded question/choice ordering for all configured variants
+- Personnel import rollback endpoint with batch snapshot and audit event
+- Paper preview endpoint and scoped exam-session XLSX export
 
 ## Partial / Production hardening
 

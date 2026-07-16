@@ -9,9 +9,9 @@ The formal decision rationale and release gates are recorded in [Production Go/N
 
 | ID | Use-case area | Remaining acceptance outcome |
 |---|---|---|
-| P0-ORG-IMPORT | Personnel import | Row correction, reconciliation history, rollback and per-row audit |
+| P0-ORG-IMPORT | Personnel import | Row-level correction and reconciliation UI remain; persistent batch rollback endpoint is now implemented |
 | P0-AUTH-SCOPE | Authorization | Scope is enforced for personnel, question banks, papers, windows, reports and audit; remaining acceptance is full permission matrix and scope-assignment UI |
-| P0-PAPER | Exam Paper | Immutable snapshots and deterministic seeded variants are implemented; random-pool criteria and preview remain |
+| P0-PAPER | Exam Paper | Immutable snapshots, deterministic seeded variants and paper preview are implemented; random-pool criteria remain |
 | P0-SESSION | Exam Session | Result-detail UI, rationale display, pagination/page-size, offline retry queue and boundary acceptance tests |
 | P0-SCORE | Scoring | Configurable scoring policy, stable result API contract and rationale UI acceptance |
 | P0-DB | Operations | PostgreSQL 16 and MySQL 8.4 migration/startup smoke verified; authenticated 500-user load and performance tuning remain |
@@ -22,7 +22,7 @@ The formal decision rationale and release gates are recorded in [Production Go/N
 | ID | Use-case area | Remaining acceptance outcome |
 |---|---|---|
 | P1-QBANK | Question Bank | Version history, bulk import, archive/restore and publish history |
-| P1-REPORT | Reporting | Examinee result, organization/time filters, detailed PDF and Excel export |
+| P1-REPORT | Reporting | Scoped exam-session XLSX export added; detailed PDF and complete organization/time report acceptance remain |
 | P1-AUDIT | Audit | 100% mutation coverage, before/after detail, retention and export |
 | P1-ADMIN | Administration | Persistent settings API and complete user/role/scope UI |
 
