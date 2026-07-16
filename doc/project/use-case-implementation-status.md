@@ -16,6 +16,8 @@ Production acceptance gate is closed.
 - Reports baseline: summary, employee CSV and per-Exam-Creation statistics
 - Durable practice recovery and real exam-session API plus Vue exam lobby/session UI baseline
 - Exam window management and server clock endpoint
+- Shared question-bank metadata with exam-window bureau scope and configurable late-entry grace minutes
+- PDF system-summary export (Excel remains the next exporter)
 - User administration, audit API/UI baseline and responsive role-aware UI
 
 ## Partial / Production hardening
@@ -26,9 +28,9 @@ Production acceptance gate is closed.
 | Authorization | Organization scope service, account lifecycle and permission matrix | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
 | Exam Paper | Random pool, immutable snapshots, deterministic variants and preview | P0 |
-| Exam Session | Enforce bureau eligibility end-to-end and complete acceptance testing | P0 |
+| Exam Session | Weighted score, result API/rationale and complete acceptance testing | P0 |
 | Scoring | Weighted rules, result API and rationale flow for real sessions | P0 |
-| Reporting | Examinee result, organization/time filters and report CSV export | P1 |
+| Reporting | Examinee result, organization/time filters, PDF detail and report CSV/Excel export | P1 |
 | Audit | 100% mutation coverage, before/after detail, retention and export | P1 |
 | Administration | Persistent settings API and complete user/role/scope UI | P1 |
 | Operations | Live MySQL/PostgreSQL, authenticated load, security review and restore drill | P0 |

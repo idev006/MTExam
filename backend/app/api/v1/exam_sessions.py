@@ -2,7 +2,7 @@ from __future__ import annotations
 
 # ruff: noqa: E501
 import json
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Annotated
 from uuid import UUID
 
@@ -22,6 +22,8 @@ from backend.app.db.models import (
     ExamVariant,
     ExamVariantQuestion,
     ExamWindow,
+    ExamWindowScope,
+    PersonUnitAssignment,
     Question,
     QuestionChoice,
     QuestionVersion,
@@ -66,6 +68,14 @@ def start_or_resume(
     paper = db.get(ExamPaper, window.exam_paper_id)
     if paper is None:
         raise HTTPException(status_code=409, detail="Exam paper not found")
+    scope_ids = set(db.scalars(select(ExamWindowScope.org_unit_id).where(ExamWindowScope.exam_window_id == window.id)))
+    if scope_ids:
+        today = date.today()
+        assignment = db.scalar(select(PersonUnitAssignment).where(PersonUnitAssignment.person_id == account.person_id, PersonUnitAssignment.org_unit_id.in_(scope_ids), PersonUnitAssignment.effective_from <= today, (PersonUnitAssignment.effective_to.is_(None)) | (PersonUnitAssignment.effective_to >= today)))
+        if assignment is None and account.role != UserRole.SUPER_ADMIN:
+            raise HTTPException(status_code=403, detail="Your organization is not allowed in this exam window")
+    if window.window_open_at and window.late_entry_minutes and utc_now() > window.window_open_at + timedelta(minutes=window.late_entry_minutes):
+        raise HTTPException(status_code=403, detail="Late entry period has ended")
     variant = _ensure_variant(paper, db)
     now = utc_now()
     ends = now + timedelta(minutes=window.duration_minutes or 60)
@@ -129,15 +139,17 @@ def submit_session(
     if session.status != ExamSessionStatus.IN_PROGRESS:
         raise HTTPException(status_code=409, detail="Exam session cannot be submitted")
     answers = list(db.scalars(select(ExamAnswer).where(ExamAnswer.exam_session_id == session.id)))
-    correct = 0
+    score = 0.0
     for answer in answers:
         choice = db.get(QuestionChoice, answer.selected_choice_id)
         answer.is_correct_cache = bool(choice and choice.is_correct)
-        correct += int(answer.is_correct_cache)
-    session.score = correct
+        if answer.is_correct_cache:
+            variant_question = db.get(ExamVariantQuestion, answer.exam_variant_question_id)
+            score += float(variant_question.score_weight if variant_question else 1)
+    session.score = score
     session.status = ExamSessionStatus.SUBMITTED
     session.submitted_at = utc_now()
-    record_audit(db, actor_person_id=account.person_id, event_type="exam_session.submit", subject_type="exam_session", subject_id=session.id, metadata={"score": correct})
+    record_audit(db, actor_person_id=account.person_id, event_type="exam_session.submit", subject_type="exam_session", subject_id=session.id, metadata={"score": score})
     db.commit()
     return _response(session, db)
 

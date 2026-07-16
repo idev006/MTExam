@@ -34,6 +34,13 @@
 | OD-004 | Export PDF/Excel | CSV only | M4 | PO |
 | OD-006 | Audit/data retention | No destructive cleanup | Before production | Sponsor/Security |
 
+## Decisions added 2026-07-16
+
+- D-022: Question banks can be shared across organizations; exam-window bureau scope remains the enforcement boundary.
+- D-023: Release 1 uses local accounts; SSO will be a replaceable identity-provider adapter later.
+- D-024: Admin configures late-entry grace minutes for scheduled batch windows.
+- D-025: PDF is the first report export format; Excel is the next compatible exporter.
+
 ## Rule
 
 Approved decision เปลี่ยนได้ด้วย ticket, impact analysis และ update เอกสาร/ADR ไม่แก้ย้อนหลังโดยลบเหตุผลเดิม

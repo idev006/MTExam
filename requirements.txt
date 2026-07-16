@@ -26,3 +26,6 @@ ruff==0.15.21
 
 # Deterministic development/demo data only
 Faker==37.5.3
+
+# PDF report export
+reportlab==4.4.10

@@ -6,7 +6,7 @@ import io
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -59,21 +59,11 @@ def get_summary(
     active = db.scalar(
         select(func.count()).select_from(Employee).where(Employee.emp_status == "active")
     ) or 0
-    submitted = db.scalar(
-        select(func.count())
-        .select_from(PracticeExamSession)
-        .where(PracticeExamSession.status == "submitted")
-    ) or 0
-    in_progress = db.scalar(
-        select(func.count())
-        .select_from(PracticeExamSession)
-        .where(PracticeExamSession.status == "in_progress")
-    ) or 0
-    average = db.scalar(
-        select(func.avg(PracticeExamSession.score)).where(
-            PracticeExamSession.status == "submitted"
-        )
-    )
+    submitted = (db.scalar(select(func.count()).select_from(ExamSession).where(ExamSession.status == "submitted")) or 0) + (db.scalar(select(func.count()).select_from(PracticeExamSession).where(PracticeExamSession.status == "submitted")) or 0)
+    in_progress = (db.scalar(select(func.count()).select_from(ExamSession).where(ExamSession.status == "in_progress")) or 0) + (db.scalar(select(func.count()).select_from(PracticeExamSession).where(PracticeExamSession.status == "in_progress")) or 0)
+    real_avg = db.scalar(select(func.avg(ExamSession.score)).where(ExamSession.status == "submitted"))
+    practice_avg = db.scalar(select(func.avg(PracticeExamSession.score)).where(PracticeExamSession.status == "submitted"))
+    average = real_avg if real_avg is not None else practice_avg
     return SystemReport(
         employee_total=total,
         employee_active=active,
@@ -115,3 +105,36 @@ def export_employees_csv(
     for employee in db.scalars(select(Employee).order_by(Employee.emp_cid)):
         writer.writerow([employee.emp_cid, employee.emp_fname, employee.emp_lname, employee.emp_position or "", employee.emp_bh or "", employee.emp_bk or "", employee.emp_kk or "", employee.emp_status])
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=employees.csv"})
+
+
+@router.get("/summary.pdf")
+def export_summary_pdf(
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+) -> Response:
+    """Export the system summary as a compact PDF; Excel can be added without changing the report model."""
+    report = get_summary(db, _account)
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+    except ImportError as error:
+        raise RuntimeError("PDF export requires reportlab; install requirements.txt") from error
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    pdf.setTitle("MTExam system summary")
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(48, 800, "MTExam System Summary")
+    pdf.setFont("Helvetica", 11)
+    lines = [
+        f"Employee total: {report.employee_total}",
+        f"Employee active: {report.employee_active}",
+        f"Employee inactive: {report.employee_inactive}",
+        f"Exam in progress: {report.exam_in_progress}",
+        f"Exam submitted: {report.exam_submitted}",
+        f"Average score: {report.average_score if report.average_score is not None else '-'}",
+    ]
+    for index, line in enumerate(lines):
+        pdf.drawString(60, 760 - index * 22, line)
+    pdf.showPage()
+    pdf.save()
+    return Response(content=buffer.getvalue(), media_type="application/pdf", headers={"Content-Disposition": "attachment; filename=mtexam-summary.pdf"})

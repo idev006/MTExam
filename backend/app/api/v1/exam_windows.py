@@ -14,7 +14,13 @@ from sqlalchemy.orm import Session
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.base import utc_now
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import ExamPaper, ExamWindow, UserAccount
+from backend.app.db.models import (
+    ExamPaper,
+    ExamPaperOrgUnit,
+    ExamWindow,
+    ExamWindowScope,
+    UserAccount,
+)
 from backend.app.domain.enums import ExamWindowMode, ExamWindowStatus, PaperStatus, UserRole
 from backend.app.services.audit import record_audit
 
@@ -25,6 +31,8 @@ class WindowCreate(BaseModel):
     exam_paper_id: UUID
     mode: ExamWindowMode = ExamWindowMode.INDIVIDUAL
     duration_minutes: int = Field(default=60, ge=1, le=600)
+    late_entry_minutes: int = Field(default=0, ge=0, le=1440)
+    allowed_org_unit_ids: list[UUID] = Field(default_factory=list)
     window_open_at: str | None = None
     window_close_at: str | None = None
 
@@ -34,6 +42,8 @@ class WindowResponse(BaseModel):
     exam_paper_id: UUID
     mode: str
     duration_minutes: int | None
+    late_entry_minutes: int
+    allowed_org_unit_ids: list[UUID] = Field(default_factory=list)
     status: str
     window_open_at: str | None
     window_close_at: str | None
@@ -52,7 +62,7 @@ def list_windows(
     db: Annotated[Session, Depends(get_db_session)],
     _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.VIEWER, UserRole.EXAMINEE))],
 ) -> list[WindowResponse]:
-    return [_response(window) for window in db.scalars(select(ExamWindow).order_by(ExamWindow.created_at.desc()))]
+    return [_response(window, db) for window in db.scalars(select(ExamWindow).order_by(ExamWindow.created_at.desc()))]
 
 
 @router.post("", response_model=WindowResponse, status_code=201)
@@ -68,13 +78,16 @@ def create_window(
     open_at = _parse_datetime(payload.window_open_at)
     if close_at and open_at and close_at <= open_at:
         raise HTTPException(status_code=422, detail="window_close_at must be after window_open_at")
-    window = ExamWindow(exam_paper_id=paper.id, mode=payload.mode, duration_minutes=payload.duration_minutes, status=ExamWindowStatus.SCHEDULED, created_by=account.person_id, window_open_at=open_at, window_close_at=close_at)
+    allowed = payload.allowed_org_unit_ids or list(db.scalars(select(ExamPaperOrgUnit.org_unit_id).where(ExamPaperOrgUnit.exam_paper_id == paper.id)))
+    window = ExamWindow(exam_paper_id=paper.id, mode=payload.mode, duration_minutes=payload.duration_minutes, late_entry_minutes=payload.late_entry_minutes, status=ExamWindowStatus.SCHEDULED, created_by=account.person_id, window_open_at=open_at, window_close_at=close_at)
     db.add(window)
+    db.flush()
+    db.add_all([ExamWindowScope(exam_window_id=window.id, org_unit_id=unit_id) for unit_id in allowed])
     db.commit()
     record_audit(db, actor_person_id=account.person_id, event_type="exam_window.create", subject_type="exam_window", subject_id=window.id, metadata={"paper_id": str(paper.id), "duration_minutes": payload.duration_minutes})
     db.commit()
     db.refresh(window)
-    return _response(window)
+    return _response(window, db)
 
 
 @router.post("/{window_id}/open", response_model=WindowResponse)
@@ -92,7 +105,7 @@ def open_window(
     record_audit(db, actor_person_id=_account.person_id, event_type="exam_window.open", subject_type="exam_window", subject_id=window.id)
     db.commit()
     db.refresh(window)
-    return _response(window)
+    return _response(window, db)
 
 
 @router.get("/{window_id}/clock", response_model=WindowClockResponse)
@@ -114,8 +127,9 @@ def window_clock(
     return WindowClockResponse(window_id=window.id, server_now=now.isoformat() + "Z", status=window.status, deadline=deadline.isoformat() + "Z" if deadline else None, remaining_seconds=remaining)
 
 
-def _response(window: ExamWindow) -> WindowResponse:
-    return WindowResponse(id=window.id, exam_paper_id=window.exam_paper_id, mode=window.mode, duration_minutes=window.duration_minutes, status=window.status, window_open_at=window.window_open_at.isoformat() if window.window_open_at else None, window_close_at=window.window_close_at.isoformat() if window.window_close_at else None)
+def _response(window: ExamWindow, db: Session) -> WindowResponse:
+    allowed = list(db.scalars(select(ExamWindowScope.org_unit_id).where(ExamWindowScope.exam_window_id == window.id)))
+    return WindowResponse(id=window.id, exam_paper_id=window.exam_paper_id, mode=window.mode, duration_minutes=window.duration_minutes, late_entry_minutes=window.late_entry_minutes, allowed_org_unit_ids=allowed, window_open_at=window.window_open_at.isoformat() if window.window_open_at else None, window_close_at=window.window_close_at.isoformat() if window.window_close_at else None)
 
 
 def _parse_datetime(value: str | None) -> datetime | None:
