@@ -40,6 +40,11 @@ with backend/frontend automated tests. Local four-breakpoint browser acceptance 
 device sign-off, load threshold and external security acceptance remain open, therefore REPORT-QA-08
 remains `Verify`, not `Done`.
 
+Paper Builder UX update 2026-07-16: organization quotas are now selected through a parent-child tree.
+The UI prevents overlapping ancestor/descendant buckets, explains shared parent coverage, permits
+non-overlapping sibling quotas, and retains backend validation. Production multi-device acceptance
+remains part of item 9.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 

@@ -14,7 +14,8 @@ Production acceptance gate is closed.
 - Question Bank: subject-bound bank, question/choice creation, validation and publish
 - Development seed: PDPA-TH-50 bank with 50 questions, four choices, correct answer and explanation
 - Development end-to-end seed: 10 employees, demo bureau assignment, published 10-question paper, open batch window, and one submitted session with 10 answer records (score 7/10)
-- Exam Creation: subject, desired question count, selected questions, variants and allowed bureaus
+- Exam Creation: subject, desired question count, selected questions, variants, pass policy and
+  hierarchical organization quota tree that prevents parent-child overlap before submit
 - Reports baseline: summary, employee CSV and per-Exam-Creation statistics
 - Durable practice recovery and real exam-session API plus Vue exam lobby/session UI baseline
 - Exam window management and server clock endpoint

@@ -565,3 +565,12 @@ organization quota enforcement, role-scoped report APIs, responsive ECharts dash
 person drill-down and PDF/XLSX/CSV exports using one filter contract. Automated API, permission,
 domain and frontend component tests are required before `Verify`; human four-device acceptance,
 production load threshold and security sign-off are still required before `Done`.
+
+## 30. Paper Builder organization quota UX
+
+The Exam Creation organization selector now follows the organization parent-child hierarchy instead
+of presenting a flat list. A selected parent is displayed as one shared quota bucket covering all
+descendants; descendants are disabled with an explicit coverage reason. Selecting a child disables
+its ancestors while leaving sibling branches available. Client overlap validation complements the
+authoritative backend validation. The interaction and responsive acceptance contract is maintained
+in [Paper Builder Organization Quota UX](paper-builder-ui-ux-design.md).

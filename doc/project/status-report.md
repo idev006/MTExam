@@ -135,3 +135,10 @@ The authenticated application shell now uses the full viewport width with respon
 This removes the previous 1152/1280 px content caps and gives reporting charts and wide tables more
 usable space on notebook, desktop, and extra-wide displays. A component test protects the full-width
 container contract.
+
+### Paper Builder quota-tree update — 2026-07-16
+
+The `/papers` Exam Creation form now presents organization quotas as a parent-child tree. Conflicting
+ancestor/descendant selections are disabled with an explicit reason, sibling quotas remain available,
+and a responsive summary explains shared parent coverage. Client overlap validation is additive to
+the existing backend authorization and overlap enforcement.

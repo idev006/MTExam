@@ -3,14 +3,15 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import AppAlert from "@/components/feedback/AppAlert.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
+import OrgQuotaTree from "@/components/papers/OrgQuotaTree.vue";
+import { hasQuotaOverlap, type QuotaOrgUnit } from "@/components/papers/orgQuota";
 import { apiGet, apiRequest } from "@/api/client";
 
 interface Subject { id: string; code: string; name: string }
-interface OrgUnit { id: string; name: string; level: string; status: string }
 interface Question { id: string; content: string; difficulty: string | null; bank_name: string }
 
 const subjects = ref<Subject[]>([]);
-const orgUnits = ref<OrgUnit[]>([]);
+const orgUnits = ref<QuotaOrgUnit[]>([]);
 const questions = ref<Question[]>([]);
 const selectedIds = ref<string[]>([]);
 const selectedOrgIds = ref<string[]>([]);
@@ -31,12 +32,13 @@ const canSubmit = computed(() => Boolean(
   form.title && form.subject_id && form.org_unit_id && selectedOrgIds.value.length
   && selectedIds.value.length >= form.desired_question_count
   && form.passing_percentage >= 0 && form.passing_percentage <= 100
+  && !hasQuotaOverlap(orgUnits.value, selectedOrgIds.value)
   && selectedOrgIds.value.every((id) => Number.isInteger(quotaCounts[id]) && quotaCounts[id] >= 0),
 ));
 
 async function loadBase() {
   [subjects.value, orgUnits.value] = await Promise.all([
-    apiGet<Subject[]>("/question-banks/subjects"), apiGet<OrgUnit[]>("/org-units"),
+    apiGet<Subject[]>("/question-banks/subjects"), apiGet<QuotaOrgUnit[]>("/org-units"),
   ]);
 }
 async function loadQuestions() {
@@ -54,6 +56,9 @@ function toggleOrganization(id: string, checked: boolean) {
     ? [...selectedOrgIds.value, id]
     : selectedOrgIds.value.filter((value) => value !== id);
   if (checked && quotaCounts[id] === undefined) quotaCounts[id] = 1;
+}
+function updateQuota(id: string, count: number) {
+  quotaCounts[id] = count;
 }
 async function create() {
   if (!canSubmit.value) return;
@@ -96,13 +101,14 @@ onMounted(loadBase);
 
       <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
         <h2 class="card-title">Quota ผู้มีสิทธิ์สอบรายหน่วยงาน</h2>
-        <p class="text-sm text-base-content/60">ห้ามเลือกหน่วยแม่และหน่วยลูกซ้อนกัน ระบบจะจำกัดจำนวนผู้เริ่มสอบตาม quota</p>
-        <div class="grid gap-3 md:grid-cols-2">
-          <div v-for="unit in orgUnits" :key="unit.id" class="rounded-box border border-base-300 p-3">
-            <label class="flex cursor-pointer items-center gap-3"><input class="checkbox checkbox-primary" type="checkbox" :checked="selectedOrgIds.includes(unit.id)" @change="toggleOrganization(unit.id, ($event.target as HTMLInputElement).checked)" /><span class="flex-1">{{ unit.name }}</span><span class="badge badge-ghost">{{ unit.level }}</span></label>
-            <label v-if="selectedOrgIds.includes(unit.id)" class="form-control mt-3"><span class="label-text">จำนวนผู้มีสิทธิ์</span><input v-model.number="quotaCounts[unit.id]" class="input input-bordered" type="number" min="0" required /></label>
-          </div>
-        </div>
+        <p class="text-sm text-base-content/60">เลือกหน่วยงานตามโครงสร้าง ระบบจะป้องกันโควต้าหน่วยแม่และหน่วยลูกซ้อนกันก่อนส่งข้อมูล</p>
+        <OrgQuotaTree
+          :units="orgUnits"
+          :selected-ids="selectedOrgIds"
+          :quota-counts="quotaCounts"
+          @toggle="toggleOrganization"
+          @update-quota="updateQuota"
+        />
       </div></section>
 
       <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
