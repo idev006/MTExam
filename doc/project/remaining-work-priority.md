@@ -45,6 +45,11 @@ The UI prevents overlapping ancestor/descendant buckets, explains shared parent 
 non-overlapping sibling quotas, and retains backend validation. Production multi-device acceptance
 remains part of item 9.
 
+Organization reference-data correction 2026-07-17: the Region 6 seed transition now attaches
+ฝ่ายอำนวยการ 1–6 to บก.อก.ภ.6 in the same first startup that creates the parent bureaus. Automated
+integration evidence verifies exact documented child sets for บก.อก.ภ.6, บก.สส.ภ.6 and ศฝร.ภ.6
+and verifies idempotent reseeding.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 

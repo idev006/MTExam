@@ -24,6 +24,8 @@ Production acceptance gate is closed.
 - User administration, audit API/UI baseline and responsive role-aware UI
 - Authentication hardening: persistent login throttling, CSRF protection for production cookie requests, password change, fail-closed role validation and immediate session revocation on account lifecycle changes
 - Organization scope enforcement for personnel listing, question banks, papers, exam windows, reports and audit visibility
+- Region 6 reference hierarchy seed from `doc/p6-station.txt`, including the six administration
+  divisions under บก.อก.ภ.6 and the documented children of บก.สส.ภ.6 and ศฝร.ภ.6
 - Paper snapshots: immutable question versions and deterministic seeded question/choice ordering for all configured variants
 - Personnel import rollback endpoint with batch snapshot and audit event
 - Paper preview endpoint and scoped exam-session XLSX export

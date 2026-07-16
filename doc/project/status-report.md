@@ -142,3 +142,10 @@ The `/papers` Exam Creation form now presents organization quotas as a parent-ch
 ancestor/descendant selections are disabled with an explicit reason, sibling quotas remain available,
 and a responsive summary explains shared parent coverage. Client overlap validation is additive to
 the existing backend authorization and overlap enforcement.
+
+### Region 6 organization hierarchy correction — 2026-07-17
+
+The `doc/p6-station.txt` development/test seed now preserves the documented parent when transitioning
+from provincial station sections to บก.อก.ภ.6 sub-units. This adds ฝ่ายอำนวยการ 1–6 beneath
+บก.อก.ภ.6, retains the seven บก.สส.ภ.6 and four ศฝร.ภ.6 children, and completes a fresh database in
+one idempotent seed pass.

@@ -469,6 +469,7 @@ def _seed_region6_org_units(db) -> None:
                     status=ActiveStatus.ACTIVE,
                 )
             )
+    db.flush()
 
 
 def _seed_region6_sub_units(db) -> None:
@@ -504,7 +505,10 @@ def _seed_region6_sub_units(db) -> None:
         if importing_stations:
             if line == "หน่วยงานระดับกองกำกับการใต้หน่วย กองบังคับการอำนวยการตำรวจภูธรภาค 6 (บก.อก.ภ.6)":
                 importing_stations = False
-                current_parent = None
+                current_parent = db.scalar(
+                    select(OrgUnit).where(OrgUnit.code == parent_names[line])
+                )
+                child_index = 0
                 continue
             if not line:
                 if station_count:
