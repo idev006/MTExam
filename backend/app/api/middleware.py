@@ -25,9 +25,7 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
             cookie_token = request.cookies.get("mtexam_csrf")
             header_token = request.headers.get("X-CSRF-Token")
             if not cookie_token or not header_token or cookie_token != header_token:
-                return JSONResponse(
-                    {"detail": "CSRF validation failed"}, status_code=403
-                )
+                return JSONResponse({"detail": "CSRF validation failed"}, status_code=403)
         request.state.correlation_id = correlation_id
         response = await call_next(request)
         response.headers["X-Correlation-ID"] = correlation_id

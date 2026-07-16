@@ -25,13 +25,16 @@ class SessionPolicy:
     session_idle_minutes: int = 30
 
     def __post_init__(self) -> None:
-        if min(
-            self.max_sessions_examinee,
-            self.max_sessions_admin,
-            self.max_sessions_other,
-            self.session_expire_minutes,
-            self.session_idle_minutes,
-        ) < 1:
+        if (
+            min(
+                self.max_sessions_examinee,
+                self.max_sessions_admin,
+                self.max_sessions_other,
+                self.session_expire_minutes,
+                self.session_idle_minutes,
+            )
+            < 1
+        ):
             raise ValueError("Session policy values must be positive")
 
     def max_sessions_for(self, role: UserRole) -> int:

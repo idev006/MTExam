@@ -30,6 +30,8 @@ Production acceptance gate is closed.
 - Random-pool paper selection with deterministic seed and preview support
 - Division/bureau/station admin scoped reporting: own organization plus active descendants,
   including organization-level breakdown statistics
+- Role-aware reporting dashboard for all seven roles with Exam Creation pass policy, per-unit quota,
+  ECharts attendance/pass-fail/organization comparison, scoped person detail and shared-filter exports
 
 ## Partial / Production hardening
 
@@ -41,7 +43,7 @@ Production acceptance gate is closed.
 | Exam Paper | Immutable snapshots and deterministic variants implemented; random-pool criteria and author preview remain | P0 |
 | Exam Session | Result-detail UI, rationale display, pagination/page-size setting, offline queue and complete acceptance testing | P0 |
 | Scoring | Configurable scoring policy, result API contract and rationale UI acceptance | P0 |
-| Reporting | Summary PDF/XLSX and scoped baseline implemented; examinee result, organization/time filters and detailed exports remain | P1 |
+| Reporting | UI/API/filter/export implementation, bundled OFL Chakra Petch PDF font and automated evidence complete; production device sign-off and load threshold remain | P1 |
 | Audit | Scoped/paginated audit baseline implemented; 100% mutation coverage, before/after detail, retention and export remain | P1 |
 | Administration | Persistent settings API and complete user/role/scope UI | P1 |
 | SSO | Police identity-provider adapter, claims mapping and logout integration | P0 when SSO is approved |

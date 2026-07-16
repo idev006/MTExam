@@ -18,6 +18,12 @@ def record_audit(
     subject_id: UUID | None = None,
     metadata: dict[str, object] | None = None,
 ) -> AuditLog:
-    event = AuditLog(actor_person_id=actor_person_id, event_type=event_type, subject_type=subject_type, subject_id=subject_id, metadata_text=json.dumps(metadata or {}, ensure_ascii=False))
+    event = AuditLog(
+        actor_person_id=actor_person_id,
+        event_type=event_type,
+        subject_type=subject_type,
+        subject_id=subject_id,
+        metadata_text=json.dumps(metadata or {}, ensure_ascii=False),
+    )
     db.add(event)
     return event

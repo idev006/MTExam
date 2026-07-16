@@ -108,12 +108,23 @@ def import_snapshot(
     return _apply_records(db, parsed.records, payload.filename, _account.person_id, parsed.errors)
 
 
-def _apply_records(db: Session, records: list, filename: str, actor_person_id, errors: list, batch: PersonnelImportBatch | None = None) -> ImportResponse:
+def _apply_records(
+    db: Session,
+    records: list,
+    filename: str,
+    actor_person_id,
+    errors: list,
+    batch: PersonnelImportBatch | None = None,
+) -> ImportResponse:
     incoming = {record.emp_cid: record for record in records}
     current = {row.emp_cid: row for row in db.scalars(select(Employee))}
     if batch is not None and batch.rollback_snapshot_text is None:
         fields = list(EmployeeImportRecord.__dataclass_fields__)
-        batch.rollback_snapshot_text = json.dumps({cid: {field: getattr(row, field) for field in fields} for cid, row in current.items()}, ensure_ascii=False, default=str)
+        batch.rollback_snapshot_text = json.dumps(
+            {cid: {field: getattr(row, field) for field in fields} for cid, row in current.items()},
+            ensure_ascii=False,
+            default=str,
+        )
     added = changed = 0
     for cid, record in incoming.items():
         row = current.get(cid)
@@ -135,7 +146,13 @@ def _apply_records(db: Session, records: list, filename: str, actor_person_id, e
             row.emp_status = ActiveStatus.INACTIVE
             missing += 1
     db.commit()
-    record_audit(db, actor_person_id=actor_person_id, event_type="personnel.import", subject_type="employee_snapshot", metadata={"filename": filename, "added": added, "changed": changed, "missing": missing})
+    record_audit(
+        db,
+        actor_person_id=actor_person_id,
+        event_type="personnel.import",
+        subject_type="employee_snapshot",
+        metadata={"filename": filename, "added": added, "changed": changed, "missing": missing},
+    )
     db.commit()
     return ImportResponse(
         filename=filename,
@@ -160,13 +177,43 @@ def preview_snapshot(
         parsed = parse_employee_csv(payload.content.encode("utf-8-sig"))
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
-    batch = PersonnelImportBatch(filename=payload.filename, file_checksum=__import__("hashlib").sha256(payload.content.encode()).hexdigest(), uploaded_by=account.person_id, status="ready" if parsed.is_valid else "validation_failed", total_rows=len(parsed.records) + len(parsed.errors), valid_rows=len(parsed.records), invalid_rows=len(parsed.errors))
+    batch = PersonnelImportBatch(
+        filename=payload.filename,
+        file_checksum=__import__("hashlib").sha256(payload.content.encode()).hexdigest(),
+        uploaded_by=account.person_id,
+        status="ready" if parsed.is_valid else "validation_failed",
+        total_rows=len(parsed.records) + len(parsed.errors),
+        valid_rows=len(parsed.records),
+        invalid_rows=len(parsed.errors),
+    )
     db.add(batch)
     db.flush()
     for index, record in enumerate(parsed.records, start=2):
-        db.add(PersonnelImportRow(batch_id=batch.id, row_number=index, raw_data_text=json.dumps(asdict(record), ensure_ascii=False), normalized_identifier_hash=__import__("hashlib").sha256(record.emp_cid.encode()).hexdigest(), validation_status="valid", action="pending"))
+        db.add(
+            PersonnelImportRow(
+                batch_id=batch.id,
+                row_number=index,
+                raw_data_text=json.dumps(asdict(record), ensure_ascii=False),
+                normalized_identifier_hash=__import__("hashlib")
+                .sha256(record.emp_cid.encode())
+                .hexdigest(),
+                validation_status="valid",
+                action="pending",
+            )
+        )
     db.commit()
-    record_audit(db, actor_person_id=account.person_id, event_type="personnel.import.preview", subject_type="personnel_import_batch", subject_id=batch.id, metadata={"filename": payload.filename, "valid_rows": len(parsed.records), "invalid_rows": len(parsed.errors)})
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="personnel.import.preview",
+        subject_type="personnel_import_batch",
+        subject_id=batch.id,
+        metadata={
+            "filename": payload.filename,
+            "valid_rows": len(parsed.records),
+            "invalid_rows": len(parsed.errors),
+        },
+    )
     db.commit()
     return ImportPreviewResponse(
         batch_id=str(batch.id),
@@ -200,18 +247,34 @@ def apply_snapshot(
         batch = db.get(PersonnelImportBatch, payload.batch_id)
         if batch is None or batch.status not in {"ready", "ready_with_warning"}:
             raise HTTPException(status_code=404, detail="Import batch is not ready")
-        rows = list(db.scalars(select(PersonnelImportRow).where(PersonnelImportRow.batch_id == batch.id).order_by(PersonnelImportRow.row_number)))
-        records = [EmployeeImportRecord(**json.loads(row.raw_data_text)) for row in rows if row.validation_status == "valid"]
+        rows = list(
+            db.scalars(
+                select(PersonnelImportRow)
+                .where(PersonnelImportRow.batch_id == batch.id)
+                .order_by(PersonnelImportRow.row_number)
+            )
+        )
+        records = [
+            EmployeeImportRecord(**json.loads(row.raw_data_text))
+            for row in rows
+            if row.validation_status == "valid"
+        ]
         result = _apply_records(db, records, batch.filename, account.person_id, [], batch)
         batch.status = "applied"
         batch.applied_at = __import__("backend.app.db.base", fromlist=["utc_now"]).utc_now()
-        batch.added_count, batch.changed_count, batch.missing_count = result.added_count, result.changed_count, result.missing_count
+        batch.added_count, batch.changed_count, batch.missing_count = (
+            result.added_count,
+            result.changed_count,
+            result.missing_count,
+        )
         db.commit()
         result.batch_id = str(batch.id)
         return result
     if not payload.filename or not payload.content:
         raise HTTPException(status_code=422, detail="batch_id or filename/content is required")
-    return import_snapshot(ImportRequest(filename=payload.filename, content=payload.content), db, account)
+    return import_snapshot(
+        ImportRequest(filename=payload.filename, content=payload.content), db, account
+    )
 
 
 @router.post("/import/{batch_id}/rollback", response_model=ImportResponse)
@@ -222,7 +285,10 @@ def rollback_snapshot(
 ) -> ImportResponse:
     batch = db.get(PersonnelImportBatch, batch_id)
     if batch is None or batch.status != "applied" or not batch.rollback_snapshot_text:
-        raise HTTPException(status_code=409, detail="Only an applied batch with a rollback snapshot can be rolled back")
+        raise HTTPException(
+            status_code=409,
+            detail="Only an applied batch with a rollback snapshot can be rolled back",
+        )
     snapshot = json.loads(batch.rollback_snapshot_text)
     current = {row.emp_cid: row for row in db.scalars(select(Employee))}
     fields = list(EmployeeImportRecord.__dataclass_fields__)
@@ -235,6 +301,23 @@ def rollback_snapshot(
             setattr(row, field, values.get(field))
         db.add(row)
     batch.status = "rolled_back"
-    record_audit(db, actor_person_id=account.person_id, event_type="personnel.import.rollback", subject_type="personnel_import_batch", subject_id=batch.id, metadata={"filename": batch.filename})
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="personnel.import.rollback",
+        subject_type="personnel_import_batch",
+        subject_id=batch.id,
+        metadata={"filename": batch.filename},
+    )
     db.commit()
-    return ImportResponse(batch_id=str(batch.id), filename=batch.filename, status="rolled_back", total_rows=len(snapshot), valid_rows=len(snapshot), invalid_rows=0, added_count=0, changed_count=0, missing_count=0)
+    return ImportResponse(
+        batch_id=str(batch.id),
+        filename=batch.filename,
+        status="rolled_back",
+        total_rows=len(snapshot),
+        valid_rows=len(snapshot),
+        invalid_rows=0,
+        added_count=0,
+        changed_count=0,
+        missing_count=0,
+    )

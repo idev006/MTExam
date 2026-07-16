@@ -55,3 +55,18 @@ export async function apiRequest<T>(path: string, method: "POST" | "PUT" | "PATC
   }
   return (await response.json()) as T;
 }
+
+export async function apiDownload(path: string): Promise<void> {
+  const response = await fetch(API_BASE_URL + path, { credentials: "include" });
+  if (!response.ok) {
+    const payload = (await response.json()) as ApiErrorResponse;
+    throw new ApiClientError(payload.error?.message ?? "Download failed.", payload.error?.code ?? "HTTP_ERROR", payload.error?.correlation_id ?? "", response.status);
+  }
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition") ?? "";
+  const filename = disposition.match(/filename="?([^";]+)"?/)?.[1] ?? "mtexam-report";
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url; link.download = filename; link.click();
+  URL.revokeObjectURL(url);
+}

@@ -5,7 +5,6 @@ import SettingsView from "@/views/SettingsView.vue";
 import PracticeExamView from "@/views/PracticeExamView.vue";
 import LoginView from "@/views/LoginView.vue";
 import { useAuth } from "@/stores/auth";
-import ReportsView from "@/views/ReportsView.vue";
 import UserAdminView from "@/views/UserAdminView.vue";
 import AuthoringView from "@/views/AuthoringView.vue";
 import PaperBuilderView from "@/views/PaperBuilderView.vue";
@@ -43,8 +42,8 @@ export const router = createRouter({
     {
       path: "/reports",
       name: "reports",
-      component: ReportsView,
-      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer", "division_admin", "bureau_admin", "station_admin"] },
+      component: () => import("@/views/ReportsView.vue"),
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer", "division_admin", "bureau_admin", "station_admin", "exam_author", "examinee"] },
     },
     {
       path: "/login",

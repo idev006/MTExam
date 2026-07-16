@@ -35,6 +35,7 @@ class ExamPaper(Base):
     pool_criteria_text: Mapped[str | None] = mapped_column(Text)
     variant_count: Mapped[int] = mapped_column(Integer, default=1)
     desired_question_count: Mapped[int] = mapped_column(Integer, default=1)
+    passing_percentage: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
     status: Mapped[str] = mapped_column(String(30), default=PaperStatus.DRAFT, index=True)
     org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"), index=True)
     created_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("persons.id"))
@@ -49,6 +50,7 @@ class ExamPaperOrgUnit(Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     exam_paper_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("exam_papers.id"), index=True)
     org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"), index=True)
+    eligible_count: Mapped[int | None] = mapped_column(Integer)
 
 
 class ExamPaperQuestion(Base):
@@ -147,6 +149,9 @@ class ExamSession(Base):
     exam_variant_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("exam_variants.id"))
     examinee_snapshot_text: Mapped[str] = mapped_column(Text)
     org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"), index=True)
+    eligibility_org_unit_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("org_units.id"), index=True
+    )
     started_at: Mapped[datetime] = mapped_column(DateTime)
     ends_at: Mapped[datetime] = mapped_column(DateTime)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime)

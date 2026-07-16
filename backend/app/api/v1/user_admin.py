@@ -57,7 +57,16 @@ def list_users(
     _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
 ) -> list[UserResponse]:
     rows = db.scalars(select(UserAccount).order_by(UserAccount.username_normalized))
-    return [UserResponse(id=row.id, username=row.username_normalized, full_name=db.get(Person, row.person_id).full_name, role=UserRole(row.role), status=row.status) for row in rows]
+    return [
+        UserResponse(
+            id=row.id,
+            username=row.username_normalized,
+            full_name=db.get(Person, row.person_id).full_name,
+            role=UserRole(row.role),
+            status=row.status,
+        )
+        for row in rows
+    ]
 
 
 @router.post("", response_model=UserResponse, status_code=201)
@@ -69,15 +78,38 @@ def create_user(
     username = payload.username.strip().lower()
     if db.scalar(select(UserAccount).where(UserAccount.username_normalized == username)):
         raise HTTPException(status_code=409, detail="Username already exists")
-    person = Person(identifier_hash=f"account-{username}", full_name=payload.full_name, status=ActiveStatus.ACTIVE)
+    person = Person(
+        identifier_hash=f"account-{username}",
+        full_name=payload.full_name,
+        status=ActiveStatus.ACTIVE,
+    )
     db.add(person)
     db.flush()
-    account = UserAccount(person_id=person.id, username_normalized=username, password_hash=hash_password(payload.password), role=payload.role, status=ActiveStatus.ACTIVE)
+    account = UserAccount(
+        person_id=person.id,
+        username_normalized=username,
+        password_hash=hash_password(payload.password),
+        role=payload.role,
+        status=ActiveStatus.ACTIVE,
+    )
     db.add(account)
-    record_audit(db, actor_person_id=_account.person_id, event_type="user.create", subject_type="user_account", subject_id=account.id, metadata={"username": username, "role": payload.role.value})
+    record_audit(
+        db,
+        actor_person_id=_account.person_id,
+        event_type="user.create",
+        subject_type="user_account",
+        subject_id=account.id,
+        metadata={"username": username, "role": payload.role.value},
+    )
     db.commit()
     db.refresh(account)
-    return UserResponse(id=account.id, username=username, full_name=person.full_name, role=payload.role, status=account.status)
+    return UserResponse(
+        id=account.id,
+        username=username,
+        full_name=person.full_name,
+        role=payload.role,
+        status=account.status,
+    )
 
 
 @router.patch("/{user_id}", response_model=UserResponse)
@@ -123,10 +155,19 @@ def update_user(
         event_type="user.update",
         subject_type="user_account",
         subject_id=target.id,
-        metadata={"before": before, "after": {"role": target.role, "status": target.status, "full_name": person.full_name}},
+        metadata={
+            "before": before,
+            "after": {"role": target.role, "status": target.status, "full_name": person.full_name},
+        },
     )
     db.commit()
-    return UserResponse(id=target.id, username=target.username_normalized, full_name=person.full_name, role=UserRole(target.role), status=target.status)
+    return UserResponse(
+        id=target.id,
+        username=target.username_normalized,
+        full_name=person.full_name,
+        role=UserRole(target.role),
+        status=target.status,
+    )
 
 
 @router.post("/{user_id}/deactivate", response_model=UserResponse)
@@ -150,9 +191,21 @@ def deactivate_user(
     ):
         session.revoked_at = utc_now()
         session.revoke_reason = "account_deactivated"
-    record_audit(db, actor_person_id=_account.person_id, event_type="user.deactivate", subject_type="user_account", subject_id=account.id)
+    record_audit(
+        db,
+        actor_person_id=_account.person_id,
+        event_type="user.deactivate",
+        subject_type="user_account",
+        subject_id=account.id,
+    )
     db.commit()
-    return UserResponse(id=account.id, username=account.username_normalized, full_name=person.full_name if person else "", role=UserRole(account.role), status=account.status)
+    return UserResponse(
+        id=account.id,
+        username=account.username_normalized,
+        full_name=person.full_name if person else "",
+        role=UserRole(account.role),
+        status=account.status,
+    )
 
 
 @router.get("/{user_id}/scope", response_model=ScopeAssignmentResponse)
@@ -164,7 +217,14 @@ def get_user_scope(
     target = db.get(UserAccount, user_id)
     if target is None:
         raise HTTPException(status_code=404, detail="User not found")
-    ids = list(db.scalars(select(PersonUnitAssignment.org_unit_id).where(PersonUnitAssignment.person_id == target.person_id, PersonUnitAssignment.effective_to.is_(None))))
+    ids = list(
+        db.scalars(
+            select(PersonUnitAssignment.org_unit_id).where(
+                PersonUnitAssignment.person_id == target.person_id,
+                PersonUnitAssignment.effective_to.is_(None),
+            )
+        )
+    )
     return ScopeAssignmentResponse(user_id=target.id, org_unit_ids=ids)
 
 
@@ -180,14 +240,34 @@ def replace_user_scope(
         raise HTTPException(status_code=404, detail="User not found")
     unique_ids = list(dict.fromkeys(payload.org_unit_ids))
     if unique_ids:
-        active_count = db.scalar(select(func.count()).select_from(OrgUnit).where(OrgUnit.id.in_(unique_ids), OrgUnit.status == ActiveStatus.ACTIVE))
+        active_count = db.scalar(
+            select(func.count())
+            .select_from(OrgUnit)
+            .where(OrgUnit.id.in_(unique_ids), OrgUnit.status == ActiveStatus.ACTIVE)
+        )
         if active_count != len(unique_ids):
             raise HTTPException(status_code=422, detail="All scope organizations must be active")
     today = utc_now().date()
-    for assignment in db.scalars(select(PersonUnitAssignment).where(PersonUnitAssignment.person_id == target.person_id, PersonUnitAssignment.effective_to.is_(None))):
+    for assignment in db.scalars(
+        select(PersonUnitAssignment).where(
+            PersonUnitAssignment.person_id == target.person_id,
+            PersonUnitAssignment.effective_to.is_(None),
+        )
+    ):
         assignment.effective_to = today
     for org_unit_id in unique_ids:
-        db.add(PersonUnitAssignment(person_id=target.person_id, org_unit_id=org_unit_id, effective_from=today))
-    record_audit(db, actor_person_id=account.person_id, event_type="user.scope.replace", subject_type="user_account", subject_id=target.id, metadata={"org_unit_ids": [str(value) for value in unique_ids]})
+        db.add(
+            PersonUnitAssignment(
+                person_id=target.person_id, org_unit_id=org_unit_id, effective_from=today
+            )
+        )
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="user.scope.replace",
+        subject_type="user_account",
+        subject_id=target.id,
+        metadata={"org_unit_ids": [str(value) for value in unique_ids]},
+    )
     db.commit()
     return ScopeAssignmentResponse(user_id=target.id, org_unit_ids=unique_ids)

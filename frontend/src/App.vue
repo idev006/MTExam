@@ -13,7 +13,8 @@ const router = useRouter();
 const isLoginPage = computed(() => route.name === "login");
 const canTakeExam = computed(() => user.value?.role === "examinee" || user.value?.role === "super_admin");
 const canViewSettings = computed(() => user.value?.role === "super_admin");
-const canViewReports = computed(() => user.value?.role === "super_admin" || user.value?.role === "viewer");
+const canViewReports = computed(() => Boolean(user.value));
+const canViewAudit = computed(() => ["super_admin", "viewer", "division_admin", "bureau_admin", "station_admin"].includes(user.value?.role ?? ""));
 const canAuthor = computed(() => user.value?.role === "super_admin" || user.value?.role === "exam_author");
 const isSuperAdmin = computed(() => user.value?.role === "super_admin");
 const roleLabel = computed(() => user.value?.role ?? "ผู้เยี่ยมชม");
@@ -58,7 +59,7 @@ async function confirmLogout() {
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/authoring">คลังข้อสอบ</RouterLink>
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/papers">Exam Paper</RouterLink>
             <RouterLink v-if="canViewReports" class="btn btn-ghost btn-sm" active-class="btn-active" to="/reports">รายงาน</RouterLink>
-            <RouterLink v-if="canViewReports" class="btn btn-ghost btn-sm" active-class="btn-active" to="/audit">Audit</RouterLink>
+            <RouterLink v-if="canViewAudit" class="btn btn-ghost btn-sm" active-class="btn-active" to="/audit">Audit</RouterLink>
             <RouterLink v-if="isSuperAdmin" class="btn btn-ghost btn-sm" active-class="btn-active" to="/admin/users">ผู้ใช้</RouterLink>
             <RouterLink v-if="canViewSettings" class="btn btn-ghost btn-sm" active-class="btn-active" to="/settings">ตั้งค่าระบบ</RouterLink>
           </nav>
@@ -78,7 +79,7 @@ async function confirmLogout() {
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/authoring" @click="mobileMenuOpen = false">คลังข้อสอบ</RouterLink>
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/papers" @click="mobileMenuOpen = false">Exam Paper</RouterLink>
           <RouterLink v-if="canViewReports" class="btn btn-ghost justify-start" to="/reports" @click="mobileMenuOpen = false">รายงาน</RouterLink>
-          <RouterLink v-if="canViewReports" class="btn btn-ghost justify-start" to="/audit" @click="mobileMenuOpen = false">Audit</RouterLink>
+          <RouterLink v-if="canViewAudit" class="btn btn-ghost justify-start" to="/audit" @click="mobileMenuOpen = false">Audit</RouterLink>
           <RouterLink v-if="isSuperAdmin" class="btn btn-ghost justify-start" to="/admin/users" @click="mobileMenuOpen = false">ผู้ใช้</RouterLink>
           <RouterLink v-if="canViewSettings" class="btn btn-ghost justify-start" to="/settings" @click="mobileMenuOpen = false">ตั้งค่าระบบ</RouterLink>
           <button v-if="user" class="btn btn-outline mt-2 justify-start sm:hidden" type="button" @click="showLogoutModal = true">ออกจากระบบ</button>

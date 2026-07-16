@@ -1,4 +1,5 @@
 """store explanation in immutable exam question snapshots"""
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa

@@ -1,4 +1,5 @@
 """store explanation for educational question results"""
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa

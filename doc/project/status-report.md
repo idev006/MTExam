@@ -10,8 +10,8 @@ report exports now have implementation evidence; external production gates remai
 
 ## Completed
 
-Current verification evidence supersedes older baseline counts below: full pytest currently
-passes 58 tests, Ruff passes, and Vue type-check/build pass. Historical commit and CI entries
+Current verification evidence supersedes older baseline counts below: full pytest, Ruff,
+Vue component tests, type-check and build are the active gate. Historical commit and CI entries
 are retained as audit history.
 
 - Master Blueprint v4.0 aligned with current decisions
@@ -65,6 +65,12 @@ authenticated load remain release-gate work.
 The real exam session API and Vue exam lobby/session wiring are now implemented for start/resume,
 durable answer upsert, server-side timeout and idempotent submit; bureau eligibility and end-to-end
 acceptance remain to be verified.
+
+Reporting implementation now includes all seven roles, Exam Creation pass percentage and per-unit
+quota, transaction-checked exam start capacity, shared-filter dashboard/export APIs, ECharts,
+responsive filter/detail drawers and audited person/export reads. Automated verification is linked
+from the traceability matrix. Local browser checks passed at 360/768/1366/1920 px without overflow
+or console errors; production device sign-off and production load remain open.
 
 - MVP vertical-slice human review and acceptance
 - Production-readiness verification against `release-readiness-checklist.md`

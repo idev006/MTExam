@@ -1,8 +1,8 @@
 # Reporting UI/UX and Implementation Plan
 
-**Version:** 1.0  
+**Version:** 1.1
 **Updated:** 2026-07-16  
-**Status:** Ready for implementation
+**Status:** Implemented — automated verification; device/human acceptance pending
 
 เอกสารนี้กำหนด layout, UX, สิทธิ์ และแผนพัฒนารายงานของ MTExam โดยรายงานทุกชนิดต้องผูกกับ `Exam Creation` และบังคับ scope ที่ API เสมอ
 
@@ -94,3 +94,19 @@ sequenceDiagram
 - มี audit event สำหรับการ export และการดูข้อมูลรายบุคคล
 - เอกสาร, Kanban ticket, automated tests และ acceptance evidence เชื่อมโยงกัน
 
+## 8. Implemented API contract
+
+- `GET /reports/context` คืนตัวเลือกที่ผ่าน role และ organization scope เท่านั้น
+- `GET /reports/dashboard` ใช้ filter `subject_id`, `exam_paper_id`, `exam_window_id`,
+  `date_from`, `date_to`, `org_unit_id`, `page` และ `page_size`
+- `GET /reports/people/{session_id}`, `/reports/my-results` และ
+  `/reports/question-analytics` แยกตาม admin/author/examinee scope
+- `GET /reports/export?format=pdf|xlsx|csv` เรียก aggregation และ filter model เดียวกับ dashboard
+- Exam Creation บันทึก `passing_percentage` และ quota ต่อหน่วย; session บันทึกทั้งหน่วยจริง
+  และ quota unit snapshot โดย backend lock quota ก่อนเริ่มสอบ
+- การเลือกเก็บ quota เป็นจำนวนทำให้ `not_started` มีเฉพาะยอดรวม ไม่สามารถระบุรายชื่อผู้ไม่เข้าสอบ
+
+Automated evidence อยู่ที่ `tests/api/test_reporting_api.py`,
+`tests/unit/test_report_rules.py` และ frontend component tests ใต้ `frontend/src`.
+Local browser acceptance ผ่านที่ 360, 768, 1366 และ 1920 px โดยไม่มี horizontal overflow,
+mobile drawer และ desktop sidebar ทำงานจริง, ECharts มี canvas สูง 288 px และไม่มี console error.

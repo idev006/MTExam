@@ -1,4 +1,5 @@
 """add persistent failed-login throttling"""
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa

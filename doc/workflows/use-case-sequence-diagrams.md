@@ -329,3 +329,50 @@ sequenceDiagram
     API-->>UI: Report data without secrets
     UI-->>V: Render table/chart/export action
 ```
+
+## UC-REPORT-03 — Filter, drill down and export
+
+```mermaid
+sequenceDiagram
+    actor U as Reporting user
+    participant UI as Vue Reports UI
+    participant API as Reporting API
+    participant Scope as Role/Organization Scope
+    participant DB as PostgreSQL
+    U->>UI: Select subject, creation, window, date and organization
+    UI->>API: GET /reports/dashboard with shared filters
+    API->>Scope: Resolve visible papers and descendant organizations
+    Scope-->>API: Allowed paper/org IDs
+    API->>DB: Aggregate quota, sessions, scores and people in scope
+    DB-->>API: KPI, charts, breakdown and page
+    API-->>UI: Dashboard + generated_at
+    U->>UI: Open person detail
+    UI->>API: GET /reports/people/{session_id}
+    API->>Scope: Re-check session scope
+    API->>DB: Read immutable result and write audit event
+    API-->>UI: Answers, correctness and rationale
+    U->>UI: Export PDF/XLSX/CSV
+    UI->>API: GET /reports/export with identical filters
+    API->>DB: Repeat scoped aggregation and write export audit
+    API-->>U: Filtered file
+```
+
+## UC-REPORT-04 — Reserve organization quota at exam start
+
+```mermaid
+sequenceDiagram
+    actor X as Examinee
+    participant API as Exam Session API
+    participant Scope as Assignment/Quota Resolver
+    participant DB as PostgreSQL
+    X->>API: POST /exam-sessions/windows/{id}/start
+    API->>Scope: Resolve active actual unit to configured quota unit
+    Scope->>DB: SELECT quota FOR UPDATE
+    Scope->>DB: Count sessions for window and quota unit
+    alt Capacity available
+        API->>DB: Create session with actual and quota organization snapshots
+        API-->>X: Session started
+    else Quota full
+        API-->>X: 409 Organization exam quota is full
+    end
+```

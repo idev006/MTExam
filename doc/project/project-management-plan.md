@@ -557,3 +557,11 @@ verification and updated API/UI documentation.
 | Operations/Security | TBD | Pending | |
 
 เมื่อยังไม่ลงนาม เอกสารนี้ใช้เป็น working baseline และ open decisions/defaults ตาม Decision Register
+
+## 29. Reporting implementation cycle evidence
+
+The REPORT-UX-01 through REPORT-QA-08 implementation adds an Exam Creation pass percentage,
+organization quota enforcement, role-scoped report APIs, responsive ECharts dashboards, audited
+person drill-down and PDF/XLSX/CSV exports using one filter contract. Automated API, permission,
+domain and frontend component tests are required before `Verify`; human four-device acceptance,
+production load threshold and security sign-off are still required before `Done`.

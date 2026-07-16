@@ -42,9 +42,12 @@ def test_pdpa_practice_bank_is_available_for_examinee_preview(client: TestClient
 
 
 def test_exam_creation_subjects_are_loaded_from_database(client: TestClient) -> None:
-    assert client.post(
-        "/api/v1/auth/login", json={"username": "author", "password": "author1234"}
-    ).status_code == 200
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "author", "password": "author1234"}
+        ).status_code
+        == 200
+    )
     response = client.get("/api/v1/question-banks/subjects")
     assert response.status_code == 200
     created = client.post(
@@ -57,9 +60,12 @@ def test_exam_creation_subjects_are_loaded_from_database(client: TestClient) -> 
 
 
 def test_practice_session_recovers_answers_and_submit_is_idempotent(client: TestClient) -> None:
-    assert client.post(
-        "/api/v1/auth/login", json={"username": "demo", "password": "demo1234"}
-    ).status_code == 200
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "demo", "password": "demo1234"}
+        ).status_code
+        == 200
+    )
     created = client.post("/api/v1/practice/sessions").json()
     session_id = created["session_id"]
     saved = client.put(
@@ -70,10 +76,13 @@ def test_practice_session_recovers_answers_and_submit_is_idempotent(client: Test
     resumed = client.get(f"/api/v1/practice/sessions/{session_id}").json()
     assert resumed["answers"] == {"0": 1}
     for question_index in range(1, 50):
-        assert client.put(
-            f"/api/v1/practice/sessions/{session_id}/answers",
-            json={"question_index": question_index, "choice_index": 0},
-        ).status_code == 200
+        assert (
+            client.put(
+                f"/api/v1/practice/sessions/{session_id}/answers",
+                json={"question_index": question_index, "choice_index": 0},
+            ).status_code
+            == 200
+        )
     submitted = client.post(f"/api/v1/practice/sessions/{session_id}/submit")
     assert submitted.status_code == 200
     repeated = client.post(f"/api/v1/practice/sessions/{session_id}/submit")
@@ -105,9 +114,12 @@ def test_built_frontend_is_served_by_application(
 
 
 def test_superadmin_summary_xlsx_is_a_valid_workbook(client: TestClient) -> None:
-    assert client.post(
-        "/api/v1/auth/login", json={"username": "superadmin", "password": "super1234"}
-    ).status_code == 200
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "superadmin", "password": "super1234"}
+        ).status_code
+        == 200
+    )
     response = client.get("/api/v1/reports/summary.xlsx")
     assert response.status_code == 200
     assert response.headers["content-type"].startswith(
@@ -135,15 +147,11 @@ def test_permission_matrix_denies_roles_at_api_boundary(client: TestClient) -> N
         ("viewer", "viewer1234", "/api/v1/practice/sessions", 403),
     ]
     for username, password, path, expected in cases:
-        login = client.post(
-            "/api/v1/auth/login", json={"username": username, "password": password}
-        )
+        login = client.post("/api/v1/auth/login", json={"username": username, "password": password})
         assert login.status_code == 200
         response = (
             client.get(path)
-            if path.endswith("question-banks")
-            or path.endswith("users")
-            or path.endswith("summary")
+            if path.endswith("question-banks") or path.endswith("users") or path.endswith("summary")
             else client.post(path)
         )
         assert response.status_code == expected

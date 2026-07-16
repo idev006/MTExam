@@ -76,23 +76,40 @@ class QuestionResponse(BaseModel):
 @router.get("/subjects", response_model=list[SubjectResponse])
 def list_subjects(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    _account: Annotated[
+        UserAccount,
+        Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN, UserRole.VIEWER)),
+    ],
 ) -> list[SubjectResponse]:
-    return [SubjectResponse.model_validate(row, from_attributes=True) for row in db.scalars(select(Subject).order_by(Subject.name))]
+    return [
+        SubjectResponse.model_validate(row, from_attributes=True)
+        for row in db.scalars(select(Subject).order_by(Subject.name))
+    ]
 
 
 @router.post("/subjects", response_model=SubjectResponse, status_code=201)
 def create_subject(
     payload: SubjectCreate,
     db: Annotated[Session, Depends(get_db_session)],
-    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+    account: Annotated[
+        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+    ],
 ) -> SubjectResponse:
     if db.scalar(select(Subject).where(Subject.code == payload.code.strip())):
         raise HTTPException(status_code=409, detail="Subject code already exists")
-    subject = Subject(code=payload.code.strip(), name=payload.name.strip(), description=payload.description)
+    subject = Subject(
+        code=payload.code.strip(), name=payload.name.strip(), description=payload.description
+    )
     db.add(subject)
     db.flush()
-    record_audit(db, actor_person_id=account.person_id, event_type="subject.create", subject_type="subject", subject_id=subject.id, metadata={"code": subject.code})
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="subject.create",
+        subject_type="subject",
+        subject_id=subject.id,
+        metadata={"code": subject.code},
+    )
     db.commit()
     db.refresh(subject)
     return SubjectResponse.model_validate(subject, from_attributes=True)
@@ -109,10 +126,7 @@ def list_banks(
     allowed = active_org_unit_ids(db, account)
     rows = db.scalars(
         select(QuestionBank)
-        .where(
-            QuestionBank.is_shared.is_(True)
-            | QuestionBank.owner_org_unit_id.in_(allowed)
-        )
+        .where(QuestionBank.is_shared.is_(True) | QuestionBank.owner_org_unit_id.in_(allowed))
         .order_by(QuestionBank.created_at.desc())
     )
     return [BankResponse.model_validate(row, from_attributes=True) for row in rows]
@@ -121,13 +135,37 @@ def list_banks(
 @router.get("/questions", response_model=list[QuestionResponse])
 def list_questions_for_selection(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+    _account: Annotated[
+        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+    ],
     subject_id: UUID | None = None,
 ) -> list[QuestionResponse]:
-    query = select(Question, QuestionBank).join(QuestionBank, Question.bank_id == QuestionBank.id).where(Question.status == ContentStatus.DRAFT)
+    query = (
+        select(Question, QuestionBank)
+        .join(QuestionBank, Question.bank_id == QuestionBank.id)
+        .where(Question.status == ContentStatus.DRAFT)
+    )
     if subject_id is not None:
         query = query.where(QuestionBank.subject_id == subject_id)
-    return [QuestionResponse(id=question.id, content=question.content, difficulty=question.difficulty, status=question.status, bank_id=bank.id, bank_name=bank.name, choices=[{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order))]) for question, bank in db.execute(query).all()]
+    return [
+        QuestionResponse(
+            id=question.id,
+            content=question.content,
+            difficulty=question.difficulty,
+            status=question.status,
+            bank_id=bank.id,
+            bank_name=bank.name,
+            choices=[
+                {"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct}
+                for choice in db.scalars(
+                    select(QuestionChoice)
+                    .where(QuestionChoice.question_id == question.id)
+                    .order_by(QuestionChoice.base_order)
+                )
+            ],
+        )
+        for question, bank in db.execute(query).all()
+    ]
 
 
 @router.post("", response_model=BankResponse, status_code=201)
@@ -147,7 +185,14 @@ def create_bank(
     )
     db.add(bank)
     db.commit()
-    record_audit(db, actor_person_id=account.person_id, event_type="question_bank.create", subject_type="question_bank", subject_id=bank.id, metadata={"name": payload.name})
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="question_bank.create",
+        subject_type="question_bank",
+        subject_id=bank.id,
+        metadata={"name": payload.name},
+    )
     db.commit()
     db.refresh(bank)
     return BankResponse.model_validate(bank, from_attributes=True)
@@ -165,7 +210,12 @@ def create_question(
         raise HTTPException(status_code=404, detail="Draft question bank not found")
     if sum(choice.is_correct for choice in payload.choices) != 1:
         raise HTTPException(status_code=422, detail="Exactly one choice must be correct")
-    question = Question(bank_id=bank.id, content=payload.content, explanation=payload.explanation, difficulty=payload.difficulty)
+    question = Question(
+        bank_id=bank.id,
+        content=payload.content,
+        explanation=payload.explanation,
+        difficulty=payload.difficulty,
+    )
     db.add(question)
     db.flush()
     db.add_all(
@@ -180,7 +230,13 @@ def create_question(
         ]
     )
     db.commit()
-    record_audit(db, actor_person_id=account.person_id, event_type="question.create", subject_type="question", subject_id=question.id)
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="question.create",
+        subject_type="question",
+        subject_id=question.id,
+    )
     db.commit()
     return {"id": str(question.id), "status": "draft"}
 
@@ -189,12 +245,34 @@ def create_question(
 def list_questions(
     bank_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+    _account: Annotated[
+        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+    ],
 ) -> list[QuestionResponse]:
     if db.get(QuestionBank, bank_id) is None:
         raise HTTPException(status_code=404, detail="Question bank not found")
-    questions = db.scalars(select(Question).where(Question.bank_id == bank_id).order_by(Question.created_at))
-    return [QuestionResponse(id=question.id, content=question.content, difficulty=question.difficulty, status=question.status, bank_id=question.bank_id, bank_name=db.get(QuestionBank, question.bank_id).name, choices=[{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order))]) for question in questions]
+    questions = db.scalars(
+        select(Question).where(Question.bank_id == bank_id).order_by(Question.created_at)
+    )
+    return [
+        QuestionResponse(
+            id=question.id,
+            content=question.content,
+            difficulty=question.difficulty,
+            status=question.status,
+            bank_id=question.bank_id,
+            bank_name=db.get(QuestionBank, question.bank_id).name,
+            choices=[
+                {"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct}
+                for choice in db.scalars(
+                    select(QuestionChoice)
+                    .where(QuestionChoice.question_id == question.id)
+                    .order_by(QuestionChoice.base_order)
+                )
+            ],
+        )
+        for question in questions
+    ]
 
 
 @router.post("/{bank_id}/publish", response_model=BankResponse)
@@ -207,11 +285,24 @@ def publish_bank(
     if bank is None:
         raise HTTPException(status_code=404, detail="Question bank not found")
     questions = list(db.scalars(select(Question).where(Question.bank_id == bank.id)))
-    if not questions or any(not list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id))) for question in questions):
-        raise HTTPException(status_code=409, detail="Every published bank must contain questions with choices")
+    if not questions or any(
+        not list(
+            db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id))
+        )
+        for question in questions
+    ):
+        raise HTTPException(
+            status_code=409, detail="Every published bank must contain questions with choices"
+        )
     bank.status = ContentStatus.ACTIVE
     db.commit()
-    record_audit(db, actor_person_id=account.person_id, event_type="question_bank.publish", subject_type="question_bank", subject_id=bank.id)
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="question_bank.publish",
+        subject_type="question_bank",
+        subject_id=bank.id,
+    )
     db.commit()
     db.refresh(bank)
     return BankResponse.model_validate(bank, from_attributes=True)
@@ -225,16 +316,40 @@ def update_question(
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
 ) -> dict[str, str]:
-    question = db.scalar(select(Question).where(Question.id == question_id, Question.bank_id == bank_id))
+    question = db.scalar(
+        select(Question).where(Question.id == question_id, Question.bank_id == bank_id)
+    )
     if question is None or question.status != ContentStatus.DRAFT:
         raise HTTPException(status_code=404, detail="Draft question not found")
     if sum(choice.is_correct for choice in payload.choices) != 1:
         raise HTTPException(status_code=422, detail="Exactly one choice must be correct")
-    question.content, question.explanation, question.difficulty = payload.content, payload.explanation, payload.difficulty
-    for choice in list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id))):
+    question.content, question.explanation, question.difficulty = (
+        payload.content,
+        payload.explanation,
+        payload.difficulty,
+    )
+    for choice in list(
+        db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id))
+    ):
         db.delete(choice)
     db.flush()
-    db.add_all([QuestionChoice(question_id=question.id, content=choice.content, is_correct=choice.is_correct, base_order=index) for index, choice in enumerate(payload.choices)])
-    record_audit(db, actor_person_id=account.person_id, event_type="question.update", subject_type="question", subject_id=question.id)
+    db.add_all(
+        [
+            QuestionChoice(
+                question_id=question.id,
+                content=choice.content,
+                is_correct=choice.is_correct,
+                base_order=index,
+            )
+            for index, choice in enumerate(payload.choices)
+        ]
+    )
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="question.update",
+        subject_type="question",
+        subject_id=question.id,
+    )
     db.commit()
     return {"id": str(question.id), "status": "draft"}

@@ -30,6 +30,14 @@
 - PDF/Excel เป็น open decision และ ticket แยก
 - Export ต้องเคารพ permission/filter เดียวกับหน้าจอ
 
+### REPORT-005 — Exam Creation reporting policy
+
+- ผู้สร้างต้องกำหนดเกณฑ์ผ่านเป็นเปอร์เซ็นต์ 0–100 และ quota จำนวนผู้มีสิทธิ์รายหน่วยก่อน publish
+- หน่วยแม่และหน่วยลูกห้ามเป็น quota ซ้อนกันใน Exam Creation เดียวกัน
+- Backend lock quota row และปฏิเสธการเริ่มสอบเมื่อเต็ม
+- Session snapshot หน่วยจริงของผู้สอบและ quota unit แยกกัน
+- ข้อมูลเก่าที่ไม่มี policy แสดง `N/A` และห้ามสร้างค่าประมาณย้อนหลัง
+
 ### AUDIT-001 — Events
 
 บันทึกอย่างน้อย login, import, paper lifecycle, exam start, answer create/change, submit, timeout และ admin view result

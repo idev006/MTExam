@@ -49,10 +49,11 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | SCORE-003 | requirements/scoring.md | finalization service | TBD | Planned |
 | SCORE-004 | requirements/scoring.md | result API | TBD | Planned |
 | SCORE-005 | requirements/scoring.md | audit/results | TBD | Planned |
-| REPORT-001 | requirements/reporting.md | examinee result | TBD | Planned |
-| REPORT-002 | requirements/reporting.md | organization report | TBD | Planned |
-| REPORT-003 | requirements/reporting.md | report summary | TBD | Planned |
-| REPORT-004 | requirements/reporting.md | CSV export | TBD | Planned |
+| REPORT-001 | requirements/reporting.md | reports/my-results + people detail | tests/api/test_reporting_api.py | Verified automated |
+| REPORT-002 | requirements/reporting.md | reports/dashboard scoped organization aggregation | tests/api/test_reporting_api.py | Verified automated |
+| REPORT-003 | requirements/reporting.md | Exam Creation KPI/chart aggregation | tests/unit/test_report_rules.py; tests/api/test_reporting_api.py | Verified automated |
+| REPORT-004 | requirements/reporting.md | shared-filter PDF/XLSX/CSV export | tests/api/test_reporting_api.py; frontend reporting tests | Verified automated |
+| REPORT-005 | requirements/reporting.md | pass policy and quota enforcement | report rules tests; migration drift test | Verify; PostgreSQL concurrency acceptance pending |
 | AUDIT-001 | requirements/reporting.md | audit events | TBD | Planned |
 | AUDIT-002 | requirements/reporting.md | audit schema | TBD | Planned |
 | AUDIT-003 | requirements/reporting.md | audit authorization | TBD | Planned |
@@ -78,7 +79,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | Personnel import | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-ORG-01 | requirements/personnel-import.md; domain import POC |
 | Question/paper authoring | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-QBANK-01/UC-PAPER-01 | requirements/question-bank.md, exam-paper.md |
 | Durable examination | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-EXAM-01/02/03 | backend/app/api/v1/practice_exam.py; tests/api/test_system_api.py |
-| Reporting | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-REPORT-01 | requirements/reporting.md |
+| Reporting | use-cases/actor-use-case-catalog.md | workflows/use-case-sequence-diagrams.md — UC-REPORT-01/02/03/04 | backend/app/services/reporting.py; tests/api/test_reporting_api.py |
 
 ## Update Rules
 

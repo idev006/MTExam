@@ -192,12 +192,15 @@ def _seed_demo_exam_data(db) -> None:
                     emp_status="active",
                 )
             )
-    if db.scalar(
-        select(PersonUnitAssignment).where(
-            PersonUnitAssignment.person_id == demo.person_id,
-            PersonUnitAssignment.org_unit_id == bureau.id,
+    if (
+        db.scalar(
+            select(PersonUnitAssignment).where(
+                PersonUnitAssignment.person_id == demo.person_id,
+                PersonUnitAssignment.org_unit_id == bureau.id,
+            )
         )
-    ) is None:
+        is None
+    ):
         db.add(
             PersonUnitAssignment(
                 person_id=demo.person_id,
@@ -206,9 +209,7 @@ def _seed_demo_exam_data(db) -> None:
             )
         )
 
-    paper = db.scalar(
-        select(ExamPaper).where(ExamPaper.title == "PDPA Demo Exam - 10 Questions")
-    )
+    paper = db.scalar(select(ExamPaper).where(ExamPaper.title == "PDPA Demo Exam - 10 Questions"))
     if paper is None:
         paper = ExamPaper(
             subject_id=subject.id,
@@ -216,6 +217,7 @@ def _seed_demo_exam_data(db) -> None:
             question_selection_mode="fixed_set",
             variant_count=1,
             desired_question_count=10,
+            passing_percentage=Decimal("60"),
             status="published",
             org_unit_id=bureau.id,
             created_by=author.person_id,
@@ -242,8 +244,18 @@ def _seed_demo_exam_data(db) -> None:
                 for index, question in enumerate(questions)
             ]
         )
-        db.add(ExamPaperOrgUnit(exam_paper_id=paper.id, org_unit_id=bureau.id))
+        db.add(ExamPaperOrgUnit(exam_paper_id=paper.id, org_unit_id=bureau.id, eligible_count=10))
         db.flush()
+    elif paper.passing_percentage is None:
+        paper.passing_percentage = Decimal("60")
+        quota = db.scalar(
+            select(ExamPaperOrgUnit).where(
+                ExamPaperOrgUnit.exam_paper_id == paper.id,
+                ExamPaperOrgUnit.org_unit_id == bureau.id,
+            )
+        )
+        if quota is not None and quota.eligible_count is None:
+            quota.eligible_count = 10
 
     window = db.scalar(select(ExamWindow).where(ExamWindow.exam_paper_id == paper.id))
     if window is None:
@@ -262,15 +274,14 @@ def _seed_demo_exam_data(db) -> None:
         db.flush()
         db.add(ExamWindowScope(exam_window_id=window.id, org_unit_id=bureau.id))
 
-    if db.scalar(
+    existing_demo_session = db.scalar(
         select(ExamSession).where(
             ExamSession.exam_window_id == window.id,
             ExamSession.person_id == demo.person_id,
         )
-    ) is None:
-        variant = db.scalar(
-            select(ExamVariant).where(ExamVariant.exam_paper_id == paper.id)
-        )
+    )
+    if existing_demo_session is None:
+        variant = db.scalar(select(ExamVariant).where(ExamVariant.exam_paper_id == paper.id))
         if variant is None:
             variant = ExamVariant(
                 exam_paper_id=paper.id,
@@ -334,6 +345,7 @@ def _seed_demo_exam_data(db) -> None:
                 {"username": "demo", "display_name": "Demo Examinee"}
             ),
             org_unit_id=bureau.id,
+            eligibility_org_unit_id=bureau.id,
             started_at=now - timedelta(minutes=30),
             ends_at=now + timedelta(minutes=30),
             submitted_at=now - timedelta(minutes=5),
@@ -365,6 +377,8 @@ def _seed_demo_exam_data(db) -> None:
                     is_correct_cache=index < 7,
                 )
             )
+    elif existing_demo_session.eligibility_org_unit_id is None:
+        existing_demo_session.eligibility_org_unit_id = bureau.id
     db.commit()
 
 
@@ -500,9 +514,7 @@ def _seed_region6_sub_units(db) -> None:
             if station_parent_index >= len(station_parents):
                 continue
             current_parent = db.scalar(
-                select(OrgUnit).where(
-                    OrgUnit.code == station_parents[station_parent_index]
-                )
+                select(OrgUnit).where(OrgUnit.code == station_parents[station_parent_index])
             )
             station_count += 1
             if current_parent is not None:
@@ -524,9 +536,7 @@ def _seed_region6_sub_units(db) -> None:
                 current_parent = None
             continue
         if line in parent_names:
-            current_parent = db.scalar(
-                select(OrgUnit).where(OrgUnit.code == parent_names[line])
-            )
+            current_parent = db.scalar(select(OrgUnit).where(OrgUnit.code == parent_names[line]))
             child_index = 0
             continue
         if current_parent is None:

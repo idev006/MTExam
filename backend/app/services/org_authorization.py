@@ -1,4 +1,5 @@
 """Organization-scope authorization shared by content and exam endpoints."""
+
 from __future__ import annotations
 
 from datetime import date

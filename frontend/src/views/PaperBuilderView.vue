@@ -1,19 +1,120 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import AppAlert from "@/components/feedback/AppAlert.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import { apiGet, apiRequest } from "@/api/client";
+
 interface Subject { id: string; code: string; name: string }
 interface OrgUnit { id: string; name: string; level: string; status: string }
-interface Question { id: string; content: string; difficulty: string | null; bank_name: string; choices: { id: string; content: string; is_correct: boolean }[] }
-const subjects = ref<Subject[]>([]); const orgUnits = ref<OrgUnit[]>([]); const questions = ref<Question[]>([]); const selectedIds = ref<string[]>([]); const search = ref(""); const message = ref(""); const error = ref(""); const loading = ref(false);
-const form = ref({ title: "", org_unit_id: "", subject_id: "", desired_question_count: 10, variant_count: 1, allowed_org_unit_ids: [] as string[] });
-const filteredQuestions = computed(() => questions.value.filter((question) => !search.value || `${question.content} ${question.bank_name}`.toLowerCase().includes(search.value.toLowerCase())));
-const selectedCount = computed(() => selectedIds.value.length); const canSubmit = computed(() => Boolean(form.value.title && form.value.subject_id && form.value.org_unit_id && form.value.allowed_org_unit_ids.length && selectedCount.value >= form.value.desired_question_count));
-async function loadBase() { [subjects.value, orgUnits.value] = await Promise.all([apiGet<Subject[]>("/question-banks/subjects"), apiGet<OrgUnit[]>("/org-units")]); }
-async function loadQuestions() { if (!form.value.subject_id) { questions.value = []; return; } loading.value = true; try { questions.value = await apiGet<Question[]>(`/question-banks/questions?subject_id=${form.value.subject_id}`); selectedIds.value = []; } catch (e) { error.value = e instanceof Error ? e.message : "โหลดคำถามไม่สำเร็จ"; } finally { loading.value = false; } }
-async function create() { if (!canSubmit.value) return; error.value = ""; try { await apiRequest("/papers", "POST", { title: form.value.title, org_unit_id: form.value.org_unit_id, subject_id: form.value.subject_id, question_ids: selectedIds.value, desired_question_count: form.value.desired_question_count, variant_count: form.value.variant_count, allowed_org_unit_ids: form.value.allowed_org_unit_ids }); message.value = "สร้าง Exam Creation แล้ว"; } catch (e) { error.value = e instanceof Error ? e.message : "สร้าง Exam Creation ไม่สำเร็จ"; } }
-watch(() => form.value.subject_id, loadQuestions); onMounted(loadBase);
+interface Question { id: string; content: string; difficulty: string | null; bank_name: string }
+
+const subjects = ref<Subject[]>([]);
+const orgUnits = ref<OrgUnit[]>([]);
+const questions = ref<Question[]>([]);
+const selectedIds = ref<string[]>([]);
+const selectedOrgIds = ref<string[]>([]);
+const quotaCounts = reactive<Record<string, number>>({});
+const search = ref("");
+const message = ref("");
+const error = ref("");
+const loading = ref(false);
+const form = reactive({
+  title: "", org_unit_id: "", subject_id: "", desired_question_count: 10,
+  variant_count: 1, passing_percentage: 60,
+});
+
+const filteredQuestions = computed(() => questions.value.filter((question) =>
+  !search.value || `${question.content} ${question.bank_name}`.toLowerCase().includes(search.value.toLowerCase()),
+));
+const canSubmit = computed(() => Boolean(
+  form.title && form.subject_id && form.org_unit_id && selectedOrgIds.value.length
+  && selectedIds.value.length >= form.desired_question_count
+  && form.passing_percentage >= 0 && form.passing_percentage <= 100
+  && selectedOrgIds.value.every((id) => Number.isInteger(quotaCounts[id]) && quotaCounts[id] >= 0),
+));
+
+async function loadBase() {
+  [subjects.value, orgUnits.value] = await Promise.all([
+    apiGet<Subject[]>("/question-banks/subjects"), apiGet<OrgUnit[]>("/org-units"),
+  ]);
+}
+async function loadQuestions() {
+  if (!form.subject_id) { questions.value = []; return; }
+  loading.value = true;
+  try {
+    questions.value = await apiGet<Question[]>(`/question-banks/questions?subject_id=${form.subject_id}`);
+    selectedIds.value = [];
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : "โหลดคำถามไม่สำเร็จ";
+  } finally { loading.value = false; }
+}
+function toggleOrganization(id: string, checked: boolean) {
+  selectedOrgIds.value = checked
+    ? [...selectedOrgIds.value, id]
+    : selectedOrgIds.value.filter((value) => value !== id);
+  if (checked && quotaCounts[id] === undefined) quotaCounts[id] = 1;
+}
+async function create() {
+  if (!canSubmit.value) return;
+  error.value = "";
+  try {
+    await apiRequest("/papers", "POST", {
+      ...form,
+      question_ids: selectedIds.value,
+      eligible_org_units: selectedOrgIds.value.map((org_unit_id) => ({
+        org_unit_id, eligible_count: quotaCounts[org_unit_id],
+      })),
+    });
+    message.value = "สร้าง Exam Creation พร้อมเกณฑ์ผ่านและ quota แล้ว";
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : "สร้าง Exam Creation ไม่สำเร็จ";
+  }
+}
+
+watch(() => form.subject_id, loadQuestions);
+onMounted(loadBase);
 </script>
-<template><PageContainer><PageHeader eyebrow="Exam Author" title="สร้าง Exam Creation" description="เลือกวิชา คำถาม จำนวนข้อ ชุดข้อสอบ และหน่วยงานผู้มีสิทธิ์สอบในขั้นตอนเดียว" /><AppAlert v-if="message" type="success">{{ message }}</AppAlert><AppAlert v-if="error" type="error">{{ error }}</AppAlert><form class="space-y-6" @submit.prevent="create"><section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body"><h2 class="card-title">ข้อมูลการสร้างข้อสอบ</h2><div class="grid gap-4 md:grid-cols-2"><input v-model="form.title" class="input input-bordered w-full" placeholder="ชื่อการสร้างข้อสอบ" required /><select v-model="form.subject_id" class="select select-bordered w-full" required><option disabled value="">เลือกรายวิชา</option><option v-for="subject in subjects" :key="subject.id" :value="subject.id">{{ subject.code }} — {{ subject.name }}</option></select><label class="form-control"><span class="label-text">จำนวนข้อที่ต้องการ</span><input v-model.number="form.desired_question_count" class="input input-bordered" type="number" min="1" max="200" required /></label><label class="form-control"><span class="label-text">จำนวนชุดข้อสอบ</span><input v-model.number="form.variant_count" class="range range-primary" type="range" min="1" max="20" /><span>{{ form.variant_count }} ชุด</span></label><select v-model="form.org_unit_id" class="select select-bordered w-full" required><option disabled value="">เลือกหน่วยงานเจ้าของ</option><option v-for="unit in orgUnits" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></div></div></section><section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body"><h2 class="card-title">หน่วยงานที่อนุญาตให้สอบ</h2><div class="grid gap-1 md:grid-cols-2"><label v-for="unit in orgUnits.filter((item) => item.level === 'bureau')" :key="unit.id" class="label cursor-pointer justify-start gap-3"><input v-model="form.allowed_org_unit_ids" class="checkbox checkbox-primary" type="checkbox" :value="unit.id" /><span>{{ unit.name }}</span></label></div><p class="text-sm text-base-content/60">เลือกได้หลายหน่วยงาน</p></div></section><section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body"><div class="flex flex-wrap items-center justify-between gap-3"><h2 class="card-title">เลือกคำถาม</h2><span class="badge" :class="selectedCount >= form.desired_question_count ? 'badge-success' : 'badge-warning'">เลือกแล้ว {{ selectedCount }} / ต้องการ {{ form.desired_question_count }}</span></div><input v-model="search" class="input input-bordered w-full" placeholder="ค้นหาคำถามหรือคลังข้อสอบ" :disabled="!questions.length" /><div v-if="loading" class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div><div v-else-if="!form.subject_id" class="alert">กรุณาเลือกรายวิชาเพื่อโหลดคำถามจากฐานข้อมูล</div><div v-else-if="!questions.length" class="alert alert-warning">รายวิชานี้ยังไม่มีคำถามที่พร้อมใช้งาน</div><div v-else class="grid max-h-[32rem] gap-3 overflow-y-auto pr-1"><label v-for="(question, index) in filteredQuestions" :key="question.id" class="rounded-box flex cursor-pointer gap-3 border border-base-300 p-3 hover:border-primary"><input v-model="selectedIds" class="checkbox checkbox-primary mt-1" type="checkbox" :value="question.id" /><span class="min-w-0"><span class="badge badge-ghost mb-1">{{ question.bank_name }} · {{ question.difficulty || 'ไม่ระบุ' }}</span><span class="block">{{ index + 1 }}. {{ question.content }}</span></span></label></div></div></section><div class="flex justify-end"><button class="btn btn-primary btn-lg" type="submit" :disabled="!canSubmit">สร้าง Exam Creation</button></div></form></PageContainer></template>
+
+<template>
+  <PageContainer>
+    <PageHeader eyebrow="Exam Author" title="สร้าง Exam Creation" description="กำหนดข้อสอบ เกณฑ์ผ่าน และจำนวนผู้มีสิทธิ์ต่อหน่วยงาน" />
+    <AppAlert v-if="message" type="success">{{ message }}</AppAlert>
+    <AppAlert v-if="error" type="error">{{ error }}</AppAlert>
+    <form class="space-y-6" @submit.prevent="create">
+      <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
+        <h2 class="card-title">ข้อมูลการสร้างข้อสอบ</h2>
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <label class="form-control"><span class="label-text">ชื่อ Exam Creation</span><input v-model="form.title" class="input input-bordered" required /></label>
+          <label class="form-control"><span class="label-text">รายวิชา</span><select v-model="form.subject_id" class="select select-bordered" required><option disabled value="">เลือกรายวิชา</option><option v-for="subject in subjects" :key="subject.id" :value="subject.id">{{ subject.code }} — {{ subject.name }}</option></select></label>
+          <label class="form-control"><span class="label-text">หน่วยงานเจ้าของ</span><select v-model="form.org_unit_id" class="select select-bordered" required><option disabled value="">เลือกหน่วยงาน</option><option v-for="unit in orgUnits" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
+          <label class="form-control"><span class="label-text">จำนวนข้อ</span><input v-model.number="form.desired_question_count" class="input input-bordered" type="number" min="1" max="200" required /></label>
+          <label class="form-control"><span class="label-text">จำนวน variants</span><input v-model.number="form.variant_count" class="input input-bordered" type="number" min="1" max="20" required /></label>
+          <label class="form-control"><span class="label-text">เกณฑ์ผ่าน (%)</span><input v-model.number="form.passing_percentage" class="input input-bordered" type="number" min="0" max="100" step="0.01" required /></label>
+        </div>
+      </div></section>
+
+      <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
+        <h2 class="card-title">Quota ผู้มีสิทธิ์สอบรายหน่วยงาน</h2>
+        <p class="text-sm text-base-content/60">ห้ามเลือกหน่วยแม่และหน่วยลูกซ้อนกัน ระบบจะจำกัดจำนวนผู้เริ่มสอบตาม quota</p>
+        <div class="grid gap-3 md:grid-cols-2">
+          <div v-for="unit in orgUnits" :key="unit.id" class="rounded-box border border-base-300 p-3">
+            <label class="flex cursor-pointer items-center gap-3"><input class="checkbox checkbox-primary" type="checkbox" :checked="selectedOrgIds.includes(unit.id)" @change="toggleOrganization(unit.id, ($event.target as HTMLInputElement).checked)" /><span class="flex-1">{{ unit.name }}</span><span class="badge badge-ghost">{{ unit.level }}</span></label>
+            <label v-if="selectedOrgIds.includes(unit.id)" class="form-control mt-3"><span class="label-text">จำนวนผู้มีสิทธิ์</span><input v-model.number="quotaCounts[unit.id]" class="input input-bordered" type="number" min="0" required /></label>
+          </div>
+        </div>
+      </div></section>
+
+      <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
+        <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="card-title">เลือกคำถาม</h2><span class="badge" :class="selectedIds.length >= form.desired_question_count ? 'badge-success' : 'badge-warning'">{{ selectedIds.length }} / {{ form.desired_question_count }}</span></div>
+        <input v-model="search" class="input input-bordered" placeholder="ค้นหาคำถาม" />
+        <span v-if="loading" class="loading loading-spinner loading-lg self-center"></span>
+        <div v-else-if="!questions.length" class="alert">เลือกรายวิชาที่มีคำถามพร้อมใช้งาน</div>
+        <div v-else class="grid max-h-[32rem] gap-3 overflow-y-auto">
+          <label v-for="question in filteredQuestions" :key="question.id" class="rounded-box flex cursor-pointer gap-3 border border-base-300 p-3"><input v-model="selectedIds" class="checkbox checkbox-primary" type="checkbox" :value="question.id" /><span>{{ question.content }}</span></label>
+        </div>
+      </div></section>
+      <div class="flex justify-end"><button class="btn btn-primary btn-lg" type="submit" :disabled="!canSubmit">สร้าง Exam Creation</button></div>
+    </form>
+  </PageContainer>
+</template>

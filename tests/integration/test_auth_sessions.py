@@ -73,18 +73,24 @@ def test_examinee_login_limit_revokes_oldest_session() -> None:
 
         assert second.revoked_session_ids == (first.session_id,)
         with database.session() as session:
-            assert get_active_session(
-                session,
-                raw_token=first.raw_token,
-                policy=policy,
-                now=first_time + timedelta(minutes=1),
-            ) is None
-            assert get_active_session(
-                session,
-                raw_token=second.raw_token,
-                policy=policy,
-                now=first_time + timedelta(minutes=1),
-            ) is not None
+            assert (
+                get_active_session(
+                    session,
+                    raw_token=first.raw_token,
+                    policy=policy,
+                    now=first_time + timedelta(minutes=1),
+                )
+                is None
+            )
+            assert (
+                get_active_session(
+                    session,
+                    raw_token=second.raw_token,
+                    policy=policy,
+                    now=first_time + timedelta(minutes=1),
+                )
+                is not None
+            )
     finally:
         Base.metadata.drop_all(database.engine)
         database.dispose()
@@ -145,20 +151,26 @@ def test_idle_expiry_and_explicit_logout_revoke_sessions() -> None:
             session.commit()
 
         with database.session() as session:
-            assert get_active_session(
-                session,
-                raw_token=created.raw_token,
-                policy=policy,
-                now=started + timedelta(minutes=31),
-            ) is None
+            assert (
+                get_active_session(
+                    session,
+                    raw_token=created.raw_token,
+                    policy=policy,
+                    now=started + timedelta(minutes=31),
+                )
+                is None
+            )
             session.commit()
 
         with database.session() as session:
-            assert revoke_session(
-                session,
-                session_id=created.session_id,
-                now=started + timedelta(minutes=32),
-            ) is False
+            assert (
+                revoke_session(
+                    session,
+                    session_id=created.session_id,
+                    now=started + timedelta(minutes=32),
+                )
+                is False
+            )
             session.commit()
     finally:
         Base.metadata.drop_all(database.engine)
@@ -213,12 +225,15 @@ def test_inactive_person_revokes_an_existing_session() -> None:
             session.commit()
 
         with database.session() as session:
-            assert get_active_session(
-                session,
-                raw_token=created.raw_token,
-                policy=policy,
-                now=started + timedelta(minutes=1),
-            ) is None
+            assert (
+                get_active_session(
+                    session,
+                    raw_token=created.raw_token,
+                    policy=policy,
+                    now=started + timedelta(minutes=1),
+                )
+                is None
+            )
             session.commit()
 
         with database.session() as session:

@@ -34,6 +34,12 @@ Reporting UI/UX and implementation baseline: [Reporting UI/UX Design](reporting-
 The reporting backlog must follow its REPORT-UX/API/UI/EXP/QA tickets and must not be marked
 Done until pass/fail, attendance, drill-down, export and responsive acceptance are evidenced.
 
+Implementation update 2026-07-16: pass/fail and attendance tied to Exam Creation, quota enforcement,
+role-scoped dashboard, ECharts, person drill-down and filter-consistent PDF/XLSX/CSV are implemented
+with backend/frontend automated tests. Local four-breakpoint browser acceptance passed; production
+device sign-off, load threshold and external security acceptance remain open, therefore REPORT-QA-08
+remains `Verify`, not `Done`.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 

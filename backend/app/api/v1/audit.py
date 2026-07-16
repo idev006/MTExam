@@ -33,9 +33,24 @@ def list_audit(
     limit: int = 100,
     offset: int = 0,
 ) -> list[AuditResponse]:
-    query = select(AuditLog).order_by(AuditLog.occurred_at.desc()).limit(min(limit, 200)).offset(max(offset, 0))
+    query = (
+        select(AuditLog)
+        .order_by(AuditLog.occurred_at.desc())
+        .limit(min(limit, 200))
+        .offset(max(offset, 0))
+    )
     if event_type:
         query = query.where(AuditLog.event_type == event_type)
     if account.role != UserRole.SUPER_ADMIN:
         query = query.where(AuditLog.actor_person_id == account.person_id)
-    return [AuditResponse(id=str(row.id), event_type=row.event_type, subject_type=row.subject_type, subject_id=str(row.subject_id) if row.subject_id else None, occurred_at=row.occurred_at.isoformat(), metadata=row.metadata_text) for row in db.scalars(query)]
+    return [
+        AuditResponse(
+            id=str(row.id),
+            event_type=row.event_type,
+            subject_type=row.subject_type,
+            subject_id=str(row.subject_id) if row.subject_id else None,
+            occurred_at=row.occurred_at.isoformat(),
+            metadata=row.metadata_text,
+        )
+        for row in db.scalars(query)
+    ]

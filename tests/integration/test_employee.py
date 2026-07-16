@@ -105,9 +105,7 @@ def test_employee_rejects_duplicate_cid() -> None:
 
         with pytest.raises(IntegrityError):
             with database.session() as session:
-                session.add(
-                    Employee(emp_cid="1234567890123", emp_fname="สอง", emp_lname="ทดสอบ")
-                )
+                session.add(Employee(emp_cid="1234567890123", emp_fname="สอง", emp_lname="ทดสอบ"))
                 session.commit()
     finally:
         Base.metadata.drop_all(database.engine)
