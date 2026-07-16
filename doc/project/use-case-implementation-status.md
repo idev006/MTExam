@@ -21,6 +21,7 @@ Production acceptance gate is closed.
 - Shared question-bank metadata with exam-window bureau scope and configurable late-entry grace minutes
 - PDF system-summary export (Excel remains the next exporter)
 - User administration, audit API/UI baseline and responsive role-aware UI
+- Authentication hardening: persistent login throttling, CSRF protection for production cookie requests, password change and fail-closed role validation
 
 ## Partial / Production hardening
 

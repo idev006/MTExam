@@ -22,7 +22,7 @@ router = APIRouter(prefix="/admin/users", tags=["user-admin"])
 
 class UserCreate(BaseModel):
     username: str = Field(min_length=3, max_length=255)
-    password: str = Field(min_length=8, max_length=256)
+    password: str = Field(min_length=12, max_length=256)
     full_name: str = Field(min_length=1, max_length=255)
     role: UserRole
 

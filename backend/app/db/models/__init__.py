@@ -14,6 +14,7 @@ from backend.app.db.models.exams import (
 )
 from backend.app.db.models.identity import (
     AuthSession,
+    LoginAttempt,
     OrgUnit,
     Person,
     PersonUnitAssignment,
@@ -34,6 +35,7 @@ from backend.app.db.models.questions import (
 __all__ = [
     "AuditLog",
     "AuthSession",
+    "LoginAttempt",
     "Employee",
     "ExamAnswer",
     "ExamPaper",

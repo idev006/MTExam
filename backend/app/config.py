@@ -91,6 +91,8 @@ class AuthSettings(BaseModel):
     max_sessions_admin: int = Field(default=3, ge=1)
     session_expire_minutes: int = Field(default=480, ge=5)
     session_idle_minutes: int = Field(default=30, ge=1)
+    max_login_attempts: int = Field(default=5, ge=1, le=20)
+    login_lockout_minutes: int = Field(default=15, ge=1, le=1440)
 
 
 class Settings(BaseSettings):

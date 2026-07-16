@@ -20,6 +20,7 @@
 - [Risk Register](risk-register.md)
 - [Decision Register](decision-register.md)
 - [Dependency Register](dependency-register.md)
+- [Authentication and Authorization Audit](security-auth-audit.md)
 - [Status Report](status-report.md)
 - [Traceability Matrix](../traceability.md)
 - Actor/use-case baseline: [Actor and Use-Case Catalog](../use-cases/actor-use-case-catalog.md)
