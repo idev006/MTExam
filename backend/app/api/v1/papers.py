@@ -6,7 +6,7 @@ import hashlib
 import json
 import random
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,6 +21,7 @@ from backend.app.db.models import (
     ExamPaper,
     ExamPaperOrgUnit,
     ExamPaperQuestion,
+    ExamWindow,
     OrgUnit,
     Question,
     Subject,
@@ -38,6 +39,7 @@ class PaperCreate(BaseModel):
     org_unit_id: UUID
     question_ids: list[UUID] = Field(min_length=1, max_length=200)
     desired_question_count: int = Field(ge=1, le=200)
+    default_duration_minutes: int = Field(default=60, ge=1, le=600)
     eligible_org_units: list[EligibleOrgUnit] = Field(min_length=1, max_length=100)
     passing_percentage: Decimal = Field(ge=0, le=100, max_digits=5, decimal_places=2)
     variant_count: int = Field(default=1, ge=1, le=20)
@@ -53,13 +55,129 @@ class PaperResponse(BaseModel):
     question_count: int
     subject_id: UUID | None = None
     desired_question_count: int = 1
+    default_duration_minutes: int = 60
     allowed_org_unit_count: int = 0
     passing_percentage: float | None = None
+    published_at: str | None = None
 
 
 class EligibleOrgUnit(BaseModel):
     org_unit_id: UUID
     eligible_count: int = Field(ge=0, le=1_000_000)
+
+
+class PaperStatusUpdate(BaseModel):
+    status: Literal["draft", "published", "archived"]
+
+
+def _paper_response(db: Session, paper: ExamPaper) -> PaperResponse:
+    question_count = (
+        db.scalar(
+            select(func.count())
+            .select_from(ExamPaperQuestion)
+            .where(ExamPaperQuestion.exam_paper_id == paper.id)
+        )
+        or 0
+    )
+    allowed_org_unit_count = (
+        db.scalar(
+            select(func.count())
+            .select_from(ExamPaperOrgUnit)
+            .where(ExamPaperOrgUnit.exam_paper_id == paper.id)
+        )
+        or 0
+    )
+    return PaperResponse(
+        id=paper.id,
+        title=paper.title,
+        status=paper.status,
+        question_count=question_count,
+        subject_id=paper.subject_id,
+        desired_question_count=paper.desired_question_count,
+        default_duration_minutes=paper.default_duration_minutes,
+        allowed_org_unit_count=allowed_org_unit_count,
+        passing_percentage=(
+            float(paper.passing_percentage) if paper.passing_percentage is not None else None
+        ),
+        published_at=paper.published_at.isoformat() if paper.published_at else None,
+    )
+
+
+def _require_paper_owner(paper: ExamPaper, account: UserAccount) -> None:
+    if account.role != UserRole.SUPER_ADMIN and paper.created_by != account.person_id:
+        raise HTTPException(status_code=403, detail="Only the creator can change this Exam Creation")
+
+
+def _ensure_publishable(db: Session, paper: ExamPaper) -> None:
+    quotas = list(
+        db.scalars(select(ExamPaperOrgUnit).where(ExamPaperOrgUnit.exam_paper_id == paper.id))
+    )
+    if (
+        paper.passing_percentage is None
+        or paper.default_duration_minutes < 1
+        or not quotas
+        or any(row.eligible_count is None for row in quotas)
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Duration, reporting pass policy and organization quotas are required",
+        )
+    count = (
+        db.scalar(
+            select(func.count())
+            .select_from(ExamPaperQuestion)
+            .where(ExamPaperQuestion.exam_paper_id == paper.id)
+        )
+        or 0
+    )
+    if count < 1:
+        raise HTTPException(status_code=409, detail="Paper must contain questions")
+
+
+def _change_paper_status(
+    db: Session,
+    *,
+    paper: ExamPaper,
+    account: UserAccount,
+    target_status: str,
+    event_type: str = "paper.status_change",
+) -> PaperResponse:
+    _require_paper_owner(paper, account)
+    if target_status == PaperStatus.PUBLISHED:
+        _ensure_publishable(db, paper)
+    if target_status == PaperStatus.DRAFT:
+        window_count = (
+            db.scalar(
+                select(func.count())
+                .select_from(ExamWindow)
+                .where(ExamWindow.exam_paper_id == paper.id)
+            )
+            or 0
+        )
+        if window_count:
+            raise HTTPException(
+                status_code=409,
+                detail="Exam Creation with an Exam Window cannot return to draft",
+            )
+    previous_status = paper.status
+    if previous_status == target_status:
+        return _paper_response(db, paper)
+    paper.status = target_status
+    if target_status == PaperStatus.PUBLISHED and paper.published_at is None:
+        paper.published_at = utc_now()
+    elif target_status == PaperStatus.DRAFT:
+        paper.published_at = None
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type=event_type,
+        subject_type="exam_paper",
+        subject_id=paper.id,
+        metadata={"from": str(previous_status), "to": str(target_status)},
+    )
+    db.commit()
+    db.refresh(paper)
+    return _paper_response(db, paper)
 
 
 @router.get("", response_model=list[PaperResponse])
@@ -76,21 +194,7 @@ def list_papers(
         for paper in papers
         if paper.org_unit_id in allowed or paper.created_by == account.person_id
     ]
-    return [
-        PaperResponse(
-            id=paper.id,
-            title=paper.title,
-            status=paper.status,
-            question_count=len(
-                list(
-                    db.scalars(
-                        select(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id)
-                    )
-                )
-            ),
-        )
-        for paper in visible
-    ]
+    return [_paper_response(db, paper) for paper in visible]
 
 
 @router.post("", response_model=PaperResponse, status_code=201)
@@ -155,6 +259,7 @@ def create_paper(
         ),
         variant_count=payload.variant_count,
         desired_question_count=payload.desired_question_count,
+        default_duration_minutes=payload.default_duration_minutes,
         passing_percentage=payload.passing_percentage,
         status=PaperStatus.DRAFT,
         org_unit_id=payload.org_unit_id,
@@ -193,16 +298,7 @@ def create_paper(
         subject_id=paper.id,
     )
     db.commit()
-    return PaperResponse(
-        id=paper.id,
-        title=paper.title,
-        status=paper.status,
-        question_count=len(questions),
-        subject_id=paper.subject_id,
-        desired_question_count=paper.desired_question_count,
-        allowed_org_unit_count=len(org_units),
-        passing_percentage=float(paper.passing_percentage),
-    )
+    return _paper_response(db, paper)
 
 
 @router.post("/{paper_id}/publish", response_model=PaperResponse)
@@ -214,48 +310,30 @@ def publish_paper(
     paper = db.get(ExamPaper, paper_id)
     if paper is None:
         raise HTTPException(status_code=404, detail="Paper not found")
-    if account.role != UserRole.SUPER_ADMIN and paper.created_by != account.person_id:
-        raise HTTPException(status_code=403, detail="Only the creator can publish this paper")
-    quotas = list(
-        db.scalars(select(ExamPaperOrgUnit).where(ExamPaperOrgUnit.exam_paper_id == paper.id))
-    )
-    if (
-        paper.passing_percentage is None
-        or not quotas
-        or any(row.eligible_count is None for row in quotas)
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="Reporting pass policy and organization quotas are required",
-        )
-    count = (
-        db.scalar(
-            select(func.count())
-            .select_from(ExamPaperQuestion)
-            .where(ExamPaperQuestion.exam_paper_id == paper.id)
-        )
-        or 0
-    )
-    if count < 1:
-        raise HTTPException(status_code=409, detail="Paper must contain questions")
-    paper.status = PaperStatus.PUBLISHED
-    paper.published_at = utc_now()
-    db.commit()
-    record_audit(
+    return _change_paper_status(
         db,
-        actor_person_id=account.person_id,
+        paper=paper,
+        account=account,
+        target_status=PaperStatus.PUBLISHED,
         event_type="paper.publish",
-        subject_type="exam_paper",
-        subject_id=paper.id,
     )
-    db.commit()
-    return PaperResponse(
-        id=paper.id,
-        title=paper.title,
-        status=paper.status,
-        question_count=count,
-        subject_id=paper.subject_id,
-        passing_percentage=float(paper.passing_percentage),
+
+
+@router.patch("/{paper_id}/status", response_model=PaperResponse)
+def change_paper_status(
+    paper_id: UUID,
+    payload: PaperStatusUpdate,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR))],
+) -> PaperResponse:
+    paper = db.get(ExamPaper, paper_id)
+    if paper is None:
+        raise HTTPException(status_code=404, detail="Paper not found")
+    return _change_paper_status(
+        db,
+        paper=paper,
+        account=account,
+        target_status=payload.status,
     )
 
 

@@ -574,3 +574,13 @@ descendants; descendants are disabled with an explicit coverage reason. Selectin
 its ancestors while leaving sibling branches available. Client overlap validation complements the
 authoritative backend validation. The interaction and responsive acceptance contract is maintained
 in [Paper Builder Organization Quota UX](paper-builder-ui-ux-design.md).
+
+## 31. Exam Creation duration and lifecycle controls
+
+Each Exam Creation now owns a default duration in minutes and an explicit Draft/Published/Archived
+lifecycle managed from `/papers`. Publishing remains a backend-validated readiness transition;
+archiving stops new Exam Windows without terminating active work; returning to Draft is allowed only
+before any Exam Window exists. PAPER-LIFE-002 remains `Verify` until human device acceptance, while
+API authorization, audit, inherited-duration and Vue action-state evidence are automated. The
+detailed interaction and sequence contract is maintained in
+[Paper Builder Organization Quota UX](paper-builder-ui-ux-design.md).

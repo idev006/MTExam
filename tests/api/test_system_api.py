@@ -86,6 +86,7 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
             "subject_id": subject["id"],
             "question_ids": [questions[0]["id"]],
             "desired_question_count": 1,
+            "default_duration_minutes": 45,
             "eligible_org_units": [{"org_unit_id": owner["id"], "eligible_count": 100}],
             "passing_percentage": 60,
             "variant_count": 1,
@@ -102,9 +103,66 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
         "question_count": 1,
         "subject_id": subject["id"],
         "desired_question_count": 1,
+        "default_duration_minutes": 45,
         "allowed_org_unit_count": 1,
         "passing_percentage": 60.0,
+        "published_at": None,
     }
+    paper_id = response.json()["id"]
+
+    opened = client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "published"})
+    assert opened.status_code == 200
+    assert opened.json()["status"] == "published"
+    assert opened.json()["published_at"]
+
+    back_to_draft = client.patch(
+        f"/api/v1/papers/{paper_id}/status", json={"status": "draft"}
+    )
+    assert back_to_draft.status_code == 200
+    assert back_to_draft.json()["status"] == "draft"
+    assert back_to_draft.json()["published_at"] is None
+
+    assert (
+        client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "published"}).status_code
+        == 200
+    )
+    window = client.post("/api/v1/exam-windows", json={"exam_paper_id": paper_id})
+    assert window.status_code == 201
+    assert window.json()["duration_minutes"] == 45
+
+    closed = client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "archived"})
+    assert closed.status_code == 200
+    assert closed.json()["status"] == "archived"
+    assert (
+        client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "published"}).status_code
+        == 200
+    )
+    blocked_draft = client.patch(
+        f"/api/v1/papers/{paper_id}/status", json={"status": "draft"}
+    )
+    assert blocked_draft.status_code == 409
+    assert blocked_draft.json()["error"]["code"] == "STATE_CONFLICT"
+
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "superadmin", "password": "super1234"}
+        ).status_code
+        == 200
+    )
+    audit_events = client.get(
+        "/api/v1/audit", params={"event_type": "paper.status_change"}
+    )
+    assert audit_events.status_code == 200
+    assert any(event["subject_id"] == paper_id for event in audit_events.json())
+
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "demo", "password": "demo1234"}
+        ).status_code
+        == 200
+    )
+    denied = client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "archived"})
+    assert denied.status_code == 403
 
 
 def test_practice_session_recovers_answers_and_submit_is_idempotent(client: TestClient) -> None:

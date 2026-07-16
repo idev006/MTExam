@@ -214,15 +214,17 @@ sequenceDiagram
     participant UI as Paper UI
     participant API as Paper API
     participant DB as SQLite
-    E->>UI: Select subject, question count, allowed bureaus and variants
-    UI->>API: POST /papers with subject_id, desired_question_count and allowed_org_unit_ids
-    API->>DB: Save independent ExamPaper creation
+    E->>UI: Select subject, questions, duration, quota and variants
+    UI->>API: POST /papers with default_duration_minutes and eligible_org_units
+    API->>DB: Save independent Draft ExamPaper creation
     API->>DB: Generate/attach ExamVariant sets
     API-->>UI: Draft Exam Creation and set count
-    E->>UI: Publish creation
-    UI->>API: POST /papers/{id}/publish
-    API->>DB: Validate and publish
-    API-->>UI: Published creation ready for exam window
+    E->>UI: Open, close or return creation to Draft
+    UI->>E: Confirm in DaisyUI modal
+    UI->>API: PATCH /papers/{id}/status
+    API->>API: Verify creator scope and lifecycle rules
+    API->>DB: Update status and append audit event
+    API-->>UI: Updated creation or 409 conflict
 ```
 
 ## UC-REPORT-02 — View statistics for one Exam Creation

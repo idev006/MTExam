@@ -35,6 +35,7 @@ class ExamPaper(Base):
     pool_criteria_text: Mapped[str | None] = mapped_column(Text)
     variant_count: Mapped[int] = mapped_column(Integer, default=1)
     desired_question_count: Mapped[int] = mapped_column(Integer, default=1)
+    default_duration_minutes: Mapped[int] = mapped_column(Integer, default=60)
     passing_percentage: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
     status: Mapped[str] = mapped_column(String(30), default=PaperStatus.DRAFT, index=True)
     org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"), index=True)

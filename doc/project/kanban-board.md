@@ -1,7 +1,7 @@
 # MTExam Kanban Board
 
 **Status SSOT:** [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
-**Last updated:** 2026-07-16
+**Last updated:** 2026-07-17
 **Owner:** Project Manager (TBD)
 **Current milestone:** M0 — Documentation and Foundation
 
@@ -53,6 +53,7 @@ P1-QBANK, P1-REPORT, P1-AUDIT and P1-ADMIN are broad-rollout work; SSO-001 is co
 | REPORT-UX-01..REPORT-QA-08 | Contract, scoped API, charts, drill-down, export and QA | High | Verify | Automated gates pass; production load/device sign-off pending |
 | QBANK-API | Question-bank authoring API/UI slice | High | Verify | Complete choice editing/versioning |
 | PAPER-API-001 | Paper builder list/create/publish with immutable snapshots and deterministic variants | High | Verify | Random-pool criteria and preview |
+| PAPER-LIFE-002 | Default exam duration and audited Draft/Open/Closed lifecycle | High | Verify | Automated API/UI evidence complete; human device acceptance pending |
 | USER-ADMIN-001 | Role-aware user administration and lifecycle revocation | High | Verify | Full permission matrix and scope-assignment UI |
 | EXAM-WINDOW-001 | Exam window management API | High | Verify | Server-authoritative timer integration |
 | AUDIT-API-001 | Scoped/paginated audit API/UI and mutation events | High | Verify | Full mutation coverage/retention |

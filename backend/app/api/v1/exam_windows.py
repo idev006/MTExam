@@ -31,7 +31,7 @@ router = APIRouter(prefix="/exam-windows", tags=["exam-windows"])
 class WindowCreate(BaseModel):
     exam_paper_id: UUID
     mode: ExamWindowMode = ExamWindowMode.INDIVIDUAL
-    duration_minutes: int = Field(default=60, ge=1, le=600)
+    duration_minutes: int | None = Field(default=None, ge=1, le=600)
     late_entry_minutes: int = Field(default=0, ge=0, le=1440)
     allowed_org_unit_ids: list[UUID] = Field(default_factory=list)
     window_open_at: str | None = None
@@ -116,10 +116,11 @@ def create_window(
     allowed = payload.allowed_org_unit_ids or list(configured_ids)
     if not set(allowed).issubset(configured_ids):
         raise HTTPException(status_code=422, detail="Window organizations must use paper quotas")
+    duration_minutes = payload.duration_minutes or paper.default_duration_minutes
     window = ExamWindow(
         exam_paper_id=paper.id,
         mode=payload.mode,
-        duration_minutes=payload.duration_minutes,
+        duration_minutes=duration_minutes,
         late_entry_minutes=payload.late_entry_minutes,
         status=ExamWindowStatus.SCHEDULED,
         created_by=account.person_id,
@@ -138,7 +139,7 @@ def create_window(
         event_type="exam_window.create",
         subject_type="exam_window",
         subject_id=window.id,
-        metadata={"paper_id": str(paper.id), "duration_minutes": payload.duration_minutes},
+        metadata={"paper_id": str(paper.id), "duration_minutes": duration_minutes},
     )
     db.commit()
     db.refresh(window)

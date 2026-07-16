@@ -217,6 +217,7 @@ def _seed_demo_exam_data(db) -> None:
             question_selection_mode="fixed_set",
             variant_count=1,
             desired_question_count=10,
+            default_duration_minutes=60,
             passing_percentage=Decimal("60"),
             status="published",
             org_unit_id=bureau.id,

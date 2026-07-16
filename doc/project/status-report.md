@@ -157,3 +157,11 @@ one idempotent seed pass.
 raised an unhandled `TypeError` and returned `500 An unexpected error occurred` before creating the
 paper. A full API regression test now covers subject, selected question, random-pool criteria, pass
 percentage, and organization quota in one successful create request.
+
+### Exam Creation duration and lifecycle — 2026-07-17
+
+Exam authors can now set a 1–600 minute default duration while creating a paper. Exam Windows inherit
+that duration when no override is supplied. The `/papers` page lists visible creations and controls
+Draft, Open and Closed states through a DaisyUI confirmation modal. Backend creator authorization,
+publish-readiness validation, audit logging and the rule that a creation cannot return to Draft after
+an Exam Window exists are covered by automated API tests; Vue tests cover state-specific actions.

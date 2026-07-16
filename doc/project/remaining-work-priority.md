@@ -1,6 +1,6 @@
 # Remaining Work Priority Register
 
-**Updated:** 2026-07-16  
+**Updated:** 2026-07-17
 **Release status:** Production Candidate / Staging-Pilot; Production Go is not approved
 
 รายการนี้เป็นลำดับงานคงค้างที่ต้องใช้ติดตามร่วมกับ Kanban และ Release Readiness Checklist
@@ -49,6 +49,11 @@ Organization reference-data correction 2026-07-17: the Region 6 seed transition 
 ฝ่ายอำนวยการ 1–6 to บก.อก.ภ.6 in the same first startup that creates the parent bureaus. Automated
 integration evidence verifies exact documented child sets for บก.อก.ภ.6, บก.สส.ภ.6 and ศฝร.ภ.6
 and verifies idempotent reseeding.
+
+Exam Creation policy update 2026-07-17: authors can set a 1–600 minute default duration, which an
+Exam Window inherits unless overridden. The `/papers` list exposes audited open/close/Draft actions;
+the backend rechecks creator authorization and blocks returning to Draft after any window exists.
+Production device acceptance remains covered by item 9 and complete mutation-audit review by item 7.
 
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
