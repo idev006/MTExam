@@ -8,6 +8,7 @@ it is not equivalent to `Done` or Production Ready.
 
 The detailed use-case inventory is maintained in [Use-Case Implementation Status](use-case-implementation-status.md).
 The rationale for the current No-Go decision is maintained in [Production Go/No-Go Decision](production-go-decision.md).
+The ordered remaining work is maintained in [Remaining Work Priority Register](remaining-work-priority.md).
 
 ## MVP evidence completed
 

@@ -23,6 +23,7 @@
 - [Authentication and Authorization Audit](security-auth-audit.md)
 - [Production Go/No-Go Decision Record](production-go-decision.md)
 - [PostgreSQL Integration Verification](../operations/postgres-integration.md)
+- [Remaining Work Priority Register](remaining-work-priority.md)
 - [Status Report](status-report.md)
 - [Traceability Matrix](../traceability.md)
 - Actor/use-case baseline: [Actor and Use-Case Catalog](../use-cases/actor-use-case-catalog.md)
