@@ -210,3 +210,24 @@ def export_summary_xlsx(
         "Summary",
     )
     return Response(content=content, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=mtexam-summary.xlsx"})
+
+
+@router.get("/exam-sessions.xlsx")
+def export_exam_sessions_xlsx(
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    status: str | None = None,
+    org_unit_id: str | None = None,
+) -> Response:
+    query = select(ExamSession).order_by(ExamSession.started_at.desc())
+    if status:
+        query = query.where(ExamSession.status == status)
+    if account.role != UserRole.SUPER_ADMIN:
+        query = query.where(ExamSession.org_unit_id.in_(active_org_unit_ids(db, account)))
+    if org_unit_id:
+        query = query.where(ExamSession.org_unit_id == org_unit_id)
+    rows: list[list[object]] = [["session_id", "person_id", "org_unit_id", "status", "score", "started_at", "submitted_at"]]
+    for session in db.scalars(query):
+        rows.append([str(session.id), str(session.person_id), str(session.org_unit_id), session.status, session.score, session.started_at.isoformat(), session.submitted_at.isoformat() if session.submitted_at else ""])
+    content = _xlsx_from_rows(rows, "ExamSessions")
+    return Response(content=content, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=mtexam-exam-sessions.xlsx"})

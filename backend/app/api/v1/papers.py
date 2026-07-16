@@ -126,3 +126,23 @@ def validate_paper(
     count = db.scalar(select(func.count()).select_from(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id)) or 0
     errors = [] if count else ["paper must contain at least one question"]
     return {"paper_id": str(paper.id), "valid": not errors, "question_count": count, "errors": errors}
+
+
+@router.get("/{paper_id}/preview")
+def preview_paper(
+    paper_id: UUID,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))],
+) -> dict[str, object]:
+    paper = db.get(ExamPaper, paper_id)
+    if paper is None:
+        raise HTTPException(status_code=404, detail="Paper not found")
+    if account.role != UserRole.SUPER_ADMIN and paper.org_unit_id not in active_org_unit_ids(db, account) and paper.created_by != account.person_id:
+        raise HTTPException(status_code=403, detail="Paper is outside your organization scope")
+    rows = list(db.scalars(select(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id).order_by(ExamPaperQuestion.base_order_index)))
+    questions = []
+    for row in rows:
+        question = db.get(Question, row.question_id)
+        if question is not None:
+            questions.append({"id": str(question.id), "order_index": row.base_order_index, "content": question.content, "difficulty": question.difficulty, "score_weight": float(row.score_weight)})
+    return {"paper_id": str(paper.id), "title": paper.title, "status": paper.status, "variant_count": paper.variant_count, "desired_question_count": paper.desired_question_count, "questions": questions}

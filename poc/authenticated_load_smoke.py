@@ -39,7 +39,10 @@ def main() -> None:
     args = parser.parse_args()
     started = time.perf_counter()
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = [pool.submit(request, args.url, args.username, args.password) for _ in range(args.requests)]
+        futures = [
+            pool.submit(request, args.url, args.username, args.password)
+            for _ in range(args.requests)
+        ]
         latencies = [future.result() for future in futures]
     elapsed = time.perf_counter() - started
     p95 = sorted(latencies)[max(0, int(len(latencies) * 0.95) - 1)] * 1000
