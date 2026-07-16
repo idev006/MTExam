@@ -17,6 +17,27 @@ services:
       timeout: 5s
       retries: 12
 
+  mysql:
+    image: mysql:8.4
+    container_name: mtexam-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mtexam}
+      MYSQL_USER: ${MYSQL_USER:-mtexam}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mtexam_dev_only_change_me}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_dev_only_change_me}
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mtexam_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
 volumes:
   mtexam_postgres_data:
     name: mtexam_postgres_data
+  mtexam_mysql_data:
+    name: mtexam_mysql_data

@@ -30,6 +30,7 @@ class PersonnelImportBatch(Base):
     moved_count: Mapped[int] = mapped_column(Integer, default=0)
     missing_count: Mapped[int] = mapped_column(Integer, default=0)
     error_summary_text: Mapped[str | None] = mapped_column(Text)
+    rollback_snapshot_text: Mapped[str | None] = mapped_column(Text)
 
 
 class PersonnelImportRow(Base):

@@ -36,8 +36,8 @@ The rationale for the current No-Go decision is maintained in [Production Go/No-
 | Question authoring | Partial | Add version snapshots and complete publish history |
 | Paper builder | Partial | Add snapshotting and deterministic variant generation |
 | Audit | Partial | Cover every state-changing API, retention policy and admin filters |
-| Database portability | PostgreSQL 16 migration/startup smoke verified | Execute MySQL integration and complete cross-database acceptance |
-| Performance | Health load smoke: 100 requests / 10 workers, p95 1.38s on dev host | Authenticated load test at the agreed target (initially 500 users) |
+| Database portability | PostgreSQL 16 and MySQL 8.4 migration/startup smoke verified | Complete cross-database acceptance in target deployment |
+| Performance | Health smoke 100/10 (p95 1.38s); authenticated PostgreSQL smoke 50/10 (p95 7.18s) | Tune authentication workload and execute agreed 500-user profile |
 | Operations/security | Partial | Execute security review and backup/restore drill using the runbook |
 
 ## Go/no-go rule

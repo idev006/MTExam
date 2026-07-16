@@ -25,13 +25,27 @@ before any shared or production deployment.
 - Application startup and development seed: passed
 - `/api/v1/health`: `200`, database reported as `postgresql`
 - `superadmin` login: `200`
+
+Authenticated load smoke against PostgreSQL (50 login + summary requests, 10 workers) completed
+without request failures: average `4147.58 ms`, p95 `7182.39 ms` on the development host. The
+latency is a signal for performance tuning, not a production acceptance result.
 - Summary report: `200`
 - Personnel API: `200`, 10 seeded employees
 - A SQLite-only seed defect was found and fixed: the tenth dummy `emp_cid` was 14 digits;
   the seed now formats every identifier as exactly 13 digits.
 
+## MySQL cross-check
+
+The same migration chain was executed against `mysql:8.4` in container `mtexam-mysql`, using
+the named volume `mtexam_mysql_data` and host port `3307`.
+
+- Alembic migrations through `20260716_0011`: passed
+- Application startup: passed
+- `/api/v1/health`: `200`, database reported as `mysql`
+- `superadmin` login: `200`
+
 ## Remaining database gate
 
-PostgreSQL integration is verified for the current schema and smoke workflow. The P0 database
-gate remains open until MySQL execution and an authenticated workload test are completed.
-
+PostgreSQL and MySQL integration are verified for the current schema and smoke workflow. The P0
+database gate remains open until authenticated workload testing and cross-database acceptance are
+completed in the target deployment environment.
