@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlparse
 
 from pydantic import AliasChoices, BaseModel, Field, SecretStr, model_validator
 from pydantic_settings import (
@@ -127,6 +128,11 @@ class Settings(BaseSettings):
             and self.app_secret_key.get_secret_value() == DEFAULT_SECRET
         ):
             raise ValueError("APP_SECRET_KEY must be configured in production")
+        if self.app.environment == "production":
+            if "*" in self.app.cors_origins:
+                raise ValueError("Wildcard CORS origin is not allowed in production")
+            if any(urlparse(origin).scheme != "https" for origin in self.app.cors_origins):
+                raise ValueError("Production CORS origins must use HTTPS")
         return self
 
     @classmethod
