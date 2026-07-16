@@ -19,6 +19,10 @@
 | 9 | UI acceptance ทุก device | build เสร็จ / acceptance ค้าง | ต้องทดสอบ smartphone, tablet, notebook และ PC ด้วย workflow จริง |
 | 10 | Police SSO integration | รอ dependency | ต้องมี OIDC/SAML metadata, claims mapping, certificate และ logout endpoint จากเจ้าของระบบ |
 
+Administrative reporting note: development accounts `divisionadmin/division1234`,
+`bureauadmin/bureau1234` and `stationadmin/station1234` are seeded for acceptance; each sees
+its assigned organization and active descendants only.
+
 ## Completion rule
 
 รายการจะย้ายเป็น `Done` เมื่อมี implementation, authorization, failure-path, automated test,

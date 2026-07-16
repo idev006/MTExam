@@ -99,6 +99,9 @@ def _seed_development_accounts(db) -> None:
         ("superadmin", "super1234", "ผู้ดูแลระบบสาธิต", UserRole.SUPER_ADMIN),
         ("author", "author1234", "ผู้สร้างข้อสอบสาธิต", UserRole.EXAM_AUTHOR),
         ("viewer", "viewer1234", "ผู้ตรวจสอบสาธิต", UserRole.VIEWER),
+        ("divisionadmin", "division1234", "Division Admin Demo", UserRole.DIVISION_ADMIN),
+        ("bureauadmin", "bureau1234", "Bureau Admin Demo", UserRole.BUREAU_ADMIN),
+        ("stationadmin", "station1234", "Station Admin Demo", UserRole.STATION_ADMIN),
     )
     for username, password, full_name, role in accounts:
         if db.scalar(select(UserAccount).where(UserAccount.username_normalized == username)):
@@ -119,18 +122,33 @@ def _seed_development_accounts(db) -> None:
                 status=ActiveStatus.ACTIVE,
             )
         )
-    demo_bureau = db.scalar(select(OrgUnit).where(OrgUnit.level == "bureau"))
-    for username in ("demo", "author"):
+    scope_seed = {
+        "demo": "bureau",
+        "author": "bureau",
+        "divisionadmin": "division",
+        "bureauadmin": "bureau",
+        "stationadmin": "station",
+    }
+    for username, level in scope_seed.items():
         seeded_account = db.scalar(
             select(UserAccount).where(UserAccount.username_normalized == username)
         )
+        assigned_unit = db.scalar(
+            select(OrgUnit).where(OrgUnit.level == level).order_by(OrgUnit.code)
+        )
+        if level == "division":
+            bureau_parent_id = db.scalar(
+                select(OrgUnit.parent_id).where(OrgUnit.level == "bureau").order_by(OrgUnit.code)
+            )
+            if bureau_parent_id is not None:
+                assigned_unit = db.get(OrgUnit, bureau_parent_id)
         if (
             seeded_account is not None
-            and demo_bureau is not None
+            and assigned_unit is not None
             and db.scalar(
                 select(PersonUnitAssignment).where(
                     PersonUnitAssignment.person_id == seeded_account.person_id,
-                    PersonUnitAssignment.org_unit_id == demo_bureau.id,
+                    PersonUnitAssignment.org_unit_id == assigned_unit.id,
                 )
             )
             is None
@@ -138,7 +156,7 @@ def _seed_development_accounts(db) -> None:
             db.add(
                 PersonUnitAssignment(
                     person_id=seeded_account.person_id,
-                    org_unit_id=demo_bureau.id,
+                    org_unit_id=assigned_unit.id,
                     effective_from=date.today(),
                 )
             )
