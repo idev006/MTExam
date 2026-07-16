@@ -116,3 +116,35 @@ def test_superadmin_summary_xlsx_is_a_valid_workbook(client: TestClient) -> None
     with ZipFile(BytesIO(response.content)) as workbook:
         assert "xl/worksheets/sheet1.xml" in workbook.namelist()
         assert "Employee total" in workbook.read("xl/worksheets/sheet1.xml").decode()
+
+
+def test_permission_matrix_denies_roles_at_api_boundary(client: TestClient) -> None:
+    cases = [
+        ("superadmin", "super1234", "/api/v1/admin/users", 200),
+        ("author", "author1234", "/api/v1/admin/users", 403),
+        ("demo", "demo1234", "/api/v1/admin/users", 403),
+        ("viewer", "viewer1234", "/api/v1/admin/users", 403),
+        ("author", "author1234", "/api/v1/question-banks", 200),
+        ("viewer", "viewer1234", "/api/v1/question-banks", 403),
+        ("demo", "demo1234", "/api/v1/question-banks", 403),
+        ("viewer", "viewer1234", "/api/v1/reports/summary", 200),
+        ("author", "author1234", "/api/v1/reports/summary", 403),
+        ("demo", "demo1234", "/api/v1/reports/summary", 403),
+        ("demo", "demo1234", "/api/v1/practice/sessions", 201),
+        ("author", "author1234", "/api/v1/practice/sessions", 403),
+        ("viewer", "viewer1234", "/api/v1/practice/sessions", 403),
+    ]
+    for username, password, path, expected in cases:
+        login = client.post(
+            "/api/v1/auth/login", json={"username": username, "password": password}
+        )
+        assert login.status_code == 200
+        response = (
+            client.get(path)
+            if path.endswith("question-banks")
+            or path.endswith("users")
+            or path.endswith("summary")
+            else client.post(path)
+        )
+        assert response.status_code == expected
+        client.post("/api/v1/auth/logout")

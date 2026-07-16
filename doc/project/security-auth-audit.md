@@ -27,6 +27,7 @@
 - Backend Ruff and Pytest pass; frontend type-check and production build pass.
 - PostgreSQL/MySQL database startup and migration smoke pass; authenticated load smoke completed
   without request failures (50 requests/10 workers, development host).
+- Repeatable `poc/security_smoke.py` passes protected-route, public-route and 429 throttle checks.
 
 ## Deployment requirements before go-live
 

@@ -118,7 +118,11 @@ def login(
         response.headers["Retry-After"] = str(
             max(1, int((attempt.locked_until - now).total_seconds()))
         )
-        raise HTTPException(status_code=429, detail="Too many login attempts")
+        raise HTTPException(
+            status_code=429,
+            detail="Too many login attempts",
+            headers={"Retry-After": response.headers["Retry-After"]},
+        )
     account = db.scalar(select(UserAccount).where(UserAccount.username_normalized == normalized))
     person = db.get(Person, account.person_id) if account else None
     try:

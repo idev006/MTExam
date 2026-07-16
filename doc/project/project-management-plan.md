@@ -417,6 +417,8 @@ test evidence, use-case documentation when behavior changes, Kanban status and s
 - Production remains No-Go until independent penetration testing, production restore sign-off,
   full permission-matrix acceptance, audit coverage/retention, device acceptance and Police SSO
   dependency resolution are complete.
+- Verification baseline is now 59 pytest tests plus repeatable security smoke and authenticated
+  load runners; measured load latency remains an open performance decision.
 
 The ordered work register is [Remaining Work Priority Register](remaining-work-priority.md);
 each item requires implementation, authorization, failure-path, test, sequence evidence and

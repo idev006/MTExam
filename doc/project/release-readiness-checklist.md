@@ -23,7 +23,8 @@ The ordered remaining work is maintained in [Remaining Work Priority Register](r
 - [x] Basic question-bank, paper and exam-window APIs
 - [x] Server-authoritative exam-window clock endpoint with expiry closure
 - [x] Audit API and baseline audit events for key mutations
-- [x] pytest, Ruff, Vue type-check and Vite build pass
+- [x] pytest (59 tests), Ruff, Vue type-check and Vite build pass
+- [x] Security smoke: unauthenticated boundary, protected boundary and login throttle
 - [x] SQLite migration and portable DDL compilation evidence
 - [x] Dependency-free HTTP load smoke evidence
 - [x] Backup script and production operations runbook

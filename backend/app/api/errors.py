@@ -31,6 +31,7 @@ def _response(
     code: str,
     message: str,
     field_errors: list[dict[str, Any]] | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
@@ -42,6 +43,7 @@ def _response(
                 "correlation_id": _correlation_id(request),
             }
         },
+        headers=headers,
     )
 
 
@@ -93,6 +95,7 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code=error.status_code,
             code=code_by_status.get(error.status_code, "HTTP_ERROR"),
             message=str(error.detail),
+            headers=error.headers,
         )
 
     @app.exception_handler(Exception)
