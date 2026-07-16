@@ -1,9 +1,10 @@
 # MTExam Project Management Plan
 
-**Version:** 1.0
-**Status:** Baseline for approval
-**Date:** 2026-07-15
+**Version:** 1.1
+**Status:** Living baseline — implementation cycle refreshed
+**Date:** 2026-07-16
 **Document owner:** Project Manager
+**Last status refresh:** 2026-07-16 — remaining-work implementation cycle
 **Review cadence:** ทุก milestone หรือเมื่อ governance เปลี่ยน
 
 ## 1. Purpose
@@ -405,6 +406,21 @@ production decision is maintained in [Release Readiness Checklist](release-readi
 and [Production Go/No-Go Decision Record](production-go-decision.md). `Verify` is not production
 approval. Before a ticket moves to `Done`, update its requirement row,
 test evidence, use-case documentation when behavior changes, Kanban status and status report.
+
+### 2026-07-16 implementation-cycle status
+
+- PostgreSQL 16 and MySQL 8.4 migration/startup smoke and development restore drill passed.
+- Authenticated 500-request/50-worker profile completed with zero request failures; p95 was
+  11.20 seconds, so performance tuning and production thresholds remain open.
+- Admin role/scope UI, random-pool preview, import rollback, detailed PDF/XLSX export and sequence
+  evidence were added.
+- Production remains No-Go until independent penetration testing, production restore sign-off,
+  full permission-matrix acceptance, audit coverage/retention, device acceptance and Police SSO
+  dependency resolution are complete.
+
+The ordered work register is [Remaining Work Priority Register](remaining-work-priority.md);
+each item requires implementation, authorization, failure-path, test, sequence evidence and
+operational acceptance before it can move to `Done`.
 
 ### Use-case completion governance
 
