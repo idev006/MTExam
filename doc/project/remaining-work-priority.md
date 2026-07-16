@@ -11,7 +11,7 @@
 | 1 | Authenticated load test ระดับ 500 users | profile ผ่าน 0 failures / performance ค้าง | 500-request summary profile ผ่าน แต่ p95 11.20s; ยังไม่ครอบคลุม exam workflow และยังไม่มี production latency threshold |
 | 2 | Independent penetration test และ security sign-off | security smoke เสร็จ / external ค้าง | automated smoke ตรวจ boundary/throttle แล้ว แต่ไม่แทนการตรวจ OWASP, privilege escalation, session, CSRF และ data leakage |
 | 3 | Production restore sign-off | ค้าง | dev restore ผ่านแล้ว แต่ต้องกำหนด RPO/RTO, encrypted off-host backup และ recurring drill |
-| 4 | Permission matrix ครบทุก role/endpoint | baseline acceptance test เสร็จ / full matrix ค้าง | ทดสอบ boundary หลักครบแล้ว แต่ต้องยืนยันทุก endpoint และกรณีข้ามหน่วยงาน |
+| 4 | Permission matrix ครบทุก role/endpoint | admin reporting roles added / full matrix ค้าง | `division_admin`, `bureau_admin`, `station_admin` now access scoped reports; ต้องยืนยันทุก endpoint และกรณีข้ามหน่วยงาน |
 | 5 | Admin UI สำหรับ role และ organization scope | implementation เสร็จ / device acceptance ค้าง | admin แก้ role, active/inactive และหน่วยงานได้โดยไม่ใช้ database direct access |
 | 6 | Random-pool acceptance | implementation เสร็จ / acceptance ค้าง | ต้องยืนยัน subject, difficulty, tag, จำนวนข้อ และ preview ผ่าน UI/API |
 | 7 | Audit coverage 100% | baseline เพิ่ม / full coverage ค้าง | ต้องตรวจทุก mutation ให้มี actor, before/after, IP, correlation ID และ retention policy |

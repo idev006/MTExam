@@ -20,7 +20,7 @@ export const router = createRouter({
       path: "/audit",
       name: "audit",
       component: AuditView,
-      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer"] },
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer", "division_admin", "bureau_admin", "station_admin"] },
     },
     {
       path: "/admin/users",
@@ -44,7 +44,7 @@ export const router = createRouter({
       path: "/reports",
       name: "reports",
       component: ReportsView,
-      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer"] },
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer", "division_admin", "bureau_admin", "station_admin"] },
     },
     {
       path: "/login",

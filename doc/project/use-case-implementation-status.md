@@ -28,6 +28,8 @@ Production acceptance gate is closed.
 - Paper preview endpoint and scoped exam-session XLSX export
 - Admin scope-assignment API for replacing a user’s active organization assignments
 - Random-pool paper selection with deterministic seed and preview support
+- Division/bureau/station admin scoped reporting: own organization plus active descendants,
+  including organization-level breakdown statistics
 
 ## Partial / Production hardening
 

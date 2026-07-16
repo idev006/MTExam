@@ -32,3 +32,23 @@ def active_org_unit_ids(db: Session, account: UserAccount) -> set[UUID]:
 
 def can_access_org_unit(db: Session, account: UserAccount, org_unit_id: UUID) -> bool:
     return account.role == UserRole.SUPER_ADMIN or org_unit_id in active_org_unit_ids(db, account)
+
+
+def accessible_org_unit_ids(db: Session, account: UserAccount) -> set[UUID]:
+    """Return assigned units plus all active descendants for scoped reporting."""
+    roots = active_org_unit_ids(db, account)
+    if account.role == UserRole.SUPER_ADMIN:
+        return roots
+    all_units = list(db.scalars(select(OrgUnit).where(OrgUnit.status == "active")))
+    children: dict[UUID | None, list[UUID]] = {}
+    for unit in all_units:
+        children.setdefault(unit.parent_id, []).append(unit.id)
+    result = set(roots)
+    queue = list(roots)
+    while queue:
+        parent_id = queue.pop()
+        for child_id in children.get(parent_id, []):
+            if child_id not in result:
+                result.add(child_id)
+                queue.append(child_id)
+    return result

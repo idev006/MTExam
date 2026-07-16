@@ -25,7 +25,7 @@ from backend.app.db.models import (
     UserAccount,
 )
 from backend.app.domain.enums import UserRole
-from backend.app.services.org_authorization import active_org_unit_ids
+from backend.app.services.org_authorization import accessible_org_unit_ids
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -47,6 +47,14 @@ class ExamCreationStats(BaseModel):
     session_total: int
     submitted_total: int
     in_progress_total: int
+    average_score: float | None
+
+
+class OrganizationStats(BaseModel):
+    org_unit_id: str
+    org_unit_name: str
+    session_total: int
+    submitted_total: int
     average_score: float | None
 
 
@@ -82,7 +90,7 @@ def _xlsx_from_rows(rows: list[list[object]], sheet_name: str = "Report") -> byt
 @router.get("/summary", response_model=SystemReport)
 def get_summary(
     db: Annotated[Session, Depends(get_db_session)],
-    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN))],
     employee_status: str | None = None,
 ) -> SystemReport:
     employee_query = select(func.count()).select_from(Employee)
@@ -95,7 +103,7 @@ def get_summary(
     exam_scope = [ExamSession.status == "submitted"]
     progress_scope = [ExamSession.status == "in_progress"]
     if account.role != UserRole.SUPER_ADMIN:
-        allowed = active_org_unit_ids(db, account)
+        allowed = accessible_org_unit_ids(db, account)
         exam_scope.append(ExamSession.org_unit_id.in_(allowed))
         progress_scope.append(ExamSession.org_unit_id.in_(allowed))
     practice_submitted = db.scalar(select(func.count()).select_from(PracticeExamSession).where(PracticeExamSession.status == "submitted")) or 0
@@ -120,13 +128,13 @@ def get_summary(
 @router.get("/exam-creations", response_model=list[ExamCreationStats])
 def list_exam_creation_stats(
     db: Annotated[Session, Depends(get_db_session)],
-    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.EXAM_AUTHOR))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.EXAM_AUTHOR, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN))],
     subject_id: str | None = None,
 ) -> list[ExamCreationStats]:
     """Statistics are scoped to each ExamPaper creation, never combined globally."""
     query = select(ExamPaper).order_by(ExamPaper.created_at.desc())
     if account.role != UserRole.SUPER_ADMIN:
-        query = query.where(ExamPaper.org_unit_id.in_(active_org_unit_ids(db, account)))
+        query = query.where(ExamPaper.org_unit_id.in_(accessible_org_unit_ids(db, account)))
     if subject_id:
         query = query.where(ExamPaper.subject_id == subject_id)
     result: list[ExamCreationStats] = []
@@ -139,17 +147,34 @@ def list_exam_creation_stats(
     return result
 
 
+@router.get("/organizations", response_model=list[OrganizationStats])
+def list_organization_stats(
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN))],
+) -> list[OrganizationStats]:
+    allowed = accessible_org_unit_ids(db, account)
+    units = {unit.id: unit for unit in db.scalars(select(OrgUnit).where(OrgUnit.id.in_(allowed)))}
+    sessions = list(db.scalars(select(ExamSession).where(ExamSession.org_unit_id.in_(allowed))))
+    result: list[OrganizationStats] = []
+    for org_id, unit in units.items():
+        scoped = [session for session in sessions if session.org_unit_id == org_id]
+        submitted = [session for session in scoped if session.status == "submitted"]
+        scores = [float(session.score) for session in submitted if session.score is not None]
+        result.append(OrganizationStats(org_unit_id=str(org_id), org_unit_name=unit.name, session_total=len(scoped), submitted_total=len(submitted), average_score=sum(scores) / len(scores) if scores else None))
+    return sorted(result, key=lambda item: item.org_unit_name)
+
+
 @router.get("/employees.csv")
 def export_employees_csv(
     db: Annotated[Session, Depends(get_db_session)],
-    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN))],
 ) -> StreamingResponse:
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["emp_cid", "emp_fname", "emp_lname", "emp_position", "emp_bh", "emp_bk", "emp_kk", "emp_status"])
     employees = list(db.scalars(select(Employee).order_by(Employee.emp_cid)))
     if account.role != UserRole.SUPER_ADMIN:
-        allowed_ids = active_org_unit_ids(db, account)
+        allowed_ids = accessible_org_unit_ids(db, account)
         units = list(db.scalars(select(OrgUnit).where(OrgUnit.id.in_(allowed_ids))))
         names = {value for unit in units for value in (unit.name, unit.code)}
         employees = [employee for employee in employees if employee.emp_bk in names or employee.emp_kk in names]
@@ -161,7 +186,7 @@ def export_employees_csv(
 @router.get("/summary.pdf")
 def export_summary_pdf(
     db: Annotated[Session, Depends(get_db_session)],
-    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN))],
 ) -> Response:
     """Export the system summary as a compact PDF; Excel can be added without changing the report model."""
     report = get_summary(db, account)
@@ -194,7 +219,7 @@ def export_summary_pdf(
 @router.get("/summary.xlsx")
 def export_summary_xlsx(
     db: Annotated[Session, Depends(get_db_session)],
-    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN))],
 ) -> Response:
     report = get_summary(db, account)
     content = _xlsx_from_rows(
@@ -223,7 +248,7 @@ def export_exam_sessions_xlsx(
     if status:
         query = query.where(ExamSession.status == status)
     if account.role != UserRole.SUPER_ADMIN:
-        query = query.where(ExamSession.org_unit_id.in_(active_org_unit_ids(db, account)))
+        query = query.where(ExamSession.org_unit_id.in_(accessible_org_unit_ids(db, account)))
     if org_unit_id:
         query = query.where(ExamSession.org_unit_id == org_unit_id)
     rows: list[list[object]] = [["session_id", "person_id", "org_unit_id", "status", "score", "started_at", "submitted_at"]]
@@ -236,14 +261,14 @@ def export_exam_sessions_xlsx(
 @router.get("/exam-sessions.pdf")
 def export_exam_sessions_pdf(
     db: Annotated[Session, Depends(get_db_session)],
-    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN))],
     status: str | None = None,
 ) -> Response:
     query = select(ExamSession).order_by(ExamSession.started_at.desc())
     if status:
         query = query.where(ExamSession.status == status)
     if account.role != UserRole.SUPER_ADMIN:
-        query = query.where(ExamSession.org_unit_id.in_(active_org_unit_ids(db, account)))
+        query = query.where(ExamSession.org_unit_id.in_(accessible_org_unit_ids(db, account)))
     sessions = list(db.scalars(query))
     try:
         from reportlab.lib.pagesizes import A4
