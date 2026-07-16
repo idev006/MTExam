@@ -10,6 +10,8 @@ import UserAdminView from "@/views/UserAdminView.vue";
 import AuthoringView from "@/views/AuthoringView.vue";
 import PaperBuilderView from "@/views/PaperBuilderView.vue";
 import AuditView from "@/views/AuditView.vue";
+import ExamLobbyView from "@/views/ExamLobbyView.vue";
+import ExamSessionView from "@/views/ExamSessionView.vue";
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,6 +61,18 @@ export const router = createRouter({
       name: "settings",
       component: SettingsView,
       meta: { requiresAuth: true, allowedRoles: ["super_admin"] },
+    },
+    {
+      path: "/exam",
+      name: "exam-lobby",
+      component: ExamLobbyView,
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "examinee"] },
+    },
+    {
+      path: "/exam/window/:windowId",
+      name: "exam-session",
+      component: ExamSessionView,
+      meta: { requiresAuth: true, allowedRoles: ["super_admin", "examinee"] },
     },
     {
       path: "/exam/pdpa",

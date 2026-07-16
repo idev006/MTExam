@@ -54,7 +54,7 @@ async function confirmLogout() {
           </RouterLink>
           <nav class="hidden items-center gap-1 lg:flex">
             <RouterLink class="btn btn-ghost btn-sm" active-class="btn-active" to="/">ภาพรวม</RouterLink>
-            <RouterLink v-if="canTakeExam" class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam/pdpa">ทำข้อสอบ</RouterLink>
+            <RouterLink v-if="canTakeExam" class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam">ทำข้อสอบ</RouterLink>
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/authoring">คลังข้อสอบ</RouterLink>
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/papers">Exam Paper</RouterLink>
             <RouterLink v-if="canViewReports" class="btn btn-ghost btn-sm" active-class="btn-active" to="/reports">รายงาน</RouterLink>
@@ -74,7 +74,7 @@ async function confirmLogout() {
         <div v-if="user" class="mb-2 rounded-box bg-base-200 p-3"><p class="text-sm">ยินดีต้อนรับ คุณ {{ user.full_name }}</p><span class="badge badge-primary mt-1 whitespace-nowrap">{{ roleLabel }}</span></div>
         <nav class="grid gap-1">
           <RouterLink class="btn btn-ghost justify-start" to="/" @click="mobileMenuOpen = false">ภาพรวม</RouterLink>
-          <RouterLink v-if="canTakeExam" class="btn btn-ghost justify-start" to="/exam/pdpa" @click="mobileMenuOpen = false">ทำข้อสอบ</RouterLink>
+          <RouterLink v-if="canTakeExam" class="btn btn-ghost justify-start" to="/exam" @click="mobileMenuOpen = false">ทำข้อสอบ</RouterLink>
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/authoring" @click="mobileMenuOpen = false">คลังข้อสอบ</RouterLink>
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/papers" @click="mobileMenuOpen = false">Exam Paper</RouterLink>
           <RouterLink v-if="canViewReports" class="btn btn-ghost justify-start" to="/reports" @click="mobileMenuOpen = false">รายงาน</RouterLink>

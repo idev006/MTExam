@@ -62,8 +62,9 @@ and expiry closure, question editing/publish validation, paper validation, mutat
 and the SQLite backup/restore runbook. Full ExamSession timer integration, rollback UX, version
 snapshots, live database execution and authenticated load remain release-gate work.
 
-The real exam session API is now implemented for start/resume, durable answer upsert, server-side
-timeout and idempotent submit; frontend exam-window wiring and end-to-end acceptance remain to be verified.
+The real exam session API and Vue exam lobby/session wiring are now implemented for start/resume,
+durable answer upsert, server-side timeout and idempotent submit; bureau eligibility and end-to-end
+acceptance remain to be verified.
 
 - MVP vertical-slice human review and acceptance
 - Production-readiness verification against `release-readiness-checklist.md`

@@ -14,7 +14,7 @@ Production acceptance gate is closed.
 - Question Bank: subject-bound bank, question/choice creation, validation and publish
 - Exam Creation: subject, desired question count, selected questions, variants and allowed bureaus
 - Reports baseline: summary, employee CSV and per-Exam-Creation statistics
-- Durable practice recovery and real exam-session API start/resume/answer/submit baseline
+- Durable practice recovery and real exam-session API plus Vue exam lobby/session UI baseline
 - Exam window management and server clock endpoint
 - User administration, audit API/UI baseline and responsive role-aware UI
 
@@ -26,7 +26,7 @@ Production acceptance gate is closed.
 | Authorization | Organization scope service, account lifecycle and permission matrix | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
 | Exam Paper | Random pool, immutable snapshots, deterministic variants and preview | P0 |
-| Exam Session | Connect real API to Vue exam UI; enforce bureau eligibility end-to-end | P0 |
+| Exam Session | Enforce bureau eligibility end-to-end and complete acceptance testing | P0 |
 | Scoring | Weighted rules, result API and rationale flow for real sessions | P0 |
 | Reporting | Examinee result, organization/time filters and report CSV export | P1 |
 | Audit | 100% mutation coverage, before/after detail, retention and export | P1 |
@@ -38,4 +38,3 @@ Production acceptance gate is closed.
 Every Partial row requires a linked ticket, acceptance test, sequence evidence and release evidence
 before it can move to `Done`. Use this document with the Kanban board, traceability matrix and
 release-readiness checklist.
-

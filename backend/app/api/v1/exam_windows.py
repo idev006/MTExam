@@ -50,7 +50,7 @@ class WindowClockResponse(BaseModel):
 @router.get("", response_model=list[WindowResponse])
 def list_windows(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.VIEWER))],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.VIEWER, UserRole.EXAMINEE))],
 ) -> list[WindowResponse]:
     return [_response(window) for window in db.scalars(select(ExamWindow).order_by(ExamWindow.created_at.desc()))]
 
