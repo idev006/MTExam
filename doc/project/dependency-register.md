@@ -10,6 +10,7 @@ Python versions pin ใน requirements.txt:
 - Psycopg and PyMySQL
 - pwdlib/Argon2 and PyJWT
 - pytest, pytest-cov, httpx2 and Ruff
+- ECharts 6 and vue-echarts 8 for responsive statistical dashboards
 
 SQLite driver มากับ Python
 
