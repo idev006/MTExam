@@ -24,8 +24,9 @@
 รายการจะย้ายเป็น `Done` เมื่อมี implementation, authorization, failure-path, automated test,
 เอกสาร/sequence evidence และ operational acceptance ครบตาม Definition of Done
 
+Sequence evidence: [Remaining Work Sequences](diagrams/remaining-work-sequences.md)
+
 ## Release rule
 
 Production Go ต้องรอรายการ 1–5 และ 7–10 มีหลักฐานครบ ส่วนรายการ 6 ต้องผ่าน acceptance ก่อนเปิดใช้
 random-pool ในการสอบจริง
-
