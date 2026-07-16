@@ -59,6 +59,54 @@ def test_exam_creation_subjects_are_loaded_from_database(client: TestClient) -> 
     assert any(subject["id"] == created.json()["id"] for subject in subjects)
 
 
+def test_exam_author_can_create_exam_creation_with_policy_and_quota(
+    client: TestClient,
+) -> None:
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "author", "password": "author1234"}
+        ).status_code
+        == 200
+    )
+    subject = next(
+        row for row in client.get("/api/v1/question-banks/subjects").json() if row["code"] == "PDPA"
+    )
+    questions = client.get(
+        "/api/v1/question-banks/questions", params={"subject_id": subject["id"]}
+    ).json()
+    owner = next(
+        row for row in client.get("/api/v1/org-units").json() if row["code"].startswith("BAG_")
+    )
+
+    response = client.post(
+        "/api/v1/papers",
+        json={
+            "title": "Exam Creation API regression",
+            "org_unit_id": owner["id"],
+            "subject_id": subject["id"],
+            "question_ids": [questions[0]["id"]],
+            "desired_question_count": 1,
+            "eligible_org_units": [{"org_unit_id": owner["id"], "eligible_count": 100}],
+            "passing_percentage": 60,
+            "variant_count": 1,
+            "question_selection_mode": "random_pool",
+            "pool_criteria": {"difficulty": "พื้นฐาน"},
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "id": response.json()["id"],
+        "title": "Exam Creation API regression",
+        "status": "draft",
+        "question_count": 1,
+        "subject_id": subject["id"],
+        "desired_question_count": 1,
+        "allowed_org_unit_count": 1,
+        "passing_percentage": 60.0,
+    }
+
+
 def test_practice_session_recovers_answers_and_submit_is_idempotent(client: TestClient) -> None:
     assert (
         client.post(

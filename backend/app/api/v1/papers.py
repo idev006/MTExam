@@ -3,6 +3,7 @@ from __future__ import annotations
 # The endpoint declarations are intentionally kept compact; domain validation remains typed.
 # ruff: noqa: E501
 import hashlib
+import json
 import random
 from decimal import Decimal
 from typing import Annotated
@@ -147,7 +148,11 @@ def create_paper(
     paper = ExamPaper(
         title=payload.title,
         question_selection_mode=payload.question_selection_mode,
-        pool_criteria=str(payload.pool_criteria) if payload.pool_criteria else None,
+        pool_criteria_text=(
+            json.dumps(payload.pool_criteria, ensure_ascii=False, sort_keys=True)
+            if payload.pool_criteria
+            else None
+        ),
         variant_count=payload.variant_count,
         desired_question_count=payload.desired_question_count,
         passing_percentage=payload.passing_percentage,

@@ -149,3 +149,11 @@ The `doc/p6-station.txt` development/test seed now preserves the documented pare
 from provincial station sections to บก.อก.ภ.6 sub-units. This adds ฝ่ายอำนวยการ 1–6 beneath
 บก.อก.ภ.6, retains the seven บก.สส.ภ.6 and four ศฝร.ภ.6 children, and completes a fresh database in
 one idempotent seed pass.
+
+### Exam Creation create-path correction — 2026-07-17
+
+`POST /papers` now maps the API `pool_criteria` contract to the persisted
+`ExamPaper.pool_criteria_text` ORM field and stores deterministic JSON. The previous keyword mismatch
+raised an unhandled `TypeError` and returned `500 An unexpected error occurred` before creating the
+paper. A full API regression test now covers subject, selected question, random-pool criteria, pass
+percentage, and organization quota in one successful create request.

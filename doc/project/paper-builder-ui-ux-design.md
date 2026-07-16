@@ -65,5 +65,8 @@ sequenceDiagram
 
 - `frontend/src/components/papers/OrgQuotaTree.test.ts` covers parent coverage, ancestor blocking,
   sibling selection, quota updates, and defensive overlap detection.
+- `tests/api/test_system_api.py` creates an Exam Creation through `POST /papers` with subject,
+  question pool criteria, passing policy, and organization quota, protecting the ORM/API field
+  mapping from returning an unexpected `500`.
 - Backend overlap and transaction-safe quota enforcement remain implemented in the paper and exam
   quota services.
