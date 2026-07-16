@@ -128,3 +128,10 @@ live database/load verification and independent penetration testing.
 สถานะในไฟล์นี้เป็นรายงาน snapshot เท่านั้น [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
 เป็น SSOT ของ current task status และไฟล์นี้ใช้สรุป periodic report
 Project visibility ปัจจุบันเป็น Private; owner ต้องอนุมัติก่อนเปิด Public หรือเพิ่ม team access
+
+### UI layout update — 2026-07-16
+
+The authenticated application shell now uses the full viewport width with responsive gutters.
+This removes the previous 1152/1280 px content caps and gives reporting charts and wide tables more
+usable space on notebook, desktop, and extra-wide displays. A component test protects the full-width
+container contract.

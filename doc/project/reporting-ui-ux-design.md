@@ -106,6 +106,13 @@ sequenceDiagram
   และ quota unit snapshot โดย backend lock quota ก่อนเริ่มสอบ
 - การเลือกเก็บ quota เป็นจำนวนทำให้ `not_started` มีเฉพาะยอดรวม ไม่สามารถระบุรายชื่อผู้ไม่เข้าสอบ
 
+### Full-width application shell
+
+- Authenticated pages and the primary navigation use the available viewport width without a fixed
+  `max-width`, allowing report charts and data tables to expand on notebook and desktop displays.
+- Responsive horizontal gutters remain at 16 px on smartphones, 24 px on tablets, 32 px on desktop,
+  and 40 px on extra-wide screens so content does not touch the viewport edge.
+
 Automated evidence อยู่ที่ `tests/api/test_reporting_api.py`,
 `tests/unit/test_report_rules.py` และ frontend component tests ใต้ `frontend/src`.
 Local browser acceptance ผ่านที่ 360, 768, 1366 และ 1920 px โดยไม่มี horizontal overflow,

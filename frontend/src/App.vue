@@ -44,7 +44,7 @@ async function confirmLogout() {
 <template>
   <div class="min-h-screen bg-base-200/50">
     <header v-if="!isLoginPage" class="sticky top-0 z-30 border-b border-base-300 bg-base-100/95 backdrop-blur">
-      <div class="navbar mx-auto min-h-16 w-full max-w-7xl gap-2 px-3 sm:px-5">
+      <div class="navbar min-h-16 w-full gap-2 px-3 sm:px-6 lg:px-8 2xl:px-10">
         <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           <button class="btn btn-square btn-ghost lg:hidden" type="button" aria-label="เปิดเมนู" @click="mobileMenuOpen = !mobileMenuOpen">
             <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
