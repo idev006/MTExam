@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import date, timedelta
+from decimal import Decimal
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,14 +17,26 @@ from backend.app.api.errors import register_exception_handlers
 from backend.app.api.middleware import CorrelationIdMiddleware
 from backend.app.api.router import api_router
 from backend.app.config import PROJECT_ROOT, Settings, get_settings
-from backend.app.db.base import Base
+from backend.app.db.base import Base, utc_now
 from backend.app.db.database import Database
 from backend.app.db.models import (
+    Employee,
+    ExamAnswer,
+    ExamPaper,
+    ExamPaperOrgUnit,
+    ExamPaperQuestion,
+    ExamSession,
+    ExamVariant,
+    ExamVariantQuestion,
+    ExamWindow,
+    ExamWindowScope,
     OrgUnit,
     Person,
+    PersonUnitAssignment,
     Question,
     QuestionBank,
     QuestionChoice,
+    QuestionVersion,
     Subject,
     UserAccount,
 )
@@ -104,6 +119,210 @@ def _seed_development_accounts(db) -> None:
         )
     db.commit()
     _seed_pdpa_question_bank(db)
+    _seed_demo_exam_data(db)
+
+
+def _seed_demo_exam_data(db) -> None:
+    """Create an end-to-end exam trail for development and UI demonstrations."""
+    columns = {column["name"] for column in inspect(db.bind).get_columns("question_banks")}
+    if "subject_id" not in columns:
+        return
+    bank = db.scalar(select(QuestionBank).where(QuestionBank.name == "PDPA-TH-50"))
+    demo = db.scalar(select(UserAccount).where(UserAccount.username_normalized == "demo"))
+    author = db.scalar(select(UserAccount).where(UserAccount.username_normalized == "author"))
+    bureau = db.scalar(select(OrgUnit).where(OrgUnit.level == "bureau"))
+    subject = db.scalar(select(Subject).where(Subject.code == "PDPA"))
+    if not all((bank, demo, author, bureau, subject)):
+        return
+
+    if db.scalar(select(Employee).where(Employee.emp_cid == "0000000000001")) is None:
+        for index in range(1, 11):
+            db.add(
+                Employee(
+                    emp_cid=f"000000000000{index}",
+                    emp_fname=f"Demo{index}",
+                    emp_lname="Examinee",
+                    emp_position="ผู้เข้าสอบ",
+                    emp_bh="ภ.6",
+                    emp_bk=bureau.name,
+                    emp_kk="หน่วยทดสอบ",
+                    emp_status="active",
+                )
+            )
+    if db.scalar(
+        select(PersonUnitAssignment).where(
+            PersonUnitAssignment.person_id == demo.person_id,
+            PersonUnitAssignment.org_unit_id == bureau.id,
+        )
+    ) is None:
+        db.add(
+            PersonUnitAssignment(
+                person_id=demo.person_id,
+                org_unit_id=bureau.id,
+                effective_from=date.today(),
+            )
+        )
+
+    paper = db.scalar(
+        select(ExamPaper).where(ExamPaper.title == "PDPA Demo Exam - 10 Questions")
+    )
+    if paper is None:
+        paper = ExamPaper(
+            subject_id=subject.id,
+            title="PDPA Demo Exam - 10 Questions",
+            question_selection_mode="fixed_set",
+            variant_count=1,
+            desired_question_count=10,
+            status="published",
+            org_unit_id=bureau.id,
+            created_by=author.person_id,
+            published_at=utc_now(),
+        )
+        db.add(paper)
+        db.flush()
+        questions = list(
+            db.scalars(
+                select(Question)
+                .where(Question.bank_id == bank.id)
+                .order_by(Question.created_at)
+                .limit(10)
+            )
+        )
+        db.add_all(
+            [
+                ExamPaperQuestion(
+                    exam_paper_id=paper.id,
+                    question_id=question.id,
+                    base_order_index=index,
+                    score_weight=Decimal("1"),
+                )
+                for index, question in enumerate(questions)
+            ]
+        )
+        db.add(ExamPaperOrgUnit(exam_paper_id=paper.id, org_unit_id=bureau.id))
+        db.flush()
+
+    window = db.scalar(select(ExamWindow).where(ExamWindow.exam_paper_id == paper.id))
+    if window is None:
+        now = utc_now()
+        window = ExamWindow(
+            exam_paper_id=paper.id,
+            mode="fixed_batch",
+            duration_minutes=60,
+            late_entry_minutes=15,
+            window_open_at=now - timedelta(minutes=5),
+            window_close_at=now + timedelta(minutes=55),
+            status="open",
+            created_by=author.person_id,
+        )
+        db.add(window)
+        db.flush()
+        db.add(ExamWindowScope(exam_window_id=window.id, org_unit_id=bureau.id))
+
+    if db.scalar(
+        select(ExamSession).where(
+            ExamSession.exam_window_id == window.id,
+            ExamSession.person_id == demo.person_id,
+        )
+    ) is None:
+        variant = db.scalar(
+            select(ExamVariant).where(ExamVariant.exam_paper_id == paper.id)
+        )
+        if variant is None:
+            variant = ExamVariant(
+                exam_paper_id=paper.id,
+                variant_label="A",
+                generation_seed_reference="demo-seed",
+            )
+            db.add(variant)
+            db.flush()
+            paper_questions = list(
+                db.scalars(
+                    select(ExamPaperQuestion)
+                    .where(ExamPaperQuestion.exam_paper_id == paper.id)
+                    .order_by(ExamPaperQuestion.base_order_index)
+                )
+            )
+            for index, paper_question in enumerate(paper_questions):
+                question = db.get(Question, paper_question.question_id)
+                choices = list(
+                    db.scalars(
+                        select(QuestionChoice)
+                        .where(QuestionChoice.question_id == question.id)
+                        .order_by(QuestionChoice.base_order)
+                    )
+                )
+                version = QuestionVersion(
+                    question_id=question.id,
+                    content_snapshot=question.content,
+                    explanation=question.explanation,
+                    choices_snapshot_text=json.dumps(
+                        [
+                            {
+                                "id": str(choice.id),
+                                "content": choice.content,
+                                "is_correct": choice.is_correct,
+                            }
+                            for choice in choices
+                        ],
+                        ensure_ascii=False,
+                    ),
+                )
+                db.add(version)
+                db.flush()
+                db.add(
+                    ExamVariantQuestion(
+                        exam_variant_id=variant.id,
+                        question_version_id=version.id,
+                        order_index=index,
+                        choice_display_order_text=json.dumps(
+                            [str(choice.id) for choice in choices]
+                        ),
+                        score_weight=paper_question.score_weight,
+                    )
+                )
+            db.flush()
+        now = utc_now()
+        session = ExamSession(
+            person_id=demo.person_id,
+            exam_window_id=window.id,
+            exam_variant_id=variant.id,
+            examinee_snapshot_text=json.dumps(
+                {"username": "demo", "display_name": "Demo Examinee"}
+            ),
+            org_unit_id=bureau.id,
+            started_at=now - timedelta(minutes=30),
+            ends_at=now + timedelta(minutes=30),
+            submitted_at=now - timedelta(minutes=5),
+            status="submitted",
+            score=Decimal("7"),
+        )
+        db.add(session)
+        db.flush()
+        variant_questions = list(
+            db.scalars(
+                select(ExamVariantQuestion)
+                .where(ExamVariantQuestion.exam_variant_id == variant.id)
+                .order_by(ExamVariantQuestion.order_index)
+            )
+        )
+        for index, variant_question in enumerate(variant_questions):
+            version = db.get(QuestionVersion, variant_question.question_version_id)
+            choices = json.loads(version.choices_snapshot_text)
+            selected = next(choice for choice in choices if choice["is_correct"])
+            if index >= 7:
+                selected = choices[1]
+            db.add(
+                ExamAnswer(
+                    exam_session_id=session.id,
+                    exam_variant_question_id=variant_question.id,
+                    selected_choice_id=UUID(selected["id"]),
+                    first_answered_at=now - timedelta(minutes=25),
+                    last_updated_at=now - timedelta(minutes=6),
+                    is_correct_cache=index < 7,
+                )
+            )
+    db.commit()
 
 
 def _seed_pdpa_question_bank(db) -> None:
