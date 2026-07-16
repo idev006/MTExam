@@ -46,6 +46,7 @@ class ChoiceInput(BaseModel):
 
 class QuestionCreate(BaseModel):
     content: str = Field(min_length=1)
+    explanation: str | None = None
     difficulty: str | None = None
     choices: list[ChoiceInput] = Field(min_length=2, max_length=10)
 
@@ -153,7 +154,7 @@ def create_question(
         raise HTTPException(status_code=404, detail="Draft question bank not found")
     if sum(choice.is_correct for choice in payload.choices) != 1:
         raise HTTPException(status_code=422, detail="Exactly one choice must be correct")
-    question = Question(bank_id=bank.id, content=payload.content, difficulty=payload.difficulty)
+    question = Question(bank_id=bank.id, content=payload.content, explanation=payload.explanation, difficulty=payload.difficulty)
     db.add(question)
     db.flush()
     db.add_all(
@@ -218,7 +219,7 @@ def update_question(
         raise HTTPException(status_code=404, detail="Draft question not found")
     if sum(choice.is_correct for choice in payload.choices) != 1:
         raise HTTPException(status_code=422, detail="Exactly one choice must be correct")
-    question.content, question.difficulty = payload.content, payload.difficulty
+    question.content, question.explanation, question.difficulty = payload.content, payload.explanation, payload.difficulty
     for choice in list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id))):
         db.delete(choice)
     db.flush()

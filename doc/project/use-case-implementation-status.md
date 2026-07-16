@@ -12,6 +12,7 @@ Production acceptance gate is closed.
 - Authentication: login, logout, `/auth/me`, cookie sessions and session limits
 - Subject and organization lookup, including ภ.6 bureau seed data
 - Question Bank: subject-bound bank, question/choice creation, validation and publish
+- Development seed: PDPA-TH-50 bank with 50 questions, four choices, correct answer and explanation
 - Exam Creation: subject, desired question count, selected questions, variants and allowed bureaus
 - Reports baseline: summary, employee CSV and per-Exam-Creation statistics
 - Durable practice recovery and real exam-session API plus Vue exam lobby/session UI baseline

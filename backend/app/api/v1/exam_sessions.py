@@ -178,7 +178,7 @@ def _ensure_variant(paper: ExamPaper, db: Session) -> ExamVariant:
     for index, paper_question in enumerate(questions):
         question = db.get(Question, paper_question.question_id)
         choices = list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order)))
-        version = QuestionVersion(question_id=question.id, content_snapshot=question.content, choices_snapshot_text=json.dumps([{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in choices]))
+        version = QuestionVersion(question_id=question.id, content_snapshot=question.content, explanation=question.explanation, choices_snapshot_text=json.dumps([{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in choices]))
         db.add(version)
         db.flush()
         db.add(ExamVariantQuestion(exam_variant_id=variant.id, question_version_id=version.id, order_index=index, choice_display_order_text=json.dumps([str(choice.id) for choice in choices]), score_weight=paper_question.score_weight))
@@ -198,5 +198,8 @@ def _response(session: ExamSession, db: Session) -> SessionResponse:
     for row in variant_questions:
         version = db.get(QuestionVersion, row.question_version_id)
         snapshot = json.loads(version.choices_snapshot_text) if version else []
-        questions.append({"id": str(row.id), "order_index": row.order_index, "content": version.content_snapshot if version else "", "choices": [{"id": choice["id"], "content": choice["content"]} for choice in snapshot]})
+        item = {"id": str(row.id), "order_index": row.order_index, "content": version.content_snapshot if version else "", "choices": [{"id": choice["id"], "content": choice["content"]} for choice in snapshot]}
+        if session.status == ExamSessionStatus.SUBMITTED and version:
+            item["explanation"] = version.explanation
+        questions.append(item)
     return SessionResponse(id=session.id, exam_window_id=session.exam_window_id, status=session.status, started_at=session.started_at.isoformat(), ends_at=session.ends_at.isoformat(), submitted_at=session.submitted_at.isoformat() if session.submitted_at else None, score=float(session.score) if session.score is not None else None, answers=answers, questions=questions)

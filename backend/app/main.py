@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -7,7 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import select
+from sqlalchemy import inspect, select
 
 from backend.app.api.errors import register_exception_handlers
 from backend.app.api.middleware import CorrelationIdMiddleware
@@ -15,7 +16,15 @@ from backend.app.api.router import api_router
 from backend.app.config import PROJECT_ROOT, Settings, get_settings
 from backend.app.db.base import Base
 from backend.app.db.database import Database
-from backend.app.db.models import OrgUnit, Person, Subject, UserAccount
+from backend.app.db.models import (
+    OrgUnit,
+    Person,
+    Question,
+    QuestionBank,
+    QuestionChoice,
+    Subject,
+    UserAccount,
+)
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.domain.security import hash_password
 
@@ -92,6 +101,57 @@ def _seed_development_accounts(db) -> None:
                 role=role,
                 status=ActiveStatus.ACTIVE,
             )
+        )
+    db.commit()
+    _seed_pdpa_question_bank(db)
+
+
+def _seed_pdpa_question_bank(db) -> None:
+    """Load the checked-in 50-question PDPA bank into development SQLite once."""
+    # A legacy development database may predate the subject migration. Startup must
+    # remain usable so the operator can run Alembic instead of failing during seeding.
+    columns = {column["name"] for column in inspect(db.bind).get_columns("question_banks")}
+    if "subject_id" not in columns:
+        return
+    source = PROJECT_ROOT / "data" / "question_banks" / "pdpa_50.json"
+    subject = db.scalar(select(Subject).where(Subject.code == "PDPA"))
+    owner = db.scalar(select(OrgUnit).where(OrgUnit.code == "POLICE_REGION_6"))
+    author = db.scalar(select(UserAccount).where(UserAccount.username_normalized == "author"))
+    if not source.exists() or subject is None or owner is None or author is None:
+        return
+    bank = db.scalar(select(QuestionBank).where(QuestionBank.name == "PDPA-TH-50"))
+    if bank is not None:
+        return
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    bank = QuestionBank(
+        name="PDPA-TH-50",
+        subject_id=subject.id,
+        owner_org_unit_id=owner.id,
+        is_shared=True,
+        status="active",
+        created_by=author.person_id,
+    )
+    db.add(bank)
+    db.flush()
+    for item in payload["questions"]:
+        question = Question(
+            bank_id=bank.id,
+            content=item["content"],
+            explanation=item.get("explanation"),
+            difficulty="พื้นฐาน",
+        )
+        db.add(question)
+        db.flush()
+        db.add_all(
+            [
+                QuestionChoice(
+                    question_id=question.id,
+                    content=choice,
+                    is_correct=index == item["correct_index"],
+                    base_order=index,
+                )
+                for index, choice in enumerate(item["choices"])
+            ]
         )
     db.commit()
 
