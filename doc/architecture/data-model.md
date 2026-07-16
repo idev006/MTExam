@@ -194,3 +194,7 @@ Index จริงต้องยืนยันด้วย query/load test ไ
 `OrgUnit` stores the hierarchy `ตำรวจภูธรภาค 6` (division) → bureau-level units. The 13 ภ.6
 units supplied by the data owner are seeded for development/test and can be selected by
 Question Bank and Exam Paper creation.
+The checked-in `doc/p6-station.txt` also seeds 147 `station` records under the nine
+provincial bureaus and 17 `sub_unit` records (กองกำกับการ-level children) under บก.อก.ภ.6,
+บก.สส.ภ.6 and ศฝร.ภ.6. The source file remains the SSOT for these names; the seed is
+idempotent and does not overwrite manually maintained records.

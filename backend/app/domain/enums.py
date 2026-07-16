@@ -10,6 +10,7 @@ class OrgUnitLevel(StrEnum):
     DIVISION = "division"
     BUREAU = "bureau"
     STATION = "station"
+    SUB_UNIT = "sub_unit"
 
 
 class UserRole(StrEnum):

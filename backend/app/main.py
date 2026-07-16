@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
@@ -91,6 +92,7 @@ def _seed_development_accounts(db) -> None:
         )
         db.flush()
     _seed_region6_org_units(db)
+    _seed_region6_sub_units(db)
     _seed_development_subjects(db)
     accounts = (
         ("demo", "demo1234", "ผู้เข้าสอบสาธิต", UserRole.EXAMINEE),
@@ -409,6 +411,95 @@ def _seed_region6_org_units(db) -> None:
                     name=name,
                     level="bureau",
                     parent_id=parent.id,
+                    status=ActiveStatus.ACTIVE,
+                )
+            )
+
+
+def _seed_region6_sub_units(db) -> None:
+    """Import the checked-in p6 station file's sub-unit sections idempotently."""
+    source = PROJECT_ROOT / "doc" / "p6-station.txt"
+    if not source.exists():
+        return
+    parent_names = {
+        "หน่วยงานระดับกองกำกับการใต้หน่วย กองบังคับการอำนวยการตำรวจภูธรภาค 6 (บก.อก.ภ.6)": (
+            "BAG_อำนวยการ_ภ6"
+        ),
+        "กองบังคับการสืบสวนสอบสวนตำรวจภูธรภาค 6 (บก.สส.ภ.6)": "BSS_ภ6",
+        "ศูนย์ฝึกอบรมตำรวจภูธรภาค 6 (ศฝร.ภ.6)": "ศฝร_ภ6",
+    }
+    station_parents = [
+        "ภจว_กำแพงเพชร",
+        "ภจว_ตาก",
+        "ภจว_นครสวรรค์",
+        "ภจว_พิจิตร",
+        "ภจว_พิษณุโลก",
+        "ภจว_เพชรบูรณ์",
+        "ภจว_สุโขทัย",
+        "ภจว_อุตรดิตถ์",
+        "ภจว_อุทัยธานี",
+    ]
+    station_parent_index = 0
+    station_count = 0
+    importing_stations = True
+    current_parent = None
+    child_index = 0
+    for raw_line in source.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if importing_stations:
+            if line == "หน่วยงานระดับกองกำกับการใต้หน่วย กองบังคับการอำนวยการตำรวจภูธรภาค 6 (บก.อก.ภ.6)":
+                importing_stations = False
+                current_parent = None
+                continue
+            if not line:
+                if station_count:
+                    station_parent_index += 1
+                    station_count = 0
+                continue
+            if station_parent_index >= len(station_parents):
+                continue
+            current_parent = db.scalar(
+                select(OrgUnit).where(
+                    OrgUnit.code == station_parents[station_parent_index]
+                )
+            )
+            station_count += 1
+            if current_parent is not None:
+                slug = re.sub(r"[^\w]+", "_", line, flags=re.UNICODE).strip("_")
+                code = f"ST_{current_parent.code}_{slug or station_count}"
+                if db.scalar(select(OrgUnit).where(OrgUnit.code == code)) is None:
+                    db.add(
+                        OrgUnit(
+                            code=code,
+                            name=line,
+                            level="station",
+                            parent_id=current_parent.id,
+                            status=ActiveStatus.ACTIVE,
+                        )
+                    )
+            continue
+        if not line or line == "----":
+            if line == "----":
+                current_parent = None
+            continue
+        if line in parent_names:
+            current_parent = db.scalar(
+                select(OrgUnit).where(OrgUnit.code == parent_names[line])
+            )
+            child_index = 0
+            continue
+        if current_parent is None:
+            continue
+        child_index += 1
+        slug = re.sub(r"[^\w]+", "_", line, flags=re.UNICODE).strip("_")
+        code = f"SUB_{current_parent.code}_{slug or child_index}"
+        if db.scalar(select(OrgUnit).where(OrgUnit.code == code)) is None:
+            db.add(
+                OrgUnit(
+                    code=code,
+                    name=line,
+                    level="sub_unit",
+                    parent_id=current_parent.id,
                     status=ActiveStatus.ACTIVE,
                 )
             )
