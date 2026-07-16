@@ -36,7 +36,7 @@ The detailed use-case inventory is maintained in [Use-Case Implementation Status
 | Paper builder | Partial | Add snapshotting and deterministic variant generation |
 | Audit | Partial | Cover every state-changing API, retention policy and admin filters |
 | Database portability | Configured | Execute integration suites against live MySQL and PostgreSQL services |
-| Performance | Smoke only | Authenticated load test at the agreed target (initially 500 users) |
+| Performance | Health load smoke: 100 requests / 10 workers, p95 1.38s on dev host | Authenticated load test at the agreed target (initially 500 users) |
 | Operations/security | Partial | Execute security review and backup/restore drill using the runbook |
 
 ## Go/no-go rule

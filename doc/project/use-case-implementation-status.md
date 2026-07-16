@@ -19,22 +19,24 @@ Production acceptance gate is closed.
 - Durable practice recovery and real exam-session API plus Vue exam lobby/session UI baseline
 - Exam window management and server clock endpoint
 - Shared question-bank metadata with exam-window bureau scope and configurable late-entry grace minutes
-- PDF system-summary export (Excel remains the next exporter)
+- PDF system-summary export and dependency-free XLSX system-summary export
 - User administration, audit API/UI baseline and responsive role-aware UI
-- Authentication hardening: persistent login throttling, CSRF protection for production cookie requests, password change and fail-closed role validation
+- Authentication hardening: persistent login throttling, CSRF protection for production cookie requests, password change, fail-closed role validation and immediate session revocation on account lifecycle changes
+- Organization scope enforcement for personnel listing, question banks, papers, exam windows, reports and audit visibility
+- Paper snapshots: immutable question versions and deterministic seeded question/choice ordering for all configured variants
 
 ## Partial / Production hardening
 
 | Use-case area | Remaining acceptance work | Priority |
 |---|---|---|
 | Personnel import | Row correction, reconciliation history, rollback and per-row audit | P0 |
-| Authorization | Content/paper/window organization scope baseline implemented; personnel/report/audit scope, account lifecycle and permission-matrix acceptance remain | P0 |
+| Authorization | Scope enforcement and account lifecycle baseline implemented; complete permission-matrix acceptance and administrative scope-assignment UI remain | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
-| Exam Paper | Random pool, immutable snapshots, deterministic variants and preview | P0 |
+| Exam Paper | Immutable snapshots and deterministic variants implemented; random-pool criteria and author preview remain | P0 |
 | Exam Session | Result-detail UI, rationale display, pagination/page-size setting, offline queue and complete acceptance testing | P0 |
 | Scoring | Configurable scoring policy, result API contract and rationale UI acceptance | P0 |
-| Reporting | Examinee result, organization/time filters, detailed PDF and Excel export | P1 |
-| Audit | 100% mutation coverage, before/after detail, retention and export | P1 |
+| Reporting | Summary PDF/XLSX and scoped baseline implemented; examinee result, organization/time filters and detailed exports remain | P1 |
+| Audit | Scoped/paginated audit baseline implemented; 100% mutation coverage, before/after detail, retention and export remain | P1 |
 | Administration | Persistent settings API and complete user/role/scope UI | P1 |
 | SSO | Police identity-provider adapter, claims mapping and logout integration | P0 when SSO is approved |
 | Operations | Live MySQL/PostgreSQL, authenticated load and external penetration test | P0 |

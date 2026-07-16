@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import hashlib
+
 # ruff: noqa: E501
 import json
+import random
 from datetime import date, timedelta
 from typing import Annotated
 from uuid import UUID
@@ -76,7 +79,7 @@ def start_or_resume(
             raise HTTPException(status_code=403, detail="Your organization is not allowed in this exam window")
     if window.window_open_at and window.late_entry_minutes and utc_now() > window.window_open_at + timedelta(minutes=window.late_entry_minutes):
         raise HTTPException(status_code=403, detail="Late entry period has ended")
-    variant = _ensure_variant(paper, db)
+    variant = _ensure_variant(paper, db, account.person_id)
     now = utc_now()
     ends = now + timedelta(minutes=window.duration_minutes or 60)
     if window.window_close_at:
@@ -167,23 +170,33 @@ def _expire_if_needed(session: ExamSession, db: Session) -> None:
         db.commit()
 
 
-def _ensure_variant(paper: ExamPaper, db: Session) -> ExamVariant:
-    variant = db.scalar(select(ExamVariant).where(ExamVariant.exam_paper_id == paper.id).order_by(ExamVariant.created_at))
-    if variant is not None:
-        return variant
-    variant = ExamVariant(exam_paper_id=paper.id, variant_label="A", generation_seed_reference="initial")
-    db.add(variant)
-    db.flush()
-    questions = list(db.scalars(select(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id).order_by(ExamPaperQuestion.base_order_index)))
-    for index, paper_question in enumerate(questions):
-        question = db.get(Question, paper_question.question_id)
-        choices = list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order)))
-        version = QuestionVersion(question_id=question.id, content_snapshot=question.content, explanation=question.explanation, choices_snapshot_text=json.dumps([{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in choices]))
-        db.add(version)
-        db.flush()
-        db.add(ExamVariantQuestion(exam_variant_id=variant.id, question_version_id=version.id, order_index=index, choice_display_order_text=json.dumps([str(choice.id) for choice in choices]), score_weight=paper_question.score_weight))
-    db.commit()
-    return variant
+def _ensure_variant(paper: ExamPaper, db: Session, person_id: UUID | None = None) -> ExamVariant:
+    variants = list(db.scalars(select(ExamVariant).where(ExamVariant.exam_paper_id == paper.id).order_by(ExamVariant.variant_label)))
+    if not variants:
+        variants = []
+        paper_questions = list(db.scalars(select(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id).order_by(ExamPaperQuestion.base_order_index)))
+        for variant_index in range(paper.variant_count):
+            label = chr(65 + variant_index) if variant_index < 26 else f"V{variant_index + 1}"
+            seed = hashlib.sha256(f"{paper.id}:{label}".encode()).hexdigest()
+            variant = ExamVariant(exam_paper_id=paper.id, variant_label=label, generation_seed_reference=seed)
+            db.add(variant)
+            db.flush()
+            ordered_questions = list(paper_questions)
+            random.Random(seed).shuffle(ordered_questions)
+            for index, paper_question in enumerate(ordered_questions):
+                question = db.get(Question, paper_question.question_id)
+                choices = list(db.scalars(select(QuestionChoice).where(QuestionChoice.question_id == question.id).order_by(QuestionChoice.base_order)))
+                random.Random(f"{seed}:{question.id}").shuffle(choices)
+                version = QuestionVersion(question_id=question.id, content_snapshot=question.content, explanation=question.explanation, choices_snapshot_text=json.dumps([{"id": str(choice.id), "content": choice.content, "is_correct": choice.is_correct} for choice in choices]))
+                db.add(version)
+                db.flush()
+                db.add(ExamVariantQuestion(exam_variant_id=variant.id, question_version_id=version.id, order_index=index, choice_display_order_text=json.dumps([str(choice.id) for choice in choices]), score_weight=paper_question.score_weight))
+            variants.append(variant)
+        db.commit()
+    if person_id is None or len(variants) == 1:
+        return variants[0]
+    digest = hashlib.sha256(f"{paper.id}:{person_id}".encode()).digest()
+    return variants[int.from_bytes(digest[:4], "big") % len(variants)]
 
 
 def _question_id_from_version(version_id: UUID, db: Session) -> UUID | None:

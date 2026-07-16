@@ -1,3 +1,6 @@
+from io import BytesIO
+from zipfile import ZipFile
+
 from fastapi.testclient import TestClient
 
 from backend.app.config import Settings
@@ -99,3 +102,17 @@ def test_built_frontend_is_served_by_application(
 
     assert response.status_code == 200
     assert "MTExam" in response.text
+
+
+def test_superadmin_summary_xlsx_is_a_valid_workbook(client: TestClient) -> None:
+    assert client.post(
+        "/api/v1/auth/login", json={"username": "superadmin", "password": "super1234"}
+    ).status_code == 200
+    response = client.get("/api/v1/reports/summary.xlsx")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    with ZipFile(BytesIO(response.content)) as workbook:
+        assert "xl/worksheets/sheet1.xml" in workbook.namelist()
+        assert "Employee total" in workbook.read("xl/worksheets/sheet1.xml").decode()

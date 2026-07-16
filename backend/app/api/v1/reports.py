@@ -3,7 +3,9 @@ from __future__ import annotations
 # ruff: noqa: E501
 import csv
 import io
+import zipfile
 from typing import Annotated
+from xml.sax.saxutils import escape
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response, StreamingResponse
@@ -18,10 +20,12 @@ from backend.app.db.models import (
     ExamPaper,
     ExamSession,
     ExamVariant,
+    OrgUnit,
     PracticeExamSession,
     UserAccount,
 )
 from backend.app.domain.enums import UserRole
+from backend.app.services.org_authorization import active_org_unit_ids
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -46,10 +50,39 @@ class ExamCreationStats(BaseModel):
     average_score: float | None
 
 
+def _xlsx_from_rows(rows: list[list[object]], sheet_name: str = "Report") -> bytes:
+    """Create a small dependency-free XLSX workbook for operational exports."""
+    sheet_rows = []
+    for row_index, row in enumerate(rows, start=1):
+        cells = []
+        for column_index, value in enumerate(row):
+            column = ""
+            number = column_index + 1
+            while number:
+                number, remainder = divmod(number - 1, 26)
+                column = chr(65 + remainder) + column
+            text = escape("" if value is None else str(value))
+            cells.append(f'<c r="{column}{row_index}" t="inlineStr"><is><t>{text}</t></is></c>')
+        sheet_rows.append(f'<row r="{row_index}">' + "".join(cells) + "</row>")
+    sheet = '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>' + "".join(sheet_rows) + "</sheetData></worksheet>"
+    workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + escape(sheet_name) + '" sheetId="1" r:id="rId1"/></sheets></workbook>'
+    rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'
+    workbook_rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'
+    content_types = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>'
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", content_types)
+        archive.writestr("_rels/.rels", rels)
+        archive.writestr("xl/workbook.xml", workbook)
+        archive.writestr("xl/_rels/workbook.xml.rels", workbook_rels)
+        archive.writestr("xl/worksheets/sheet1.xml", sheet)
+    return output.getvalue()
+
+
 @router.get("/summary", response_model=SystemReport)
 def get_summary(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
     employee_status: str | None = None,
 ) -> SystemReport:
     employee_query = select(func.count()).select_from(Employee)
@@ -59,10 +92,20 @@ def get_summary(
     active = db.scalar(
         select(func.count()).select_from(Employee).where(Employee.emp_status == "active")
     ) or 0
-    submitted = (db.scalar(select(func.count()).select_from(ExamSession).where(ExamSession.status == "submitted")) or 0) + (db.scalar(select(func.count()).select_from(PracticeExamSession).where(PracticeExamSession.status == "submitted")) or 0)
-    in_progress = (db.scalar(select(func.count()).select_from(ExamSession).where(ExamSession.status == "in_progress")) or 0) + (db.scalar(select(func.count()).select_from(PracticeExamSession).where(PracticeExamSession.status == "in_progress")) or 0)
-    real_avg = db.scalar(select(func.avg(ExamSession.score)).where(ExamSession.status == "submitted"))
-    practice_avg = db.scalar(select(func.avg(PracticeExamSession.score)).where(PracticeExamSession.status == "submitted"))
+    exam_scope = [ExamSession.status == "submitted"]
+    progress_scope = [ExamSession.status == "in_progress"]
+    if account.role != UserRole.SUPER_ADMIN:
+        allowed = active_org_unit_ids(db, account)
+        exam_scope.append(ExamSession.org_unit_id.in_(allowed))
+        progress_scope.append(ExamSession.org_unit_id.in_(allowed))
+    practice_submitted = db.scalar(select(func.count()).select_from(PracticeExamSession).where(PracticeExamSession.status == "submitted")) or 0
+    practice_in_progress = db.scalar(select(func.count()).select_from(PracticeExamSession).where(PracticeExamSession.status == "in_progress")) or 0
+    if account.role != UserRole.SUPER_ADMIN:
+        practice_submitted = practice_in_progress = 0
+    submitted = (db.scalar(select(func.count()).select_from(ExamSession).where(*exam_scope)) or 0) + practice_submitted
+    in_progress = (db.scalar(select(func.count()).select_from(ExamSession).where(*progress_scope)) or 0) + practice_in_progress
+    real_avg = db.scalar(select(func.avg(ExamSession.score)).where(*exam_scope))
+    practice_avg = db.scalar(select(func.avg(PracticeExamSession.score)).where(PracticeExamSession.status == "submitted")) if account.role == UserRole.SUPER_ADMIN else None
     average = real_avg if real_avg is not None else practice_avg
     return SystemReport(
         employee_total=total,
@@ -77,11 +120,13 @@ def get_summary(
 @router.get("/exam-creations", response_model=list[ExamCreationStats])
 def list_exam_creation_stats(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.EXAM_AUTHOR))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER, UserRole.EXAM_AUTHOR))],
     subject_id: str | None = None,
 ) -> list[ExamCreationStats]:
     """Statistics are scoped to each ExamPaper creation, never combined globally."""
     query = select(ExamPaper).order_by(ExamPaper.created_at.desc())
+    if account.role != UserRole.SUPER_ADMIN:
+        query = query.where(ExamPaper.org_unit_id.in_(active_org_unit_ids(db, account)))
     if subject_id:
         query = query.where(ExamPaper.subject_id == subject_id)
     result: list[ExamCreationStats] = []
@@ -97,12 +142,18 @@ def list_exam_creation_stats(
 @router.get("/employees.csv")
 def export_employees_csv(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
 ) -> StreamingResponse:
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["emp_cid", "emp_fname", "emp_lname", "emp_position", "emp_bh", "emp_bk", "emp_kk", "emp_status"])
-    for employee in db.scalars(select(Employee).order_by(Employee.emp_cid)):
+    employees = list(db.scalars(select(Employee).order_by(Employee.emp_cid)))
+    if account.role != UserRole.SUPER_ADMIN:
+        allowed_ids = active_org_unit_ids(db, account)
+        units = list(db.scalars(select(OrgUnit).where(OrgUnit.id.in_(allowed_ids))))
+        names = {value for unit in units for value in (unit.name, unit.code)}
+        employees = [employee for employee in employees if employee.emp_bk in names or employee.emp_kk in names]
+    for employee in employees:
         writer.writerow([employee.emp_cid, employee.emp_fname, employee.emp_lname, employee.emp_position or "", employee.emp_bh or "", employee.emp_bk or "", employee.emp_kk or "", employee.emp_status])
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=employees.csv"})
 
@@ -110,10 +161,10 @@ def export_employees_csv(
 @router.get("/summary.pdf")
 def export_summary_pdf(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
 ) -> Response:
     """Export the system summary as a compact PDF; Excel can be added without changing the report model."""
-    report = get_summary(db, _account)
+    report = get_summary(db, account)
     try:
         from reportlab.lib.pagesizes import A4
         from reportlab.pdfgen import canvas
@@ -138,3 +189,24 @@ def export_summary_pdf(
     pdf.showPage()
     pdf.save()
     return Response(content=buffer.getvalue(), media_type="application/pdf", headers={"Content-Disposition": "attachment; filename=mtexam-summary.pdf"})
+
+
+@router.get("/summary.xlsx")
+def export_summary_xlsx(
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+) -> Response:
+    report = get_summary(db, account)
+    content = _xlsx_from_rows(
+        [
+            ["Metric", "Value"],
+            ["Employee total", report.employee_total],
+            ["Employee active", report.employee_active],
+            ["Employee inactive", report.employee_inactive],
+            ["Exam in progress", report.exam_in_progress],
+            ["Exam submitted", report.exam_submitted],
+            ["Average score", report.average_score],
+        ],
+        "Summary",
+    )
+    return Response(content=content, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=mtexam-summary.xlsx"})

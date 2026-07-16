@@ -1,17 +1,17 @@
 # Project Status Report
 
-**As of:** 2026-07-15
+**As of:** 2026-07-16
 **Overall:** MVP vertical slices — Verify; Production readiness — Not ready
 
 Use-case completeness is tracked in [Use-Case Implementation Status](use-case-implementation-status.md).
-MVP coverage exists, while P0 gaps remain in import rollback, scope enforcement, paper snapshots,
-real exam UI integration, scoring/results and operations.
+MVP coverage exists. Organization scope, account lifecycle, paper snapshots/variants and scoped
+report exports now have implementation evidence; external production gates remain.
 **Overall:** M0 Foundation — Verify
 
 ## Completed
 
 Current verification evidence supersedes older baseline counts below: full pytest currently
-passes 56 tests, Ruff passes, and Vue type-check/build pass. Historical commit and CI entries
+passes 58 tests, Ruff passes, and Vue type-check/build pass. Historical commit and CI entries
 are retained as audit history.
 
 - Master Blueprint v4.0 aligned with current decisions
@@ -57,10 +57,10 @@ Current implementation is in MVP human-review and production-readiness verificat
 vertical slices include personnel import preview/apply, reports/CSV, question authoring, paper
 builder, user administration, exam windows, audit API/UI and load-smoke tooling.
 
-This cycle added persistent personnel import batches/rows, server-authoritative exam-window clock
-and expiry closure, question editing/publish validation, paper validation, mutation audit events,
-and the SQLite backup/restore runbook. Full ExamSession timer integration, rollback UX, version
-snapshots, live database execution and authenticated load remain release-gate work.
+This cycle added personnel/report/audit scope filtering, account lifecycle updates with immediate
+session revocation, immutable question snapshots with deterministic seeded variants, and XLSX/PDF
+summary exports. Import rollback UX, detailed result exports, live database execution and
+authenticated load remain release-gate work.
 
 The real exam session API and Vue exam lobby/session wiring are now implemented for start/resume,
 durable answer upsert, server-side timeout and idempotent submit; bureau eligibility and end-to-end
@@ -116,8 +116,8 @@ database matrix and load testing remain.
 The current implementation status is maintained in [Use-Case Implementation Status](use-case-implementation-status.md)
 and the remaining production work is consolidated in [Production Use-Case Backlog](production-use-case-backlog.md).
 Authentication hardening, station/sub-unit organization seed, PDPA data and SQLite restore drill are complete.
-Production remains blocked by P0 organization-scope authorization, paper snapshots/variants, complete
-exam-session result/recovery UX, live database/load verification and independent penetration testing.
+Production remains blocked by P0 import rollback, permission-matrix acceptance, random-pool preview,
+live database/load verification and independent penetration testing.
 
 สถานะในไฟล์นี้เป็นรายงาน snapshot เท่านั้น [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
 เป็น SSOT ของ current task status และไฟล์นี้ใช้สรุป periodic report

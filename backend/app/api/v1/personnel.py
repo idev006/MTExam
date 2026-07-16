@@ -13,10 +13,17 @@ from sqlalchemy.orm import Session
 
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import Employee, PersonnelImportBatch, PersonnelImportRow, UserAccount
+from backend.app.db.models import (
+    Employee,
+    OrgUnit,
+    PersonnelImportBatch,
+    PersonnelImportRow,
+    UserAccount,
+)
 from backend.app.domain.employee_import import EmployeeImportRecord, parse_employee_csv
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.services.audit import record_audit
+from backend.app.services.org_authorization import active_org_unit_ids
 
 router = APIRouter(prefix="/personnel", tags=["personnel"])
 
@@ -63,12 +70,17 @@ class ImportApplyRequest(BaseModel):
 @router.get("", response_model=list[EmployeeResponse])
 def list_employees(
     db: Annotated[Session, Depends(get_db_session)],
-    _account: Annotated[
+    account: Annotated[
         UserAccount,
         Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.VIEWER)),
     ],
 ) -> list[EmployeeResponse]:
-    rows = db.scalars(select(Employee).order_by(Employee.emp_cid))
+    rows = list(db.scalars(select(Employee).order_by(Employee.emp_cid)))
+    if account.role != UserRole.SUPER_ADMIN:
+        allowed_ids = active_org_unit_ids(db, account)
+        allowed_units = list(db.scalars(select(OrgUnit).where(OrgUnit.id.in_(allowed_ids))))
+        allowed_names = {value for unit in allowed_units for value in (unit.name, unit.code)}
+        rows = [row for row in rows if row.emp_bk in allowed_names or row.emp_kk in allowed_names]
     return [EmployeeResponse.model_validate(row, from_attributes=True) for row in rows]
 
 

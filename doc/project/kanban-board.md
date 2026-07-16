@@ -1,7 +1,7 @@
 # MTExam Kanban Board
 
 **Status SSOT:** [GitHub Project — MTExam Delivery](https://github.com/users/idev006/projects/3/views/1)
-**Last updated:** 2026-07-15
+**Last updated:** 2026-07-16
 **Owner:** Project Manager (TBD)
 **Current milestone:** M0 — Documentation and Foundation
 
@@ -48,14 +48,14 @@ P1-QBANK, P1-REPORT, P1-AUDIT and P1-ADMIN are broad-rollout work; SSO-001 is co
 | Ticket | Outcome | Priority | Status | Blocker |
 |---|---|---|---|---|
 | PER-IMP-API | Personnel list and CSV preview/apply API | High | Verify | Persistent staging, rollback and row audit |
-| REPORT-API | Report summary and CSV export | Medium | Verify | Product filters and acceptance |
+| REPORT-API | Scoped report summary, CSV and XLSX/PDF export | Medium | Verify | Product filters and detailed result acceptance |
 | QBANK-API | Question-bank authoring API/UI slice | High | Verify | Complete choice editing/versioning |
-| PAPER-API-001 | Paper builder list/create/publish slice | High | Verify | Snapshot and variant validation |
-| USER-ADMIN-001 | Role-aware user administration slice | High | Verify | Lifecycle/security acceptance |
+| PAPER-API-001 | Paper builder list/create/publish with immutable snapshots and deterministic variants | High | Verify | Random-pool criteria and preview |
+| USER-ADMIN-001 | Role-aware user administration and lifecycle revocation | High | Verify | Full permission matrix and scope-assignment UI |
 | EXAM-WINDOW-001 | Exam window management API | High | Verify | Server-authoritative timer integration |
-| AUDIT-API-001 | Audit API/UI and mutation events | High | Verify | Full mutation coverage/retention |
+| AUDIT-API-001 | Scoped/paginated audit API/UI and mutation events | High | Verify | Full mutation coverage/retention |
 | DB-VERIFY-001 | Live MySQL/PostgreSQL migration verification | High | Ready | CI services configured; execution pending |
-| PERF-001 | Authenticated load verification | Medium | Ready | 500-user workload and environment |
+| PERF-001 | Authenticated load verification | Medium | Verify | 500-user workload and production environment |
 
 ### PM-001
 

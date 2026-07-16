@@ -8,8 +8,8 @@
 | ID | Use-case area | Remaining acceptance outcome |
 |---|---|---|
 | P0-ORG-IMPORT | Personnel import | Row correction, reconciliation history, rollback and per-row audit |
-| P0-AUTH-SCOPE | Authorization | Scope baseline now enforced for question banks, papers and exam windows; extend to personnel/reports/audit and complete account lifecycle and permission matrix |
-| P0-PAPER | Exam Paper | Random pool, immutable snapshots, deterministic variants and preview |
+| P0-AUTH-SCOPE | Authorization | Scope is enforced for personnel, question banks, papers, windows, reports and audit; remaining acceptance is full permission matrix and scope-assignment UI |
+| P0-PAPER | Exam Paper | Immutable snapshots and deterministic seeded variants are implemented; random-pool criteria and preview remain |
 | P0-SESSION | Exam Session | Result-detail UI, rationale display, pagination/page-size, offline retry queue and boundary acceptance tests |
 | P0-SCORE | Scoring | Configurable scoring policy, stable result API contract and rationale UI acceptance |
 | P0-DB | Operations | Live MySQL/PostgreSQL migration/integration verification and authenticated load test |
@@ -32,9 +32,12 @@
 
 ## Already implemented baseline
 
-Login/logout, server sessions, session limits, CSRF, login throttling, role checks, PDPA bank,
-question authoring baseline, paper/window baseline, start/resume/answer/submit, weighted score,
-PDF summary, audit baseline, personnel/station seed data and SQLite restore drill are implemented.
+Login/logout, server sessions, session limits, CSRF, login throttling, role checks, account lifecycle
+revocation, PDPA bank, question authoring baseline, scoped paper/window baseline, immutable paper
+snapshots, deterministic variants, start/resume/answer/submit, weighted score, scoped reports,
+PDF/XLSX summary, scoped/paginated audit baseline, personnel/station seed data and SQLite restore
+drill are implemented. The current authenticated load smoke evidence is 100 requests / 10 workers
+against `/health`; it is not a substitute for the agreed 500-user production profile.
 
 An item moves to Done only when its UI/API path, authorization, persistence, failure path, automated
 test, sequence evidence and operational acceptance are all attached to the Kanban ticket.
