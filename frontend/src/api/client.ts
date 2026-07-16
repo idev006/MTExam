@@ -41,7 +41,7 @@ export async function apiGet<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-export async function apiRequest<T>(path: string, method: "POST" | "PUT", body?: unknown): Promise<T> {
+export async function apiRequest<T>(path: string, method: "POST" | "PUT" | "PATCH", body?: unknown): Promise<T> {
   const token = csrfToken();
   const response = await fetch(API_BASE_URL + path, {
     method,

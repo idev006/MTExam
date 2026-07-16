@@ -231,3 +231,40 @@ def export_exam_sessions_xlsx(
         rows.append([str(session.id), str(session.person_id), str(session.org_unit_id), session.status, session.score, session.started_at.isoformat(), session.submitted_at.isoformat() if session.submitted_at else ""])
     content = _xlsx_from_rows(rows, "ExamSessions")
     return Response(content=content, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=mtexam-exam-sessions.xlsx"})
+
+
+@router.get("/exam-sessions.pdf")
+def export_exam_sessions_pdf(
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.VIEWER))],
+    status: str | None = None,
+) -> Response:
+    query = select(ExamSession).order_by(ExamSession.started_at.desc())
+    if status:
+        query = query.where(ExamSession.status == status)
+    if account.role != UserRole.SUPER_ADMIN:
+        query = query.where(ExamSession.org_unit_id.in_(active_org_unit_ids(db, account)))
+    sessions = list(db.scalars(query))
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+    except ImportError as error:
+        raise RuntimeError("PDF export requires reportlab; install requirements.txt") from error
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    pdf.setTitle("MTExam exam sessions")
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(40, 800, "MTExam Exam Session Report")
+    pdf.setFont("Helvetica", 9)
+    y = 775
+    for session in sessions:
+        line = f"{str(session.id)[:8]} | {session.status} | score={session.score or '-'} | {session.started_at.isoformat()}"
+        pdf.drawString(40, y, line[:115])
+        y -= 14
+        if y < 45:
+            pdf.showPage()
+            pdf.setFont("Helvetica", 9)
+            y = 800
+    pdf.showPage()
+    pdf.save()
+    return Response(content=buffer.getvalue(), media_type="application/pdf", headers={"Content-Disposition": "attachment; filename=mtexam-exam-sessions.pdf"})
