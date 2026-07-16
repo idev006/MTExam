@@ -30,9 +30,8 @@
 1. migration และ integration tests ผ่านบน SQLite, MySQL และ PostgreSQL
 2. authenticated load profile ที่ตกลงกัน (เริ่มต้น 500 users) ผ่าน latency/error/concurrency thresholds
 3. penetration test แก้ไขข้อค้นพบระดับ Critical/High และมี sign-off
-4. restore drill ผ่าน พร้อมระบุ RPO/RTO และตรวจข้อมูลหลัง restore
+4. restore drill ผ่าน พร้อมระบุ RPO/RTO และตรวจข้อมูลหลัง restore (development drill now passed; production sign-off remains)
 5. permission matrix และ organization scope acceptance ผ่านทุก role ทุก endpoint
 6. random-pool preview, import rollback และ detailed result export ผ่าน acceptance tests
 
 จนกว่าจะครบทุกข้อ สถานะ release คือ **No-Go / staging or pilot only**
-

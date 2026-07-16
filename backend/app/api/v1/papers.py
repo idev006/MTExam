@@ -2,6 +2,8 @@ from __future__ import annotations
 
 # The endpoint declarations are intentionally kept compact; domain validation remains typed.
 # ruff: noqa: E501
+import hashlib
+import random
 from typing import Annotated
 from uuid import UUID
 
@@ -37,6 +39,8 @@ class PaperCreate(BaseModel):
     allowed_org_unit_ids: list[UUID] = Field(min_length=1, max_length=100)
     variant_count: int = Field(default=1, ge=1, le=20)
     subject_id: UUID | None = None
+    question_selection_mode: str = Field(default="fixed_set", pattern="^(fixed_set|random_pool)$")
+    pool_criteria: dict[str, object] | None = None
 
 
 class PaperResponse(BaseModel):
@@ -75,13 +79,19 @@ def create_paper(
         raise HTTPException(status_code=422, detail="All allowed units must be active bureau-level organization units")
     if any(not can_access_org_unit(db, account, unit.id) for unit in org_units):
         raise HTTPException(status_code=403, detail="One or more allowed organizations are outside your scope")
-    selected_ids = payload.question_ids[:payload.desired_question_count]
+    candidate_ids = list(dict.fromkeys(payload.question_ids))
+    if len(candidate_ids) < payload.desired_question_count:
+        raise HTTPException(status_code=422, detail="Question pool does not contain enough unique questions")
+    if payload.question_selection_mode == "random_pool":
+        seed = hashlib.sha256(f"{payload.title}:{','.join(sorted(str(value) for value in candidate_ids))}".encode()).hexdigest()
+        random.Random(seed).shuffle(candidate_ids)
+    selected_ids = candidate_ids[:payload.desired_question_count]
     questions = list(db.scalars(select(Question).where(Question.id.in_(selected_ids))))
-    if len(questions) != len(set(payload.question_ids)):
+    if len(questions) != len(set(selected_ids)):
         raise HTTPException(status_code=422, detail="One or more questions do not exist")
     if payload.subject_id is not None and db.get(Subject, payload.subject_id) is None:
         raise HTTPException(status_code=422, detail="Subject not found")
-    paper = ExamPaper(title=payload.title, question_selection_mode="fixed_set", variant_count=payload.variant_count, desired_question_count=payload.desired_question_count, status=PaperStatus.DRAFT, org_unit_id=payload.org_unit_id, subject_id=payload.subject_id, created_by=account.person_id)
+    paper = ExamPaper(title=payload.title, question_selection_mode=payload.question_selection_mode, pool_criteria=str(payload.pool_criteria) if payload.pool_criteria else None, variant_count=payload.variant_count, desired_question_count=payload.desired_question_count, status=PaperStatus.DRAFT, org_unit_id=payload.org_unit_id, subject_id=payload.subject_id, created_by=account.person_id)
     db.add(paper)
     db.flush()
     db.add_all([ExamPaperQuestion(exam_paper_id=paper.id, question_id=question.id, base_order_index=index, score_weight=question.default_score_weight) for index, question in enumerate(questions)])
@@ -104,8 +114,6 @@ def publish_paper(
     count = db.scalar(select(func.count()).select_from(ExamPaperQuestion).where(ExamPaperQuestion.exam_paper_id == paper.id)) or 0
     if count < 1:
         raise HTTPException(status_code=409, detail="Paper must contain questions")
-    if paper.variant_count > 1 and paper.question_selection_mode != "fixed_set":
-        raise HTTPException(status_code=409, detail="Paper selection mode is not supported")
     paper.status = PaperStatus.PUBLISHED
     paper.published_at = utc_now()
     db.commit()

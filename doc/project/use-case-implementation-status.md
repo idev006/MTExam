@@ -26,6 +26,8 @@ Production acceptance gate is closed.
 - Paper snapshots: immutable question versions and deterministic seeded question/choice ordering for all configured variants
 - Personnel import rollback endpoint with batch snapshot and audit event
 - Paper preview endpoint and scoped exam-session XLSX export
+- Admin scope-assignment API for replacing a user’s active organization assignments
+- Random-pool paper selection with deterministic seed and preview support
 
 ## Partial / Production hardening
 

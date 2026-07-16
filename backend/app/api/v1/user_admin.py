@@ -7,13 +7,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.api.v1.auth import require_roles
 from backend.app.db.base import utc_now
 from backend.app.db.dependencies import get_db_session
-from backend.app.db.models import AuthSession, Person, UserAccount
+from backend.app.db.models import AuthSession, OrgUnit, Person, PersonUnitAssignment, UserAccount
 from backend.app.domain.enums import ActiveStatus, UserRole
 from backend.app.domain.security import hash_password
 from backend.app.services.audit import record_audit
@@ -40,6 +40,15 @@ class UserResponse(BaseModel):
     full_name: str
     role: UserRole
     status: str
+
+
+class ScopeAssignmentRequest(BaseModel):
+    org_unit_ids: list[UUID] = Field(default_factory=list, max_length=100)
+
+
+class ScopeAssignmentResponse(BaseModel):
+    user_id: UUID
+    org_unit_ids: list[UUID]
 
 
 @router.get("", response_model=list[UserResponse])
@@ -144,3 +153,41 @@ def deactivate_user(
     record_audit(db, actor_person_id=_account.person_id, event_type="user.deactivate", subject_type="user_account", subject_id=account.id)
     db.commit()
     return UserResponse(id=account.id, username=account.username_normalized, full_name=person.full_name if person else "", role=UserRole(account.role), status=account.status)
+
+
+@router.get("/{user_id}/scope", response_model=ScopeAssignmentResponse)
+def get_user_scope(
+    user_id: UUID,
+    db: Annotated[Session, Depends(get_db_session)],
+    _account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
+) -> ScopeAssignmentResponse:
+    target = db.get(UserAccount, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    ids = list(db.scalars(select(PersonUnitAssignment.org_unit_id).where(PersonUnitAssignment.person_id == target.person_id, PersonUnitAssignment.effective_to.is_(None))))
+    return ScopeAssignmentResponse(user_id=target.id, org_unit_ids=ids)
+
+
+@router.put("/{user_id}/scope", response_model=ScopeAssignmentResponse)
+def replace_user_scope(
+    user_id: UUID,
+    payload: ScopeAssignmentRequest,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[UserAccount, Depends(require_roles(UserRole.SUPER_ADMIN))],
+) -> ScopeAssignmentResponse:
+    target = db.get(UserAccount, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    unique_ids = list(dict.fromkeys(payload.org_unit_ids))
+    if unique_ids:
+        active_count = db.scalar(select(func.count()).select_from(OrgUnit).where(OrgUnit.id.in_(unique_ids), OrgUnit.status == ActiveStatus.ACTIVE))
+        if active_count != len(unique_ids):
+            raise HTTPException(status_code=422, detail="All scope organizations must be active")
+    today = utc_now().date()
+    for assignment in db.scalars(select(PersonUnitAssignment).where(PersonUnitAssignment.person_id == target.person_id, PersonUnitAssignment.effective_to.is_(None))):
+        assignment.effective_to = today
+    for org_unit_id in unique_ids:
+        db.add(PersonUnitAssignment(person_id=target.person_id, org_unit_id=org_unit_id, effective_from=today))
+    record_audit(db, actor_person_id=account.person_id, event_type="user.scope.replace", subject_type="user_account", subject_id=target.id, metadata={"org_unit_ids": [str(value) for value in unique_ids]})
+    db.commit()
+    return ScopeAssignmentResponse(user_id=target.id, org_unit_ids=unique_ids)

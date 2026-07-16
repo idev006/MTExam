@@ -16,6 +16,8 @@
 - Role checks deny by default and invalid stored roles fail closed with 403.
 - Password change is available to an authenticated user and requires a new 12-character password.
 - Super-admin bypass is explicit in the role dependency; it is not an implicit frontend permission.
+- Active organization scope is enforced in personnel, content, paper, window, report and audit APIs;
+  admin scope replacement is audited as `user.scope.replace`.
 
 ## Verification evidence
 
@@ -23,6 +25,8 @@
 - Valid login remains possible for other accounts while one identity is throttled.
 - Logout and inactive-account session checks are covered by existing integration tests.
 - Backend Ruff and Pytest pass; frontend type-check and production build pass.
+- PostgreSQL/MySQL database startup and migration smoke pass; authenticated load smoke completed
+  without request failures (50 requests/10 workers, development host).
 
 ## Deployment requirements before go-live
 
@@ -31,7 +35,7 @@
 - Run `alembic upgrade head` against the production database before starting workers.
 - Terminate TLS at the host/proxy and restrict database/network access.
 - Configure centralized log monitoring and alert on repeated 429 responses, role-denied events and session revocations.
-- Perform dependency scanning, penetration testing and restore-drill acceptance before handling real personal data.
+- Perform dependency scanning, independent penetration testing and production restore-drill acceptance before handling real personal data.
 
 ## Known boundary
 

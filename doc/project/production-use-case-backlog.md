@@ -10,12 +10,12 @@ The formal decision rationale and release gates are recorded in [Production Go/N
 | ID | Use-case area | Remaining acceptance outcome |
 |---|---|---|
 | P0-ORG-IMPORT | Personnel import | Row-level correction and reconciliation UI remain; persistent batch rollback endpoint is now implemented |
-| P0-AUTH-SCOPE | Authorization | Scope is enforced for personnel, question banks, papers, windows, reports and audit; remaining acceptance is full permission matrix and scope-assignment UI |
-| P0-PAPER | Exam Paper | Immutable snapshots, deterministic seeded variants and paper preview are implemented; random-pool criteria remain |
+| P0-AUTH-SCOPE | Authorization | Scope is enforced for personnel, question banks, papers, windows, reports and audit; scope-assignment API is implemented, UI and full matrix acceptance remain |
+| P0-PAPER | Exam Paper | Immutable snapshots, deterministic seeded variants, random-pool mode and paper preview are implemented; criteria acceptance remains |
 | P0-SESSION | Exam Session | Result-detail UI, rationale display, pagination/page-size, offline retry queue and boundary acceptance tests |
 | P0-SCORE | Scoring | Configurable scoring policy, stable result API contract and rationale UI acceptance |
 | P0-DB | Operations | PostgreSQL 16 and MySQL 8.4 migration/startup smoke verified; authenticated 500-user load and performance tuning remain |
-| P0-SEC | Security | Independent penetration test and production security sign-off |
+| P0-SEC | Security | Security smoke baseline is automated; independent penetration test and production security sign-off remain |
 
 ## P1 before broad rollout
 
