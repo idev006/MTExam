@@ -49,6 +49,7 @@ P1-QBANK, P1-REPORT, P1-AUDIT and P1-ADMIN are broad-rollout work; SSO-001 is co
 |---|---|---|---|---|
 | PER-IMP-API | Personnel list and CSV preview/apply API | High | Verify | Persistent staging, rollback and row audit |
 | REPORT-API | Scoped report summary, CSV and XLSX/PDF export | Medium | Verify | Product filters and detailed result acceptance |
+| REPORT-UX | Responsive report layout, role dashboards and ECharts | High | Ready | See [Reporting UI/UX Design](reporting-ui-ux-design.md), tickets REPORT-UX-01..REPORT-QA-08 |
 | QBANK-API | Question-bank authoring API/UI slice | High | Verify | Complete choice editing/versioning |
 | PAPER-API-001 | Paper builder list/create/publish with immutable snapshots and deterministic variants | High | Verify | Random-pool criteria and preview |
 | USER-ADMIN-001 | Role-aware user administration and lifecycle revocation | High | Verify | Full permission matrix and scope-assignment UI |

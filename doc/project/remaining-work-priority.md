@@ -30,6 +30,10 @@ its assigned organization and active descendants only.
 
 Sequence evidence: [Remaining Work Sequences](diagrams/remaining-work-sequences.md)
 
+Reporting UI/UX and implementation baseline: [Reporting UI/UX Design](reporting-ui-ux-design.md).
+The reporting backlog must follow its REPORT-UX/API/UI/EXP/QA tickets and must not be marked
+Done until pass/fail, attendance, drill-down, export and responsive acceptance are evidenced.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 
