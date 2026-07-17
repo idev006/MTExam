@@ -55,6 +55,11 @@ Exam Window inherits unless overridden. The `/papers` list exposes audited open/
 the backend rechecks creator authorization and blocks returning to Draft after any window exists.
 Production device acceptance remains covered by item 9 and complete mutation-audit review by item 7.
 
+Exam Window boundary update 2026-07-17: Paper organization quotas now act as a template and each
+Window owns the enforceable quota for that round. The Window management UI supports fixed-end or
+full-duration timing and an audited Scheduled/Open/Suspended/Closed/Cancelled lifecycle. ExamPaper
+revision/clone and human device acceptance remain open follow-up work.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 

@@ -58,6 +58,7 @@ async function confirmLogout() {
             <RouterLink v-if="canTakeExam" class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam">ทำข้อสอบ</RouterLink>
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/authoring">คลังข้อสอบ</RouterLink>
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/papers">Exam Paper</RouterLink>
+            <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam-windows">รอบสอบ</RouterLink>
             <RouterLink v-if="canViewReports" class="btn btn-ghost btn-sm" active-class="btn-active" to="/reports">รายงาน</RouterLink>
             <RouterLink v-if="canViewAudit" class="btn btn-ghost btn-sm" active-class="btn-active" to="/audit">Audit</RouterLink>
             <RouterLink v-if="isSuperAdmin" class="btn btn-ghost btn-sm" active-class="btn-active" to="/admin/users">ผู้ใช้</RouterLink>
@@ -78,6 +79,7 @@ async function confirmLogout() {
           <RouterLink v-if="canTakeExam" class="btn btn-ghost justify-start" to="/exam" @click="mobileMenuOpen = false">ทำข้อสอบ</RouterLink>
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/authoring" @click="mobileMenuOpen = false">คลังข้อสอบ</RouterLink>
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/papers" @click="mobileMenuOpen = false">Exam Paper</RouterLink>
+          <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/exam-windows" @click="mobileMenuOpen = false">จัดรอบสอบ</RouterLink>
           <RouterLink v-if="canViewReports" class="btn btn-ghost justify-start" to="/reports" @click="mobileMenuOpen = false">รายงาน</RouterLink>
           <RouterLink v-if="canViewAudit" class="btn btn-ghost justify-start" to="/audit" @click="mobileMenuOpen = false">Audit</RouterLink>
           <RouterLink v-if="isSuperAdmin" class="btn btn-ghost justify-start" to="/admin/users" @click="mobileMenuOpen = false">ผู้ใช้</RouterLink>

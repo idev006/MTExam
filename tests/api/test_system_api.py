@@ -126,9 +126,92 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
         client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "published"}).status_code
         == 200
     )
-    window = client.post("/api/v1/exam-windows", json={"exam_paper_id": paper_id})
+    quota_policy = client.get(f"/api/v1/papers/{paper_id}/quota-policy")
+    assert quota_policy.status_code == 200
+    assert quota_policy.json()["eligible_org_units"][0]["eligible_count"] == 100
+
+    window = client.post(
+        "/api/v1/exam-windows",
+        json={
+            "exam_paper_id": paper_id,
+            "title": "รอบทดสอบ Full duration",
+            "completion_policy": "full_duration",
+            "eligible_org_units": [
+                {"org_unit_id": owner["id"], "eligible_count": 25}
+            ],
+        },
+    )
     assert window.status_code == 201
     assert window.json()["duration_minutes"] == 45
+    assert window.json()["completion_policy"] == "full_duration"
+    assert window.json()["eligible_org_units"] == [
+        {"org_unit_id": owner["id"], "eligible_count": 25}
+    ]
+    window_id = window.json()["id"]
+
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "superadmin", "password": "super1234"}
+        ).status_code
+        == 200
+    )
+    other_author = client.post(
+        "/api/v1/admin/users",
+        json={
+            "username": "window-author-2",
+            "password": "window-author-2-password",
+            "full_name": "ผู้สร้างข้อสอบคนที่สอง",
+            "role": "exam_author",
+        },
+    )
+    assert other_author.status_code == 201
+    assert (
+        client.post(
+            "/api/v1/auth/login",
+            json={"username": "window-author-2", "password": "window-author-2-password"},
+        ).status_code
+        == 200
+    )
+    cross_author = client.patch(
+        f"/api/v1/exam-windows/{window_id}/status", json={"status": "open"}
+    )
+    assert cross_author.status_code == 403
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "author", "password": "author1234"}
+        ).status_code
+        == 200
+    )
+    opened_window = client.patch(
+        f"/api/v1/exam-windows/{window_id}/status", json={"status": "open"}
+    )
+    assert opened_window.status_code == 200
+    assert opened_window.json()["status"] == "open"
+    missing_reason = client.patch(
+        f"/api/v1/exam-windows/{window_id}/status", json={"status": "suspended"}
+    )
+    assert missing_reason.status_code == 422
+    suspended_window = client.patch(
+        f"/api/v1/exam-windows/{window_id}/status",
+        json={"status": "suspended", "reason": "ทดสอบระงับรับผู้เข้าสอบ"},
+    )
+    assert suspended_window.status_code == 200
+    assert suspended_window.json()["status"] == "suspended"
+    assert (
+        client.patch(
+            f"/api/v1/exam-windows/{window_id}/status", json={"status": "open"}
+        ).status_code
+        == 200
+    )
+    closed_window = client.patch(
+        f"/api/v1/exam-windows/{window_id}/status", json={"status": "closed"}
+    )
+    assert closed_window.status_code == 200
+    assert closed_window.json()["status"] == "closed"
+    terminal_window = client.patch(
+        f"/api/v1/exam-windows/{window_id}/status", json={"status": "open"}
+    )
+    assert terminal_window.status_code == 409
 
     closed = client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "archived"})
     assert closed.status_code == 200
@@ -154,6 +237,11 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
     )
     assert audit_events.status_code == 200
     assert any(event["subject_id"] == paper_id for event in audit_events.json())
+    window_events = client.get(
+        "/api/v1/audit", params={"event_type": "exam_window.status_change"}
+    )
+    assert window_events.status_code == 200
+    assert any(event["subject_id"] == window_id for event in window_events.json())
 
     assert (
         client.post(

@@ -227,6 +227,29 @@ sequenceDiagram
     API-->>UI: Updated creation or 409 conflict
 ```
 
+## UC-EXAM-00 — Create and operate an Exam Window
+
+```mermaid
+sequenceDiagram
+    actor E as exam_author
+    participant UI as Window Management UI
+    participant API as Exam Window API
+    participant DB as PostgreSQL
+    E->>UI: Select published paper
+    UI->>API: GET /papers/{id}/quota-policy
+    API-->>UI: Duration and quota template
+    E->>UI: Set schedule, completion policy and Window quotas
+    UI->>API: POST /exam-windows
+    API->>API: Verify author, paper and organization scope
+    API->>DB: Save Scheduled Window and quota snapshot
+    API->>DB: Append audit event
+    E->>UI: Open, suspend, resume, close or cancel
+    UI->>API: PATCH /exam-windows/{id}/status
+    API->>API: Validate owner and transition
+    API->>DB: Save status and audit reason
+    API-->>UI: Updated Window and session counts
+```
+
 ## UC-REPORT-02 — View statistics for one Exam Creation
 
 ```mermaid

@@ -62,7 +62,8 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | QBANK-API | requirements/question-bank.md | question-banks authoring API | API authorization smoke | Implemented minimal slice |
 | PAPER-API | requirements/exam-paper.md | exam paper list/create/publish API | API authorization smoke | Implemented minimal slice |
 | USER-ADMIN-API | requirements/authentication.md | user list/create/deactivate API | API authorization smoke | Implemented minimal slice |
-| EXAM-WINDOW-API | requirements/exam-session.md | exam window list/create/open API | API authorization smoke | Implemented minimal slice; timer integration pending |
+| EXAM-WINDOW-API | requirements/exam-session.md | scoped window quota/timing/lifecycle API and management UI | test_system_api.py; test_window_policy.py; WindowLifecycleActions.test.ts | Verified automated; device acceptance pending |
+| WINDOW-POLICY-001 | exam-paper-window-lifecycle-design.md | per-window quota locking and fixed/full-duration deadlines | PostgreSQL concurrency + domain policy tests | Verified automated |
 | AUDIT-API | requirements/reporting.md | audit list and mutation events | API authorization smoke | Implemented baseline; full mutation coverage pending |
 | SUBJECT-001 | requirements/question-bank.md | subjects and subject-bound question banks | API/frontend build | Implemented |
 | QBANK-UI-001 | requirements/question-bank.md | bank/question management UI | Vue type-check/build; API smoke | Implemented MVP |

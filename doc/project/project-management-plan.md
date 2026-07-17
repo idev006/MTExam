@@ -584,3 +584,11 @@ before any Exam Window exists. PAPER-LIFE-002 remains `Verify` until human devic
 API authorization, audit, inherited-duration and Vue action-state evidence are automated. The
 detailed interaction and sequence contract is maintained in
 [Paper Builder Organization Quota UX](paper-builder-ui-ux-design.md).
+
+## 32. Exam Window operational boundary
+
+ExamPaper remains the reusable content and policy template. ExamWindow now snapshots enforceable
+organization quotas per round and owns scheduling, duration override, fixed-end/full-duration timing
+and the Scheduled/Open/Suspended/Closed/Cancelled lifecycle. Mutations require the Window creator or
+super admin and generate audit evidence. The management contract, compatibility rules and sequence
+are maintained in [ExamPaper and ExamWindow Lifecycle Design](exam-paper-window-lifecycle-design.md).

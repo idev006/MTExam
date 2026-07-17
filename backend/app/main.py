@@ -263,8 +263,10 @@ def _seed_demo_exam_data(db) -> None:
         now = utc_now()
         window = ExamWindow(
             exam_paper_id=paper.id,
+            title="รอบสอบสาธิต PDPA",
             mode="fixed_batch",
             duration_minutes=60,
+            completion_policy="fixed_end",
             late_entry_minutes=15,
             window_open_at=now - timedelta(minutes=5),
             window_close_at=now + timedelta(minutes=55),
@@ -273,7 +275,19 @@ def _seed_demo_exam_data(db) -> None:
         )
         db.add(window)
         db.flush()
-        db.add(ExamWindowScope(exam_window_id=window.id, org_unit_id=bureau.id))
+        db.add(
+            ExamWindowScope(
+                exam_window_id=window.id,
+                org_unit_id=bureau.id,
+                eligible_count=10,
+            )
+        )
+    else:
+        window_scope = db.scalar(
+            select(ExamWindowScope).where(ExamWindowScope.exam_window_id == window.id)
+        )
+        if window_scope is not None and window_scope.eligible_count is None:
+            window_scope.eligible_count = 10
 
     existing_demo_session = db.scalar(
         select(ExamSession).where(

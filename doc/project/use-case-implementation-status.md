@@ -19,7 +19,8 @@ Production acceptance gate is closed.
   duration in minutes and creator-controlled Draft/Published/Archived lifecycle
 - Reports baseline: summary, employee CSV and per-Exam-Creation statistics
 - Durable practice recovery and real exam-session API plus Vue exam lobby/session UI baseline
-- Exam window management and server clock endpoint
+- Exam Window management UI/API with per-round quota snapshots, fixed-end/full-duration policy,
+  scheduled/open/suspended/closed/cancelled lifecycle, session counts and audit events
 - Shared question-bank metadata with exam-window bureau scope and configurable late-entry grace minutes
 - PDF system-summary export and dependency-free XLSX system-summary export
 - User administration, audit API/UI baseline and responsive role-aware UI
@@ -44,7 +45,7 @@ Production acceptance gate is closed.
 | Personnel import | Row correction, reconciliation history, rollback and per-row audit | P0 |
 | Authorization | Scope enforcement and account lifecycle baseline implemented; complete permission-matrix acceptance and administrative scope-assignment UI remain | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
-| Exam Paper | Immutable snapshots and deterministic variants implemented; random-pool criteria and author preview remain | P0 |
+| Exam Paper | Immutable snapshots, deterministic variants and reusable quota template implemented; revision/clone workflow remains | P0 |
 | Exam Session | Result-detail UI, rationale display, pagination/page-size setting, offline queue and complete acceptance testing | P0 |
 | Scoring | Configurable scoring policy, result API contract and rationale UI acceptance | P0 |
 | Reporting | UI/API/filter/export implementation, bundled OFL Chakra Petch PDF font and automated evidence complete; production device sign-off and load threshold remain | P1 |

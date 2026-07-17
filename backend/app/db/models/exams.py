@@ -113,8 +113,10 @@ class ExamWindow(Base):
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     exam_paper_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("exam_papers.id"), index=True)
+    title: Mapped[str | None] = mapped_column(String(255))
     mode: Mapped[str] = mapped_column(String(30))
     duration_minutes: Mapped[int | None] = mapped_column(Integer)
+    completion_policy: Mapped[str] = mapped_column(String(30), default="fixed_end")
     late_entry_minutes: Mapped[int] = mapped_column(Integer, default=0)
     window_open_at: Mapped[datetime | None] = mapped_column(DateTime)
     window_close_at: Mapped[datetime | None] = mapped_column(DateTime)
@@ -136,6 +138,7 @@ class ExamWindowScope(Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     exam_window_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("exam_windows.id"), index=True)
     org_unit_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("org_units.id"))
+    eligible_count: Mapped[int | None] = mapped_column(Integer)
 
 
 class ExamSession(Base):

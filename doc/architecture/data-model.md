@@ -136,7 +136,8 @@ Unique exam_variant_id + question_version_id
 
 ### exam_windows
 
-id, exam_paper_id, mode, duration_minutes, window_open_at, window_close_at, status, created_by
+id, exam_paper_id, title, mode, duration_minutes, completion_policy, late_entry_minutes,
+window_open_at, window_close_at, status, created_by
 
 Validation:
 
@@ -145,9 +146,12 @@ Validation:
 
 ### exam_window_scopes
 
-id, exam_window_id, org_unit_id
+id, exam_window_id, org_unit_id, eligible_count
 
 Unique exam_window_id + org_unit_id
+
+`eligible_count` is the enforceable quota for one Window. The corresponding Paper organization row
+is only the reusable template used when the Window is created.
 
 ### exam_sessions
 

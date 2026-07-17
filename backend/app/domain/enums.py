@@ -73,10 +73,17 @@ class ExamWindowMode(StrEnum):
     FIXED_BATCH = "fixed_batch"
 
 
+class ExamCompletionPolicy(StrEnum):
+    FIXED_END = "fixed_end"
+    FULL_DURATION = "full_duration"
+
+
 class ExamWindowStatus(StrEnum):
     SCHEDULED = "scheduled"
     OPEN = "open"
+    SUSPENDED = "suspended"
     CLOSED = "closed"
+    CANCELLED = "cancelled"
 
 
 class ExamSessionStatus(StrEnum):

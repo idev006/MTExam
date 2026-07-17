@@ -10,7 +10,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.db.models import (
-    ExamPaperOrgUnit,
     ExamSession,
     ExamWindow,
     ExamWindowScope,
@@ -37,17 +36,9 @@ def reserve_quota(
     window: ExamWindow,
 ) -> tuple[UUID, UUID]:
     """Return (actual organization, quota organization) after a locked capacity check."""
-    window_scope = set(
-        db.scalars(
-            select(ExamWindowScope.org_unit_id).where(ExamWindowScope.exam_window_id == window.id)
-        )
-    )
     quotas = list(
         db.scalars(
-            select(ExamPaperOrgUnit).where(
-                ExamPaperOrgUnit.exam_paper_id == window.exam_paper_id,
-                ExamPaperOrgUnit.org_unit_id.in_(window_scope),
-            )
+            select(ExamWindowScope).where(ExamWindowScope.exam_window_id == window.id)
         )
     )
     today = date.today()
@@ -88,10 +79,10 @@ def reserve_quota(
         key=assignment_rank,
     )
     quota = db.scalar(
-        select(ExamPaperOrgUnit)
+        select(ExamWindowScope)
         .where(
-            ExamPaperOrgUnit.exam_paper_id == window.exam_paper_id,
-            ExamPaperOrgUnit.org_unit_id == quota_id,
+            ExamWindowScope.exam_window_id == window.id,
+            ExamWindowScope.org_unit_id == quota_id,
         )
         .with_for_update()
     )

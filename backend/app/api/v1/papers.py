@@ -70,6 +70,18 @@ class PaperStatusUpdate(BaseModel):
     status: Literal["draft", "published", "archived"]
 
 
+class PaperQuotaItem(BaseModel):
+    org_unit_id: UUID
+    org_unit_name: str
+    eligible_count: int
+
+
+class PaperQuotaPolicyResponse(BaseModel):
+    paper_id: UUID
+    default_duration_minutes: int
+    eligible_org_units: list[PaperQuotaItem]
+
+
 def _paper_response(db: Session, paper: ExamPaper) -> PaperResponse:
     question_count = (
         db.scalar(
@@ -334,6 +346,39 @@ def change_paper_status(
         paper=paper,
         account=account,
         target_status=payload.status,
+    )
+
+
+@router.get("/{paper_id}/quota-policy", response_model=PaperQuotaPolicyResponse)
+def paper_quota_policy(
+    paper_id: UUID,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[
+        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+    ],
+) -> PaperQuotaPolicyResponse:
+    paper = db.get(ExamPaper, paper_id)
+    if paper is None:
+        raise HTTPException(status_code=404, detail="Paper not found")
+    _require_paper_owner(paper, account)
+    rows = list(
+        db.scalars(select(ExamPaperOrgUnit).where(ExamPaperOrgUnit.exam_paper_id == paper.id))
+    )
+    items = []
+    for row in rows:
+        unit = db.get(OrgUnit, row.org_unit_id)
+        if unit is not None and row.eligible_count is not None:
+            items.append(
+                PaperQuotaItem(
+                    org_unit_id=row.org_unit_id,
+                    org_unit_name=unit.name,
+                    eligible_count=row.eligible_count,
+                )
+            )
+    return PaperQuotaPolicyResponse(
+        paper_id=paper.id,
+        default_duration_minutes=paper.default_duration_minutes,
+        eligible_org_units=items,
     )
 
 

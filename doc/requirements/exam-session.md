@@ -29,13 +29,16 @@ The current development preview is available at `/exam/pdpa`. An administrator s
 - Window อ้าง published paper
 - กำหนด mode เป็น individual หรือ fixed_batch
 - กำหนด organization scopes ได้หลายรายการ
+- แต่ละ Window ต้อง snapshot quota ของตนเองจาก ExamPaper template และสามารถปรับจำนวนต่อรอบได้
 - ป้องกันการเริ่มนอก window หรือ scope
+- ผู้สร้างหรือ super admin เท่านั้นที่เปลี่ยน lifecycle; ทุก transition ต้องมี audit
 
 ### EXAM-002 — Individual timing
 
 - started_at มาจาก server
 - ends_at เท่ากับ started_at บวก duration
 - Refresh หน้าไม่เริ่มเวลาใหม่
+- `full_duration` ให้ผู้ที่เริ่มก่อนเวลาปิดรับการเริ่มสอบทำต่อจนครบ duration
 
 ### EXAM-003 — Fixed batch timing
 
@@ -43,6 +46,15 @@ The current development preview is available at `/exam/pdpa`. An administrator s
 - ends_at ของทุก session เท่ากับ window_close_at
 - ผู้เข้าสายได้รับเฉพาะเวลาที่เหลือ
 - Default อนุญาตเข้าสายพร้อมคำเตือน
+- `fixed_end` คำนวณ `min(started_at + duration, window_close_at)`
+
+### EXAM-003A — Operational lifecycle
+
+- สถานะ Window คือ `scheduled`, `open`, `suspended`, `closed`, `cancelled`
+- Suspended/Closed หยุด session ใหม่ แต่ไม่เปลี่ยน `ends_at` ของ session เดิม
+- Closed และ Cancelled เป็น terminal state
+- Suspended และ Cancelled ต้องระบุเหตุผล และ Audit ต้องเก็บเหตุผลดังกล่าว
+- การเปิดรอบต้องใช้ Published ExamPaper, quota ครบ และอยู่ในช่วงเวลาที่กำหนด
 
 ### EXAM-004 — Start session
 
@@ -97,3 +109,5 @@ The current development preview is available at `/exam/pdpa`. An administrator s
 - Boundary at exact ends_at
 - Submit twice
 - Client time manipulation
+- Window quota isolation across multiple rounds
+- Authorized and invalid lifecycle transitions with audit evidence

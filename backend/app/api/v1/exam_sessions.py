@@ -31,6 +31,7 @@ from backend.app.db.models import (
     UserAccount,
 )
 from backend.app.domain.enums import ExamSessionStatus, ExamWindowStatus, UserRole
+from backend.app.domain.window_policy import session_ends_at
 from backend.app.services.audit import record_audit
 from backend.app.services.exam_quota import reserve_quota
 
@@ -76,18 +77,25 @@ def start_or_resume(
     paper = db.get(ExamPaper, window.exam_paper_id)
     if paper is None:
         raise HTTPException(status_code=409, detail="Exam paper not found")
+    now = utc_now()
+    if window.window_open_at and now < window.window_open_at:
+        raise HTTPException(status_code=409, detail="Exam window has not started")
+    if window.window_close_at and now >= window.window_close_at:
+        raise HTTPException(status_code=409, detail="Exam window no longer accepts new sessions")
     actual_org_id, quota_org_id = reserve_quota(db, account=account, window=window)
     if (
         window.window_open_at
         and window.late_entry_minutes
-        and utc_now() > window.window_open_at + timedelta(minutes=window.late_entry_minutes)
+        and now > window.window_open_at + timedelta(minutes=window.late_entry_minutes)
     ):
         raise HTTPException(status_code=403, detail="Late entry period has ended")
     variant = _ensure_variant(paper, db, account.person_id)
-    now = utc_now()
-    ends = now + timedelta(minutes=window.duration_minutes or 60)
-    if window.window_close_at:
-        ends = min(ends, window.window_close_at)
+    ends = session_ends_at(
+        started_at=now,
+        duration_minutes=window.duration_minutes or 60,
+        window_close_at=window.window_close_at,
+        completion_policy=window.completion_policy,
+    )
     session = ExamSession(
         person_id=account.person_id,
         exam_window_id=window.id,

@@ -7,6 +7,7 @@ withDefaults(
     confirmLabel?: string;
     cancelLabel?: string;
     busy?: boolean;
+    confirmDisabled?: boolean;
   }>(),
   { confirmLabel: "ยืนยัน", cancelLabel: "ยกเลิก" },
 );
@@ -22,11 +23,12 @@ defineEmits<{
     <div class="modal-box">
       <h2 id="confirm-title" class="text-lg font-bold">{{ title }}</h2>
       <p class="py-4 text-base-content/70">{{ message }}</p>
+      <slot></slot>
       <div class="modal-action">
         <button class="btn btn-ghost" type="button" @click="$emit('cancel')">
           {{ cancelLabel }}
         </button>
-        <button class="btn btn-primary" type="button" :disabled="busy" @click="$emit('confirm')">
+        <button class="btn btn-primary" type="button" :disabled="busy || confirmDisabled" @click="$emit('confirm')">
           <span v-if="busy" class="loading loading-spinner loading-sm"></span>
           {{ confirmLabel }}
         </button>

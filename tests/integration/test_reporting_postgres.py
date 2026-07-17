@@ -38,22 +38,17 @@ def test_postgres_quota_lock_allows_only_one_concurrent_start() -> None:
     usernames = [f"quota-{suffix}-a", f"quota-{suffix}-b"]
     password = "quota-test-password"
     person_ids = []
-    original_quota = None
     with Session(engine) as db:
         paper = db.scalar(
             select(ExamPaper).where(ExamPaper.title == "PDPA Demo Exam - 10 Questions")
         )
         assert paper is not None
-        paper_id = paper.id
-        quota = db.scalar(
+        paper_quota = db.scalar(
             select(ExamPaperOrgUnit).where(ExamPaperOrgUnit.exam_paper_id == paper.id)
         )
-        assert quota is not None
-        original_quota = quota.eligible_count
-        quota.eligible_count = 1
-        unit = db.get(OrgUnit, quota.org_unit_id)
+        assert paper_quota is not None
+        unit = db.get(OrgUnit, paper_quota.org_unit_id)
         assert unit is not None
-        unit_id = unit.id
         for username in usernames:
             person = Person(identifier_hash=f"test-{username}", full_name=username, status="active")
             db.add(person)
@@ -75,8 +70,10 @@ def test_postgres_quota_lock_allows_only_one_concurrent_start() -> None:
             )
         window = ExamWindow(
             exam_paper_id=paper.id,
+            title=f"Concurrent quota {suffix}",
             mode="individual",
             duration_minutes=30,
+            completion_policy="fixed_end",
             late_entry_minutes=60,
             window_open_at=utc_now(),
             window_close_at=utc_now() + timedelta(hours=1),
@@ -86,7 +83,13 @@ def test_postgres_quota_lock_allows_only_one_concurrent_start() -> None:
         db.add(window)
         db.flush()
         window_id = window.id
-        db.add(ExamWindowScope(exam_window_id=window.id, org_unit_id=unit.id))
+        db.add(
+            ExamWindowScope(
+                exam_window_id=window.id,
+                org_unit_id=unit.id,
+                eligible_count=1,
+            )
+        )
         db.commit()
 
     settings = Settings(database_url=database_url, app_secret_key="postgres-quota-test-secret")
@@ -111,14 +114,6 @@ def test_postgres_quota_lock_allows_only_one_concurrent_start() -> None:
         for client in clients:
             client.close()
         with Session(engine) as db:
-            quota = db.scalar(
-                select(ExamPaperOrgUnit).where(
-                    ExamPaperOrgUnit.exam_paper_id == paper_id,
-                    ExamPaperOrgUnit.org_unit_id == unit_id,
-                )
-            )
-            if quota is not None:
-                quota.eligible_count = original_quota
             db.execute(delete(ExamSession).where(ExamSession.exam_window_id == window_id))
             db.execute(delete(ExamWindowScope).where(ExamWindowScope.exam_window_id == window_id))
             db.execute(delete(ExamWindow).where(ExamWindow.id == window_id))

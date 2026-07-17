@@ -165,3 +165,18 @@ that duration when no override is supplied. The `/papers` page lists visible cre
 Draft, Open and Closed states through a DaisyUI confirmation modal. Backend creator authorization,
 publish-readiness validation, audit logging and the rule that a creation cannot return to Draft after
 an Exam Window exists are covered by automated API tests; Vue tests cover state-specific actions.
+
+### Exam Window operational boundary — 2026-07-17
+
+The new `/exam-windows` management page separates reusable ExamPaper configuration from actual exam
+rounds. Migration `0014` backfills existing scope quotas, while new Windows snapshot editable quota
+counts and enforce capacity against the Window row. Authors choose fixed-end or full-duration timing
+and operate an audited Scheduled/Open/Suspended/Closed/Cancelled lifecycle. Backend owner checks,
+domain deadline tests, PostgreSQL concurrent quota evidence and Vue lifecycle tests protect the flow.
+
+Final automated evidence: 71 pytest cases passed (the opt-in PostgreSQL case passed separately),
+14 Vitest cases passed, Ruff/type-check/build/Alembic drift checks passed, and browser acceptance at
+360/768/1366/1920 px found no overflow or console errors. The implementation audit closed four
+findings: missing Window-owner validation, Paper-coupled quota locking, implicit fixed-end timing and
+missing mandatory reasons for suspend/cancel. ExamPaper revision/clone remains the next domain slice;
+the existing ECharts chunk-size build warning remains a non-blocking performance follow-up.
