@@ -12,8 +12,10 @@ Production acceptance gate is closed.
 - Authentication: login, logout, `/auth/me`, cookie sessions and session limits
 - Subject and organization lookup, including ภ.6 bureau seed data
 - Question Bank: subject-bound bank, question/choice creation, validation and publish
-- Development seed: PDPA-TH-50 bank with 50 questions, four choices, correct answer and explanation
-- Development end-to-end seed: 10 employees, demo bureau assignment, published 10-question paper, open batch window, and one submitted session with 10 answer records (score 7/10)
+- Optional test fixture: PDPA-TH-50 bank and deterministic end-to-end exam trail remain available
+  in automated tests, but local development demo content seeding is disabled for clean acceptance
+- Development master seed: accounts, persons/employee compatibility data, subjects and the Region 6
+  organization hierarchy remain idempotent and independent from disposable examination content
 - Exam Creation: subject, desired question count, selected questions, variants, pass policy and
   hierarchical organization quota tree that prevents parent-child overlap before submit, default
   duration in minutes and creator-controlled Draft/Published/Archived lifecycle

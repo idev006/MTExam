@@ -73,6 +73,24 @@
     session_expire_minutes = 480
     session_idle_minutes = 30
 
+## Development seed policy
+
+`[development_seed]` separates durable master/reference fixtures from disposable examination data:
+
+```toml
+[development_seed]
+master_data = true
+demo_content = false
+```
+
+- `master_data=true` maintains development user accounts, persons, assignments, subjects and the
+  documented organization hierarchy idempotently.
+- `demo_content=false` prevents automatic recreation of the PDPA question fixture, Exam Creation,
+  Exam Window, variants, sessions and answers after a controlled reset.
+- The `test` environment always creates deterministic demo fixtures so automated API tests remain
+  isolated and reproducible.
+- Production never runs either development seed path.
+
 ## Environment Variables
 
 Required candidates:

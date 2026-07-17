@@ -67,6 +67,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | EXAM-010 | requirements/exam-session.md | coordinator scheduling scope and quota ceiling | test_system_api.py; frontend/src/domain/roles.test.ts | Verified automated |
 | EXAM-COORD-004 | project/exam-coordinator-authorization-design.md | operational Paper discovery, scoped quota policy and row capabilities | test_system_api.py; tests/api/test_reporting_api.py | Verified automated |
 | EXAM-E2E-005 | workflows/end-to-end-exam-workflow.md | submit confirmation, terminal scoring and scoped result visibility | tests/api/test_exam_session_lifecycle.py; ExamSubmitPanel.test.ts | Verify; human device acceptance pending |
+| DATA-RESET-006 | operations/development-data-reset-2026-07-17.md | master/demo seed policy and controlled PostgreSQL reset | tests/api/test_development_seed_policy.py; tests/unit/test_config.py | Verified automated and local PostgreSQL evidence |
 | WINDOW-POLICY-001 | exam-paper-window-lifecycle-design.md | per-window quota locking and fixed/full-duration deadlines | PostgreSQL concurrency + domain policy tests | Verified automated |
 | AUDIT-API | requirements/reporting.md | audit list and mutation events | API authorization smoke | Implemented baseline; full mutation coverage pending |
 | SUBJECT-001 | requirements/question-bank.md | subjects and subject-bound question banks | API/frontend build | Implemented |

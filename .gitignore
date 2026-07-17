@@ -18,6 +18,7 @@ data/
 *.db
 *.sqlite
 *.sqlite3
+backups/*.dump
 
 # Frontend
 frontend/node_modules/

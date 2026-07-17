@@ -34,6 +34,7 @@
 - [Deployment](architecture/deployment.md)
 - [Database and Performance Verification](architecture/database-verification.md)
 - [Production Operations Runbook](operations/production-runbook.md)
+- [Development Data Reset Evidence — 2026-07-17](operations/development-data-reset-2026-07-17.md)
 
 ## Workflows
 

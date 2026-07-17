@@ -621,3 +621,12 @@ count. Swimlane, authorization boundary and terminal alternatives are maintained
 [End-to-End Exam Workflow](../workflows/end-to-end-exam-workflow.md). Automated evidence may move
 the ticket to `Verify`; human responsive acceptance, load evidence and external security review are
 still required before `Done`.
+
+## 36. Clean acceptance data baseline
+
+`DATA-RESET-006` separates idempotent master-data seeding from optional demo examination content.
+The local PostgreSQL development database was backed up, validated and reset so user, person,
+employee, subject and organization data remain while content/exam/session/audit/auth-session rows
+start clean. The committed development baseline disables demo content reseeding; automated tests
+continue using deterministic fixtures. Operational evidence and restore cautions are maintained in
+[Development Data Reset](../operations/development-data-reset-2026-07-17.md).

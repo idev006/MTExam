@@ -79,6 +79,12 @@ withhold score/pass/rationale until permitted. Request-driven timeout correctnes
 evidence; proactive background finalization, production device acceptance and authenticated workflow
 load evidence remain open under items 1, 7 and 9.
 
+Acceptance data reset 2026-07-17: the local PostgreSQL database was backed up and transactional
+question/exam/session data cleared while accounts, employee/person, subjects and organization
+reference data were retained. Development startup now keeps master data idempotently without
+recreating demo content. The next acceptance run must create Question Bank → Exam Creation → Exam
+Window → Session through the UI rather than relying on seeded examination records.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 

@@ -96,6 +96,11 @@ class AuthSettings(BaseModel):
     login_lockout_minutes: int = Field(default=15, ge=1, le=1440)
 
 
+class DevelopmentSeedSettings(BaseModel):
+    master_data: bool = True
+    demo_content: bool = False
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
@@ -112,6 +117,7 @@ class Settings(BaseSettings):
     personnel_import: PersonnelImportSettings = Field(default_factory=PersonnelImportSettings)
     audit: AuditSettings = Field(default_factory=AuditSettings)
     auth: AuthSettings = Field(default_factory=AuthSettings)
+    development_seed: DevelopmentSeedSettings = Field(default_factory=DevelopmentSeedSettings)
     database_url: str = Field(
         default="sqlite:///./data/mtexam.db",
         validation_alias=AliasChoices("DATABASE_URL", "database_url"),

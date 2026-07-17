@@ -54,7 +54,14 @@ def create_app(settings: Settings | None = None, frontend_dist: Path | None = No
         Base.metadata.create_all(database.engine)
         if resolved_settings.app.environment in {"development", "test"}:
             with database.session() as db:
-                _seed_development_accounts(db)
+                if resolved_settings.development_seed.master_data:
+                    _seed_development_master_data(db)
+                if (
+                    resolved_settings.app.environment == "test"
+                    or resolved_settings.development_seed.demo_content
+                ):
+                    _seed_pdpa_question_bank(db)
+                    _seed_demo_exam_data(db)
         yield
         database.dispose()
 
@@ -80,7 +87,7 @@ def create_app(settings: Settings | None = None, frontend_dist: Path | None = No
     return app
 
 
-def _seed_development_accounts(db) -> None:
+def _seed_development_master_data(db) -> None:
     if db.scalar(select(OrgUnit).where(OrgUnit.code == "DEV")) is None:
         db.add(
             OrgUnit(
@@ -168,8 +175,6 @@ def _seed_development_accounts(db) -> None:
                 )
             )
     db.commit()
-    _seed_pdpa_question_bank(db)
-    _seed_demo_exam_data(db)
 
 
 def _seed_demo_exam_data(db) -> None:

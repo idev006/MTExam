@@ -17,6 +17,8 @@ def test_settings_load_committed_toml() -> None:
     assert settings.auth.max_sessions_admin == 3
     assert settings.auth.session_expire_minutes == 480
     assert settings.auth.session_idle_minutes == 30
+    assert settings.development_seed.master_data is True
+    assert settings.development_seed.demo_content is False
 
 
 def test_question_range_must_be_valid() -> None:

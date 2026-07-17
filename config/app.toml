@@ -6,6 +6,10 @@ api_prefix = "/api/v1"
 timezone = "Asia/Bangkok"
 cors_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
+[development_seed]
+master_data = true
+demo_content = false
+
 [database]
 pool_size = 10
 max_overflow = 10

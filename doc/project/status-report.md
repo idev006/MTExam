@@ -220,3 +220,12 @@ automated API/component evidence is complete and no browser pass is claimed.
 - Added cross-role swimlane and sequence evidence in the workflow documentation.
 - Status remains `Verify`: production device, authenticated load and external security acceptance
   are not claimed complete.
+
+## Status update — 2026-07-17 Clean Acceptance Baseline
+
+- Added separate `master_data` and `demo_content` development seed controls.
+- Backed up and validated local PostgreSQL before the reset.
+- Preserved users, persons/employees, assignments, subjects and organizations.
+- Cleared question/exam/window/session/audit/auth-session/import transaction data.
+- Restart verification passed on PostgreSQL without demo examination data being recreated.
+- `DATA-RESET-006` remains `Verify` until the clean end-to-end human acceptance run completes.
