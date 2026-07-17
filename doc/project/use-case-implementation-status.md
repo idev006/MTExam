@@ -50,8 +50,8 @@ Production acceptance gate is closed.
 | Authorization | Scope/account lifecycle and author/coordinator separation implemented; complete production permission-matrix acceptance remains | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
 | Exam Paper | Immutable snapshots, deterministic variants, Draft editing and revision/clone implemented; production author acceptance remains | P0 |
-| Exam Session | Result-detail UI, rationale display, pagination/page-size setting, offline queue and complete acceptance testing | P0 |
-| Scoring | Configurable scoring policy, result API contract and rationale UI acceptance | P0 |
+| Exam Session | Submit/timeout/force-close and result-detail baseline implemented; offline queue, proactive timeout scheduler and complete production acceptance remain | P0 |
+| Scoring | Percentage/pass result contract and Window visibility policy implemented; configurable weighted policy and human rationale UI acceptance remain | P0 |
 | Reporting | UI/API/filter/export implementation, bundled OFL Chakra Petch PDF font and automated evidence complete; production device sign-off and load threshold remain | P1 |
 | Audit | Scoped/paginated audit baseline implemented; 100% mutation coverage, before/after detail, retention and export remain | P1 |
 | Administration | Persistent settings API and complete user/role/scope UI | P1 |

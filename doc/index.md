@@ -40,6 +40,7 @@
 - [Personnel Import Flow](workflows/personnel-import-flow.md)
 - [Create and Publish Exam Flow](workflows/create-exam-flow.md)
 - [Take Exam Flow](workflows/take-exam-flow.md)
+- [End-to-End Exam Workflow](workflows/end-to-end-exam-workflow.md)
 - [Actor and Use-Case Catalog](use-cases/actor-use-case-catalog.md)
 - [Use-Case Sequence Diagrams](workflows/use-case-sequence-diagrams.md)
 - [Use-Case Sequence Coverage](workflows/use-case-sequence-coverage.md)

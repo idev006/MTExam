@@ -136,7 +136,7 @@ Unique exam_variant_id + question_version_id
 
 ### exam_windows
 
-id, exam_paper_id, title, mode, duration_minutes, completion_policy, late_entry_minutes,
+id, exam_paper_id, title, mode, duration_minutes, completion_policy, result_visibility, late_entry_minutes,
 window_open_at, window_close_at, status, created_by
 
 Validation:
@@ -155,9 +155,13 @@ is only the reusable template used when the Window is created.
 
 ### exam_sessions
 
-id, person_id, exam_window_id, exam_variant_id, examinee_snapshot_text, org_unit_id, started_at, ends_at, submitted_at, status, score, ip_address
+id, person_id, exam_window_id, exam_variant_id, examinee_snapshot_text, org_unit_id,
+eligibility_org_unit_id, started_at, ends_at, submitted_at, status, score, ip_address
 
 Unique person_id + exam_window_id ป้องกัน session ซ้ำตาม policy
+
+`org_unit_id` snapshot หน่วยจริง ณ เวลาเริ่ม ส่วน `eligibility_org_unit_id` ระบุ quota bucket ที่
+ถูก lock/reserve และใช้ใน attendance aggregation
 
 ### exam_answers
 

@@ -15,6 +15,7 @@ interface QuotaPolicy { paper_id: string; default_duration_minutes: number; elig
 interface ExamWindow {
   id: string; exam_paper_id: string; paper_title: string; title: string; status: WindowStatus;
   duration_minutes: number; completion_policy: "fixed_end" | "full_duration";
+  result_visibility: "immediate" | "after_window_close" | "hidden";
   late_entry_minutes: number; window_open_at: string | null; window_close_at: string | null;
   eligible_org_units: QuotaItem[]; session_counts: Record<string, number>;
   can_manage: boolean;
@@ -33,6 +34,7 @@ const deletePending = ref<ExamWindow | null>(null);
 const statusReason = ref("");
 const form = reactive({
   exam_paper_id: "", title: "", duration_minutes: 60, completion_policy: "fixed_end",
+  result_visibility: "immediate",
   late_entry_minutes: 0, window_open_at: "", window_close_at: "",
 });
 
@@ -149,6 +151,7 @@ onMounted(load);
         <label class="form-control min-w-0"><span class="label-text">เวลาสุดท้ายที่เริ่มสอบ</span><input v-model="form.window_close_at" class="input input-bordered w-full min-w-0" type="datetime-local" required /></label>
         <label class="form-control min-w-0"><span class="label-text">ระยะเวลาทำข้อสอบ</span><div class="join w-full min-w-0"><input v-model.number="form.duration_minutes" class="input input-bordered join-item w-full min-w-0" type="number" min="1" max="600" required /><span class="btn join-item pointer-events-none">นาที</span></div></label>
         <label class="form-control min-w-0"><span class="label-text">นโยบายสิ้นสุด</span><select v-model="form.completion_policy" class="select select-bordered w-full min-w-0"><option value="fixed_end">หยุดพร้อมกันเมื่อปิดรอบ</option><option value="full_duration">ผู้เริ่มแล้วได้เวลาครบ</option></select></label>
+        <label class="form-control min-w-0"><span class="label-text">การเปิดเผยผลสอบ</span><select v-model="form.result_visibility" class="select select-bordered w-full min-w-0"><option value="immediate">แสดงทันทีเมื่อส่ง/หมดเวลา</option><option value="after_window_close">แสดงหลังปิดรอบสอบ</option><option value="hidden">ไม่แสดงแก่ผู้สอบ</option></select></label>
         <label class="form-control min-w-0"><span class="label-text">อนุญาตเข้าสาย</span><div class="join w-full min-w-0"><input v-model.number="form.late_entry_minutes" class="input input-bordered join-item w-full min-w-0" type="number" min="0" max="1440" /><span class="btn join-item pointer-events-none">นาที</span></div></label>
         <div class="min-w-0 rounded-box border border-base-300 p-3 md:col-span-2 xl:col-span-4">
           <h3 class="font-semibold">Quota ของรอบสอบ</h3><p class="mb-3 text-xs text-base-content/60">คัดลอกจาก ExamPaper เป็นค่าเริ่มต้น การแก้ตรงนี้ไม่เปลี่ยนรอบอื่น</p>
@@ -165,7 +168,7 @@ onMounted(load);
       <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <article v-for="window in windows" :key="window.id" class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body p-5">
           <div class="flex items-start justify-between gap-3"><div><h3 class="font-bold">{{ window.title }}</h3><p class="text-sm text-base-content/60">{{ window.paper_title }}</p></div><span class="badge shrink-0" :class="statusClasses[window.status]">{{ statusLabels[window.status] }}</span></div>
-          <dl class="grid grid-cols-2 gap-3 text-sm"><div><dt class="text-base-content/50">เปิดเริ่มสอบ</dt><dd>{{ displayDate(window.window_open_at) }}</dd></div><div><dt class="text-base-content/50">ปิดรับการเริ่ม</dt><dd>{{ displayDate(window.window_close_at) }}</dd></div><div><dt class="text-base-content/50">เวลาทำข้อสอบ</dt><dd>{{ window.duration_minutes }} นาที</dd></div><div><dt class="text-base-content/50">นโยบายเวลา</dt><dd>{{ window.completion_policy === 'full_duration' ? 'ได้เวลาครบหลังเริ่ม' : 'หยุดพร้อมกัน' }}</dd></div><div><dt class="text-base-content/50">Quota</dt><dd>{{ window.eligible_org_units.reduce((sum, item) => sum + item.eligible_count, 0) }} คน / {{ window.eligible_org_units.length }} หน่วย</dd></div><div><dt class="text-base-content/50">Session</dt><dd>{{ window.session_counts.total ?? 0 }} คน</dd></div></dl>
+          <dl class="grid grid-cols-2 gap-3 text-sm"><div><dt class="text-base-content/50">เปิดเริ่มสอบ</dt><dd>{{ displayDate(window.window_open_at) }}</dd></div><div><dt class="text-base-content/50">ปิดรับการเริ่ม</dt><dd>{{ displayDate(window.window_close_at) }}</dd></div><div><dt class="text-base-content/50">เวลาทำข้อสอบ</dt><dd>{{ window.duration_minutes }} นาที</dd></div><div><dt class="text-base-content/50">นโยบายเวลา</dt><dd>{{ window.completion_policy === 'full_duration' ? 'ได้เวลาครบหลังเริ่ม' : 'หยุดพร้อมกัน' }}</dd></div><div><dt class="text-base-content/50">แสดงผล</dt><dd>{{ window.result_visibility === 'immediate' ? 'ทันที' : window.result_visibility === 'after_window_close' ? 'หลังปิดรอบ' : 'ไม่แสดง' }}</dd></div><div><dt class="text-base-content/50">Quota</dt><dd>{{ window.eligible_org_units.reduce((sum, item) => sum + item.eligible_count, 0) }} คน / {{ window.eligible_org_units.length }} หน่วย</dd></div><div><dt class="text-base-content/50">Session</dt><dd>{{ window.session_counts.total ?? 0 }} คน</dd></div></dl>
           <WindowLifecycleActions v-if="window.can_manage" :status="window.status" :deletable="['scheduled', 'cancelled'].includes(window.status) && (window.session_counts.total ?? 0) === 0" @request="requestStatus(window, $event)" @remove="deletePending = window" />
           <p v-else class="text-xs text-base-content/50">ดูได้ตาม scope · จัดการได้เฉพาะผู้สร้างรอบหรือ super_admin</p>
         </div></article>

@@ -610,3 +610,14 @@ Creator-scoped lifecycle operations, backend capability checks, audit events and
 legacy-author completion path prevent privilege expansion and operational orphaning. The matrix,
 transition rule and sequence evidence are maintained in
 [Exam Coordinator Authorization Design](exam-coordinator-authorization-design.md).
+
+## 35. End-to-end exam workflow hardening
+
+`EXAM-E2E-005` aligns the executable lifecycle with the documented author → coordinator → examinee
+workflow. Submit, request-driven timeout and authorized force-close now share one scoring path;
+the session contract exposes maximum score, percentage and pass outcome only when the Exam Window
+result policy permits it. The Vue flow requires a DaisyUI confirmation containing the unanswered
+count. Swimlane, authorization boundary and terminal alternatives are maintained in
+[End-to-End Exam Workflow](../workflows/end-to-end-exam-workflow.md). Automated evidence may move
+the ticket to `Verify`; human responsive acceptance, load evidence and external security review are
+still required before `Done`.

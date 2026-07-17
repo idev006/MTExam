@@ -163,6 +163,7 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
         "exam_paper_id": paper_id,
         "title": "รอบทดสอบ Full duration",
         "completion_policy": "full_duration",
+        "result_visibility": "after_window_close",
         "eligible_org_units": [{"org_unit_id": owner["id"], "eligible_count": 25}],
     }
     assert client.post("/api/v1/exam-windows", json=window_payload).status_code == 403
@@ -261,6 +262,7 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
     assert window.status_code == 201
     assert window.json()["duration_minutes"] == 50
     assert window.json()["completion_policy"] == "full_duration"
+    assert window.json()["result_visibility"] == "after_window_close"
     assert window.json()["eligible_org_units"] == [
         {"org_unit_id": owner["id"], "eligible_count": 25}
     ]

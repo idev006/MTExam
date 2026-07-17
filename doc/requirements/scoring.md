@@ -27,14 +27,15 @@
 
 ### SCORE-004 — Result visibility
 
-- Examinee ดูผลตนเองทันทีหลัง finalization
+- Exam Window กำหนด `immediate`, `after_window_close` หรือ `hidden`
+- ค่าเริ่มต้น `immediate` รักษา compatibility กับรอบเดิม
 - ผู้ดูแลดูตาม organization scope
 - API ไม่เปิดเผยเฉลยก่อน session final
-- รายละเอียดเฉลยหลังสอบเป็น policy ที่กำหนดใน config/requirement
+- เมื่อ policy ยังไม่อนุญาต API ต้องซ่อน score, maximum score, percentage, pass state และ rationale
 
 ### SCORE-005 — Audit
 
-- เก็บ final score, submitted_at/status และ audit event
+- เก็บ final score, submitted_at/status และ audit event สำหรับ submit, timeout และ force-close
 - การแก้คะแนนโดย admin ไม่อยู่ใน initial scope
 
 ## Required Tests

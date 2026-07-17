@@ -31,9 +31,11 @@ from backend.app.db.models import (
     UserAccount,
 )
 from backend.app.domain.enums import ExamSessionStatus, ExamWindowStatus, UserRole
+from backend.app.domain.report_rules import pass_outcome, score_percentage
 from backend.app.domain.window_policy import session_ends_at
 from backend.app.services.audit import record_audit
 from backend.app.services.exam_quota import reserve_quota
+from backend.app.services.exam_scoring import finalize_session, maximum_score
 
 router = APIRouter(prefix="/exam-sessions", tags=["exam-sessions"])
 
@@ -41,6 +43,10 @@ router = APIRouter(prefix="/exam-sessions", tags=["exam-sessions"])
 class AnswerRequest(BaseModel):
     variant_question_id: UUID
     selected_choice_id: UUID
+
+
+class ForceCloseRequest(BaseModel):
+    reason: str
 
 
 class SessionResponse(BaseModel):
@@ -51,6 +57,11 @@ class SessionResponse(BaseModel):
     ends_at: str
     submitted_at: str | None
     score: float | None
+    maximum_score: float | None
+    percentage: float | None
+    passing_percentage: float | None
+    passed: bool | None
+    result_visible: bool
     answers: dict[str, str]
     questions: list[dict[str, object]]
 
@@ -202,26 +213,56 @@ def submit_session(
         return _response(session, db)
     if session.status != ExamSessionStatus.IN_PROGRESS:
         raise HTTPException(status_code=409, detail="Exam session cannot be submitted")
-    answers = list(db.scalars(select(ExamAnswer).where(ExamAnswer.exam_session_id == session.id)))
-    score = 0.0
-    for answer in answers:
-        choice = db.get(QuestionChoice, answer.selected_choice_id)
-        answer.is_correct_cache = bool(choice and choice.is_correct)
-        if answer.is_correct_cache:
-            variant_question = db.get(ExamVariantQuestion, answer.exam_variant_question_id)
-            score += float(variant_question.score_weight if variant_question else 1)
-    session.score = score
-    session.status = ExamSessionStatus.SUBMITTED
-    session.submitted_at = utc_now()
+    score = finalize_session(db, session, status=ExamSessionStatus.SUBMITTED)
     record_audit(
         db,
         actor_person_id=account.person_id,
         event_type="exam_session.submit",
         subject_type="exam_session",
         subject_id=session.id,
-        metadata={"score": score},
+        metadata={"score": float(score)},
     )
     db.commit()
+    return _response(session, db)
+
+
+@router.post("/{session_id}/force-close", response_model=SessionResponse)
+def force_close_session(
+    session_id: UUID,
+    payload: ForceCloseRequest,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[
+        UserAccount,
+        Depends(
+            require_roles(
+                UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
+                UserRole.SUPER_ADMIN,
+            )
+        ),
+    ],
+) -> SessionResponse:
+    session = db.get(ExamSession, session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Exam session not found")
+    window = db.get(ExamWindow, session.exam_window_id)
+    if window is None or (
+        account.role != UserRole.SUPER_ADMIN and window.created_by != account.person_id
+    ):
+        raise HTTPException(status_code=403, detail="Exam session is outside your operation scope")
+    if not payload.reason.strip():
+        raise HTTPException(status_code=422, detail="A reason is required to force-close a session")
+    if session.status == ExamSessionStatus.IN_PROGRESS:
+        score = finalize_session(db, session, status=ExamSessionStatus.FORCE_CLOSED)
+        record_audit(
+            db,
+            actor_person_id=account.person_id,
+            event_type="exam_session.force_close",
+            subject_type="exam_session",
+            subject_id=session.id,
+            metadata={"score": float(score), "reason": payload.reason.strip()},
+        )
+        db.commit()
     return _response(session, db)
 
 
@@ -236,7 +277,15 @@ def _owned_session(session_id: UUID, account: UserAccount, db: Session) -> ExamS
 
 def _expire_if_needed(session: ExamSession, db: Session) -> None:
     if session.status == ExamSessionStatus.IN_PROGRESS and utc_now() >= session.ends_at:
-        session.status = ExamSessionStatus.TIMED_OUT
+        score = finalize_session(db, session, status=ExamSessionStatus.TIMED_OUT)
+        record_audit(
+            db,
+            actor_person_id=None,
+            event_type="exam_session.timeout",
+            subject_type="exam_session",
+            subject_id=session.id,
+            metadata={"score": float(score)},
+        )
         db.commit()
 
 
@@ -319,6 +368,16 @@ def _question_id_from_version(version_id: UUID, db: Session) -> UUID | None:
 
 
 def _response(session: ExamSession, db: Session) -> SessionResponse:
+    window = db.get(ExamWindow, session.exam_window_id)
+    paper = db.get(ExamPaper, window.exam_paper_id) if window else None
+    terminal = session.status in {
+        ExamSessionStatus.SUBMITTED,
+        ExamSessionStatus.TIMED_OUT,
+        ExamSessionStatus.FORCE_CLOSED,
+    }
+    result_visible = terminal and _result_is_visible(window)
+    maximum = maximum_score(db, session) if terminal else None
+    percentage = score_percentage(session.score, maximum) if result_visible else None
     variant_questions = list(
         db.scalars(
             select(ExamVariantQuestion)
@@ -340,7 +399,7 @@ def _response(session: ExamSession, db: Session) -> SessionResponse:
             "content": version.content_snapshot if version else "",
             "choices": [{"id": choice["id"], "content": choice["content"]} for choice in snapshot],
         }
-        if session.status == ExamSessionStatus.SUBMITTED and version:
+        if result_visible and version:
             item["explanation"] = version.explanation
         questions.append(item)
     return SessionResponse(
@@ -350,7 +409,31 @@ def _response(session: ExamSession, db: Session) -> SessionResponse:
         started_at=session.started_at.isoformat(),
         ends_at=session.ends_at.isoformat(),
         submitted_at=session.submitted_at.isoformat() if session.submitted_at else None,
-        score=float(session.score) if session.score is not None else None,
+        score=float(session.score) if result_visible and session.score is not None else None,
+        maximum_score=float(maximum) if result_visible and maximum is not None else None,
+        percentage=percentage,
+        passing_percentage=(
+            float(paper.passing_percentage)
+            if result_visible and paper and paper.passing_percentage is not None
+            else None
+        ),
+        passed=(
+            pass_outcome(percentage, paper.passing_percentage)
+            if result_visible and paper
+            else None
+        ),
+        result_visible=result_visible,
         answers=answers,
         questions=questions,
+    )
+
+
+def _result_is_visible(window: ExamWindow | None) -> bool:
+    if window is None or window.result_visibility == "immediate":
+        return True
+    if window.result_visibility == "hidden":
+        return False
+    return bool(
+        window.status in {ExamWindowStatus.CLOSED, ExamWindowStatus.CANCELLED}
+        or (window.window_close_at and utc_now() >= window.window_close_at)
     )

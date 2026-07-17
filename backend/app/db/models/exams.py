@@ -123,6 +123,7 @@ class ExamWindow(Base):
     mode: Mapped[str] = mapped_column(String(30))
     duration_minutes: Mapped[int | None] = mapped_column(Integer)
     completion_policy: Mapped[str] = mapped_column(String(30), default="fixed_end")
+    result_visibility: Mapped[str] = mapped_column(String(30), default="immediate")
     late_entry_minutes: Mapped[int] = mapped_column(Integer, default=0)
     window_open_at: Mapped[datetime | None] = mapped_column(DateTime)
     window_close_at: Mapped[datetime | None] = mapped_column(DateTime)

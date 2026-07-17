@@ -1,6 +1,6 @@
 # Project Status Report
 
-**As of:** 2026-07-16
+**As of:** 2026-07-17
 **Overall:** MVP vertical slices — Verify; Production readiness — Not ready
 
 Use-case completeness is tracked in [Use-Case Implementation Status](use-case-implementation-status.md).
@@ -210,3 +210,13 @@ separately, 21 Vitest cases passed, and Ruff, type-check, production build, sour
 traceability and Alembic PostgreSQL drift checks passed. Browser acceptance for the new role remains
 pending because the in-app browser rejected the recovered local error tab under its URL policy;
 automated API/component evidence is complete and no browser pass is claimed.
+## Status update — 2026-07-17 End-to-End Exam Workflow Hardening
+
+- Added shared scoring finalization for submitted, timed-out and force-closed sessions.
+- Added Exam Window result visibility (`immediate`, `after_window_close`, `hidden`) with backend
+  withholding of score/pass/rationale.
+- Added DaisyUI submit confirmation with unanswered count and responsive result summary.
+- Added API permission/lifecycle tests and frontend component tests.
+- Added cross-role swimlane and sequence evidence in the workflow documentation.
+- Status remains `Verify`: production device, authenticated load and external security acceptance
+  are not claimed complete.

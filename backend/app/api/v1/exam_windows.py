@@ -29,6 +29,7 @@ from backend.app.domain.enums import (
     ExamWindowMode,
     ExamWindowStatus,
     PaperStatus,
+    ResultVisibilityPolicy,
     UserRole,
 )
 from backend.app.services.audit import record_audit
@@ -48,6 +49,7 @@ class WindowCreate(BaseModel):
     mode: ExamWindowMode = ExamWindowMode.INDIVIDUAL
     duration_minutes: int | None = Field(default=None, ge=1, le=600)
     completion_policy: ExamCompletionPolicy = ExamCompletionPolicy.FIXED_END
+    result_visibility: ResultVisibilityPolicy = ResultVisibilityPolicy.IMMEDIATE
     late_entry_minutes: int = Field(default=0, ge=0, le=1440)
     eligible_org_units: list[WindowEligibleOrgUnit] = Field(default_factory=list, max_length=100)
     allowed_org_unit_ids: list[UUID] = Field(default_factory=list, max_length=100)
@@ -68,6 +70,7 @@ class WindowResponse(BaseModel):
     mode: str
     duration_minutes: int | None
     completion_policy: str
+    result_visibility: str
     late_entry_minutes: int
     eligible_org_units: list[WindowEligibleOrgUnit] = Field(default_factory=list)
     allowed_org_unit_ids: list[UUID] = Field(default_factory=list)
@@ -151,6 +154,7 @@ def create_window(
         mode=payload.mode,
         duration_minutes=duration_minutes,
         completion_policy=payload.completion_policy,
+        result_visibility=payload.result_visibility,
         late_entry_minutes=payload.late_entry_minutes,
         status=ExamWindowStatus.SCHEDULED,
         created_by=account.person_id,
@@ -179,6 +183,7 @@ def create_window(
             "paper_id": str(paper.id),
             "duration_minutes": duration_minutes,
             "completion_policy": str(payload.completion_policy),
+            "result_visibility": str(payload.result_visibility),
             "quota_total": sum(quota_by_org.values()),
         },
     )
@@ -420,6 +425,7 @@ def _response(
         mode=window.mode,
         duration_minutes=window.duration_minutes,
         completion_policy=window.completion_policy,
+        result_visibility=window.result_visibility,
         late_entry_minutes=window.late_entry_minutes,
         eligible_org_units=[
             WindowEligibleOrgUnit(org_unit_id=row.org_unit_id, eligible_count=row.eligible_count or 0)

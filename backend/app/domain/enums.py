@@ -79,6 +79,12 @@ class ExamCompletionPolicy(StrEnum):
     FULL_DURATION = "full_duration"
 
 
+class ResultVisibilityPolicy(StrEnum):
+    IMMEDIATE = "immediate"
+    AFTER_WINDOW_CLOSE = "after_window_close"
+    HIDDEN = "hidden"
+
+
 class ExamWindowStatus(StrEnum):
     SCHEDULED = "scheduled"
     OPEN = "open"

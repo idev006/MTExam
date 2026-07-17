@@ -12,7 +12,9 @@
 - `GET /exam-sessions/{session_id}` returns questions, saved answers and server deadline
 - `PUT /exam-sessions/{session_id}/answers` upserts a validated answer
 - `POST /exam-sessions/{session_id}/submit` calculates and stores the immutable score
-- The server changes an overdue in-progress session to `timed_out`; the browser clock is display-only
+- `POST /exam-sessions/{session_id}/force-close` lets the Window owner or super admin finalize an
+  in-progress session with a required audited reason
+- The server finalizes an overdue in-progress session as `timed_out`; the browser clock is display-only
 
 The current development preview is available at `/exam/pdpa`. An administrator selects the number of questions per page (1, 5, 10, 20, or 50), and the examinee can navigate directly to any page. The recovery POC creates a durable SQLite `practice_exam_sessions` row, autosaves each answer through the API, keeps a local browser recovery copy, and resumes the same session after refresh, browser restart, or temporary network loss. Score plus stored rationales are revealed only after the complete paper is submitted. Cookie-based authentication now protects the practice and settings routes; formal authenticated exam windows remain pending.
 
@@ -22,7 +24,8 @@ The current development preview is available at `/exam/pdpa`. An administrator s
 - Each answer is persisted independently; retrying an answer update is safe.
 - Offline or failed writes remain in browser recovery storage and are retried when the user continues or submits.
 - Submit is idempotent: a repeated submit returns the existing result and never recalculates a second attempt.
-- The server rejects incomplete submissions and calculates the score from the server-side question bank.
+- The confirmation UI reports unanswered questions; unanswered questions score zero and the server
+  calculates only from immutable question/choice snapshots.
 
 ### EXAM-001 — Exam window
 
@@ -90,6 +93,9 @@ The current development preview is available at `/exam/pdpa`. An administrator s
 - หลัง submit แก้คำตอบไม่ได้
 - Request หลัง ends_at ทำให้ session เป็น timed_out ตาม use case
 - Submit และ timeout เรียก scoring service เดียวกัน
+- Force-close เรียก scoring service เดียวกันและต้องมีเหตุผลใน audit
+- Response คืน maximum score, percentage, passing threshold, pass outcome และ result visibility
+  เฉพาะเมื่อ policy ของ Window อนุญาต
 
 ### EXAM-009 — Recovery
 
@@ -120,3 +126,4 @@ The current development preview is available at `/exam/pdpa`. An administrator s
 - Client time manipulation
 - Window quota isolation across multiple rounds
 - Authorized and invalid lifecycle transitions with audit evidence
+- Immediate/after-close/hidden result policy and force-close authorization

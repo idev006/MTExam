@@ -72,6 +72,13 @@ creator-only lifecycle access until terminal so active operations are not orphan
 cross-scope, quota-escalation and UI capability evidence is implemented; production assignment and
 human acceptance remain under items 4, 5 and 9.
 
+End-to-end exam workflow update 2026-07-17: submit confirmation reports unanswered questions;
+submitted, timed-out and force-closed sessions share one server scoring service and audited terminal
+state. Exam Window now owns immediate/after-close/hidden result visibility, and examinee responses
+withhold score/pass/rationale until permitted. Request-driven timeout correctness has automated
+evidence; proactive background finalization, production device acceptance and authenticated workflow
+load evidence remain open under items 1, 7 and 9.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 

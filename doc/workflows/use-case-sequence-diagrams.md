@@ -337,27 +337,39 @@ sequenceDiagram
     UI->>API: Retry pending mutations
 ```
 
-## UC-EXAM-03 — Submit exam and reveal result
+## UC-EXAM-03 — Submit, timeout or force-close and reveal result by policy
 
 ```mermaid
 sequenceDiagram
     actor X as examinee
     participant UI as Exam UI
     participant API as Exam API
-    participant DB as SQLite
-    X->>UI: Click submit
-    UI-->>X: Show unanswered summary and confirm modal
-    X->>UI: Confirm
-    UI->>API: Sync pending answers
-    UI->>API: POST /exam-sessions/{id}/submit
-    API->>DB: Transaction: validate, calculate score, mark submitted
-    DB-->>API: Immutable result
-    API-->>UI: Score/result
-    UI-->>X: Show score, answers, and rationales
+    participant DB as PostgreSQL
+    alt Examinee submits
+        X->>UI: Click submit
+        UI-->>X: DaisyUI modal with unanswered count
+        X->>UI: Confirm
+        UI->>API: POST /exam-sessions/{id}/submit
+        API->>DB: Finalize score and mark submitted
+    else Server deadline passes
+        UI->>API: Next session request
+        API->>DB: Finalize score and mark timed_out
+    else Window manager force-closes
+        UI->>API: POST /exam-sessions/{id}/force-close + reason
+        API->>API: Verify Window owner or super_admin
+        API->>DB: Finalize score and mark force_closed
+    end
+    API->>DB: Append terminal audit event
+    alt Result policy permits
+        API-->>UI: Score/max, percentage, pass state and rationale
+    else Result hidden until close or permanently
+        API-->>UI: Terminal status without result fields/rationale
+    end
+    UI-->>X: Show permitted result or policy message
 ```
 
-Submission is idempotent: repeating the submit request returns the stored result rather than
-recalculating a different score.
+All terminal paths share the scoring service. Submission is idempotent: repeating the submit request
+returns the stored result rather than recalculating a different score.
 
 ## UC-REPORT-01 — View scoped report
 

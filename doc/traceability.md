@@ -42,13 +42,13 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | EXAM-005 | requirements/exam-session.md | session read | TBD | Planned |
 | EXAM-006 | requirements/exam-session.md | PUT answer | TBD | Planned |
 | EXAM-007 | requirements/exam-session.md | session clock response | TBD | Planned |
-| EXAM-008 | requirements/exam-session.md | submit/finalize | TBD | Planned |
+| EXAM-008 | requirements/exam-session.md | submit/timeout/force-close through shared scoring service | tests/api/test_exam_session_lifecycle.py | Verified automated |
 | EXAM-009 | requirements/exam-session.md | session recovery | TBD | Planned |
 | SCORE-001 | requirements/scoring.md | scoring domain | TBD | Planned |
 | SCORE-002 | requirements/scoring.md | scoring domain | TBD | Planned |
 | SCORE-003 | requirements/scoring.md | finalization service | TBD | Planned |
-| SCORE-004 | requirements/scoring.md | result API | TBD | Planned |
-| SCORE-005 | requirements/scoring.md | audit/results | TBD | Planned |
+| SCORE-004 | requirements/scoring.md | result visibility API contract | tests/api/test_exam_session_lifecycle.py; ExamSubmitPanel.test.ts | Verified automated |
+| SCORE-005 | requirements/scoring.md | terminal result audit | tests/api/test_exam_session_lifecycle.py | Verified automated |
 | REPORT-001 | requirements/reporting.md | reports/my-results + people detail | tests/api/test_reporting_api.py | Verified automated |
 | REPORT-002 | requirements/reporting.md | reports/dashboard scoped organization aggregation | tests/api/test_reporting_api.py | Verified automated |
 | REPORT-003 | requirements/reporting.md | Exam Creation KPI/chart aggregation | tests/unit/test_report_rules.py; tests/api/test_reporting_api.py | Verified automated |
@@ -66,6 +66,7 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | AUTH-007 | requirements/authentication.md | separated author/coordinator capabilities and creator-scoped Window operations | test_system_api.py; frontend/src/domain/roles.test.ts | Verified automated |
 | EXAM-010 | requirements/exam-session.md | coordinator scheduling scope and quota ceiling | test_system_api.py; frontend/src/domain/roles.test.ts | Verified automated |
 | EXAM-COORD-004 | project/exam-coordinator-authorization-design.md | operational Paper discovery, scoped quota policy and row capabilities | test_system_api.py; tests/api/test_reporting_api.py | Verified automated |
+| EXAM-E2E-005 | workflows/end-to-end-exam-workflow.md | submit confirmation, terminal scoring and scoped result visibility | tests/api/test_exam_session_lifecycle.py; ExamSubmitPanel.test.ts | Verify; human device acceptance pending |
 | WINDOW-POLICY-001 | exam-paper-window-lifecycle-design.md | per-window quota locking and fixed/full-duration deadlines | PostgreSQL concurrency + domain policy tests | Verified automated |
 | AUDIT-API | requirements/reporting.md | audit list and mutation events | API authorization smoke | Implemented baseline; full mutation coverage pending |
 | SUBJECT-001 | requirements/question-bank.md | subjects and subject-bound question banks | API/frontend build | Implemented |

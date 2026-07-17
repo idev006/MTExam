@@ -1,6 +1,6 @@
 # Use-Case Sequence Coverage
 
-**Reviewed:** 2026-07-16
+**Reviewed:** 2026-07-17
 
 Every use case in the Actor and Use-Case Catalog has a Mermaid sequence diagram. The diagram
 file is the behavioral SSOT; this table prevents a new use case from being added without flow
@@ -23,9 +23,12 @@ evidence.
 | UC-EXAM-00 | Create and operate an Exam Window | coordinator role/scope, quota ceiling, creator lifecycle and audit |
 | UC-EXAM-01 | Start or resume exam | durable session and server deadline |
 | UC-EXAM-02 | Answer and autosave/recover | local/API retry path |
-| UC-EXAM-03 | Submit exam and reveal result | score finalization |
+| UC-EXAM-03 | Submit, timeout or force-close and reveal result by policy | shared score finalization and audit |
 | UC-REPORT-01 | View scoped report | authorization and read-only query |
 | UC-REPORT-02 | View statistics for one Exam Creation | per-creation aggregation |
+| UC-REPORT-03 | Filter, drill down and export | shared scoped report filters and export audit |
+| UC-REPORT-04 | Reserve organization quota at exam start | PostgreSQL row lock and quota bucket |
 | UC-AUDIT-01 | Review audit events | filtered immutable audit view |
 
 Source: [Use-Case Sequence Diagrams](use-case-sequence-diagrams.md).
+Cross-use-case swimlane and terminal alternatives: [End-to-End Exam Workflow](end-to-end-exam-workflow.md).
