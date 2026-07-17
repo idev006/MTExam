@@ -251,21 +251,22 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    actor E as exam_author
+    actor E as exam_coordinator
     participant UI as Window Management UI
     participant API as Exam Window API
     participant DB as PostgreSQL
     E->>UI: Select published paper
     UI->>API: GET /papers/{id}/quota-policy
-    API-->>UI: Duration and quota template
+    API->>API: Apply coordinator organization scope
+    API-->>UI: Scoped duration and quota template with ceilings
     E->>UI: Set schedule, completion policy and Window quotas
     UI->>API: POST /exam-windows
-    API->>API: Verify author, paper and organization scope
+    API->>API: Verify coordinator, Published Paper, scope and quota <= template
     API->>DB: Save Scheduled Window and quota snapshot
     API->>DB: Append audit event
     E->>UI: Open, suspend, resume, close or cancel
     UI->>API: PATCH /exam-windows/{id}/status
-    API->>API: Validate owner and transition
+    API->>API: Validate creator capability and transition
     API->>DB: Save status and audit reason
     API-->>UI: Updated Window and session counts
 ```

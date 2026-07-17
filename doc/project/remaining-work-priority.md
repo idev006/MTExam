@@ -65,6 +65,13 @@ summary; used Papers create a lineage-preserving Revision instead. Scheduled/Can
 zero sessions can be deleted to recover from setup mistakes. Physical Paper deletion remains
 intentionally excluded and human acceptance remains open.
 
+Exam Coordinator update 2026-07-17: new Window creation is separated from content authoring.
+`exam_coordinator` schedules only Published Paper quota buckets inside assigned organization scope,
+cannot raise template quota, and manages only its own Windows. Existing author-owned Windows retain
+creator-only lifecycle access until terminal so active operations are not orphaned. Automated role,
+cross-scope, quota-escalation and UI capability evidence is implemented; production assignment and
+human acceptance remain under items 4, 5 and 9.
+
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.
 

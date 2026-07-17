@@ -600,3 +600,13 @@ revision with explicit lineage instead of rewriting historical content. Mistaken
 Windows may be deleted only when they have no sessions. Authorization, change summaries and audit
 events are mandatory. Detailed rules and sequence evidence are maintained in
 [ExamPaper Draft Editing and Revision Design](exam-paper-revision-design.md).
+
+## 34. Exam Coordinator separation of duties
+
+New Exam Window scheduling is assigned to `exam_coordinator`, independently of Exam Creation
+content ownership. Coordinator write scope is the assigned organization plus active descendants,
+intersected with exact Published Paper quota buckets; a Window cannot raise a template quota.
+Creator-scoped lifecycle operations, backend capability checks, audit events and a temporary
+legacy-author completion path prevent privilege expansion and operational orphaning. The matrix,
+transition rule and sequence evidence are maintained in
+[Exam Coordinator Authorization Design](exam-coordinator-authorization-design.md).

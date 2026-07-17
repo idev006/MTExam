@@ -5,6 +5,7 @@ import ConfirmModal from "@/components/feedback/ConfirmModal.vue";
 import ThemeSelector from "@/components/settings/ThemeSelector.vue";
 import { useAuth } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
+import { AUTHOR_ROLES, WINDOW_PAGE_ROLES, hasRole } from "@/domain/roles";
 
 const themeStore = useThemeStore();
 const { user, logout } = useAuth();
@@ -15,7 +16,8 @@ const canTakeExam = computed(() => user.value?.role === "examinee" || user.value
 const canViewSettings = computed(() => user.value?.role === "super_admin");
 const canViewReports = computed(() => Boolean(user.value));
 const canViewAudit = computed(() => ["super_admin", "viewer", "division_admin", "bureau_admin", "station_admin"].includes(user.value?.role ?? ""));
-const canAuthor = computed(() => user.value?.role === "super_admin" || user.value?.role === "exam_author");
+const canAuthor = computed(() => hasRole(user.value?.role, AUTHOR_ROLES));
+const canOperateWindows = computed(() => hasRole(user.value?.role, WINDOW_PAGE_ROLES));
 const isSuperAdmin = computed(() => user.value?.role === "super_admin");
 const roleLabel = computed(() => user.value?.role ?? "ผู้เยี่ยมชม");
 const showLogoutModal = ref(false);
@@ -58,7 +60,7 @@ async function confirmLogout() {
             <RouterLink v-if="canTakeExam" class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam">ทำข้อสอบ</RouterLink>
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/authoring">คลังข้อสอบ</RouterLink>
             <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/papers">Exam Paper</RouterLink>
-            <RouterLink v-if="canAuthor" class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam-windows">รอบสอบ</RouterLink>
+            <RouterLink v-if="canOperateWindows" class="btn btn-ghost btn-sm" active-class="btn-active" to="/exam-windows">รอบสอบ</RouterLink>
             <RouterLink v-if="canViewReports" class="btn btn-ghost btn-sm" active-class="btn-active" to="/reports">รายงาน</RouterLink>
             <RouterLink v-if="canViewAudit" class="btn btn-ghost btn-sm" active-class="btn-active" to="/audit">Audit</RouterLink>
             <RouterLink v-if="isSuperAdmin" class="btn btn-ghost btn-sm" active-class="btn-active" to="/admin/users">ผู้ใช้</RouterLink>
@@ -79,7 +81,7 @@ async function confirmLogout() {
           <RouterLink v-if="canTakeExam" class="btn btn-ghost justify-start" to="/exam" @click="mobileMenuOpen = false">ทำข้อสอบ</RouterLink>
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/authoring" @click="mobileMenuOpen = false">คลังข้อสอบ</RouterLink>
           <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/papers" @click="mobileMenuOpen = false">Exam Paper</RouterLink>
-          <RouterLink v-if="canAuthor" class="btn btn-ghost justify-start" to="/exam-windows" @click="mobileMenuOpen = false">จัดรอบสอบ</RouterLink>
+          <RouterLink v-if="canOperateWindows" class="btn btn-ghost justify-start" to="/exam-windows" @click="mobileMenuOpen = false">จัดรอบสอบ</RouterLink>
           <RouterLink v-if="canViewReports" class="btn btn-ghost justify-start" to="/reports" @click="mobileMenuOpen = false">รายงาน</RouterLink>
           <RouterLink v-if="canViewAudit" class="btn btn-ghost justify-start" to="/audit" @click="mobileMenuOpen = false">Audit</RouterLink>
           <RouterLink v-if="isSuperAdmin" class="btn btn-ghost justify-start" to="/admin/users" @click="mobileMenuOpen = false">ผู้ใช้</RouterLink>

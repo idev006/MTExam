@@ -19,6 +19,7 @@ class UserRole(StrEnum):
     BUREAU_ADMIN = "bureau_admin"
     STATION_ADMIN = "station_admin"
     EXAM_AUTHOR = "exam_author"
+    EXAM_COORDINATOR = "exam_coordinator"
     EXAMINEE = "examinee"
     VIEWER = "viewer"
 

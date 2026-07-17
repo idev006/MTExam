@@ -30,7 +30,11 @@ from backend.app.db.models import (
 )
 from backend.app.domain.enums import PaperStatus, UserRole
 from backend.app.services.audit import record_audit
-from backend.app.services.org_authorization import active_org_unit_ids, can_access_org_unit
+from backend.app.services.org_authorization import (
+    accessible_org_unit_ids,
+    active_org_unit_ids,
+    can_access_org_unit,
+)
 
 router = APIRouter(prefix="/papers", tags=["papers"])
 
@@ -298,16 +302,40 @@ def _change_paper_status(
 def list_papers(
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[
-        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+        UserAccount,
+        Depends(
+            require_roles(
+                UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
+                UserRole.SUPER_ADMIN,
+            )
+        ),
     ],
 ) -> list[PaperResponse]:
     papers = list(db.scalars(select(ExamPaper).order_by(ExamPaper.created_at.desc())))
-    allowed = active_org_unit_ids(db, account)
-    visible = [
-        paper
-        for paper in papers
-        if paper.org_unit_id in allowed or paper.created_by == account.person_id
-    ]
+    if account.role == UserRole.EXAM_COORDINATOR:
+        scoped_orgs = accessible_org_unit_ids(db, account)
+        scoped_paper_ids = set(
+            db.scalars(
+                select(ExamPaperOrgUnit.exam_paper_id).where(
+                    ExamPaperOrgUnit.org_unit_id.in_(scoped_orgs)
+                )
+            )
+        )
+        visible = [
+            paper
+            for paper in papers
+            if paper.id in scoped_paper_ids and paper.status == PaperStatus.PUBLISHED
+        ]
+    else:
+        allowed = active_org_unit_ids(db, account)
+        visible = [
+            paper
+            for paper in papers
+            if account.role == UserRole.SUPER_ADMIN
+            or paper.org_unit_id in allowed
+            or paper.created_by == account.person_id
+        ]
     return [_paper_response(db, paper, account) for paper in visible]
 
 
@@ -528,16 +556,31 @@ def paper_quota_policy(
     paper_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[
-        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+        UserAccount,
+        Depends(
+            require_roles(
+                UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
+                UserRole.SUPER_ADMIN,
+            )
+        ),
     ],
 ) -> PaperQuotaPolicyResponse:
     paper = db.get(ExamPaper, paper_id)
     if paper is None:
         raise HTTPException(status_code=404, detail="Paper not found")
-    _require_paper_owner(paper, account)
     rows = list(
         db.scalars(select(ExamPaperOrgUnit).where(ExamPaperOrgUnit.exam_paper_id == paper.id))
     )
+    if account.role == UserRole.EXAM_COORDINATOR:
+        if paper.status != PaperStatus.PUBLISHED:
+            raise HTTPException(status_code=409, detail="Only published papers can schedule an Exam Window")
+        scoped_orgs = accessible_org_unit_ids(db, account)
+        rows = [row for row in rows if row.org_unit_id in scoped_orgs]
+        if not rows:
+            raise HTTPException(status_code=403, detail="Exam Creation is outside coordinator scope")
+    else:
+        _require_paper_owner(paper, account)
     items = []
     for row in rows:
         unit = db.get(OrgUnit, row.org_unit_id)

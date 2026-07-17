@@ -6,7 +6,7 @@ def login(client: TestClient, username: str, password: str) -> None:
     assert response.status_code == 200
 
 
-def test_reporting_context_is_available_to_all_seven_roles(client: TestClient) -> None:
+def test_reporting_context_is_available_to_all_eight_roles(client: TestClient) -> None:
     accounts = [
         ("superadmin", "super1234"),
         ("viewer", "viewer1234"),
@@ -14,6 +14,7 @@ def test_reporting_context_is_available_to_all_seven_roles(client: TestClient) -
         ("bureauadmin", "bureau1234"),
         ("stationadmin", "station1234"),
         ("author", "author1234"),
+        ("coordinator", "coordinator1234"),
         ("demo", "demo1234"),
     ]
     for username, password in accounts:

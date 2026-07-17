@@ -55,6 +55,7 @@ REPORT_ROLES = (
     UserRole.BUREAU_ADMIN,
     UserRole.STATION_ADMIN,
     UserRole.EXAM_AUTHOR,
+    UserRole.EXAM_COORDINATOR,
     UserRole.EXAMINEE,
 )
 

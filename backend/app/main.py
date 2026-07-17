@@ -98,6 +98,12 @@ def _seed_development_accounts(db) -> None:
         ("demo", "demo1234", "ผู้เข้าสอบสาธิต", UserRole.EXAMINEE),
         ("superadmin", "super1234", "ผู้ดูแลระบบสาธิต", UserRole.SUPER_ADMIN),
         ("author", "author1234", "ผู้สร้างข้อสอบสาธิต", UserRole.EXAM_AUTHOR),
+        (
+            "coordinator",
+            "coordinator1234",
+            "ผู้จัดรอบสอบสาธิต",
+            UserRole.EXAM_COORDINATOR,
+        ),
         ("viewer", "viewer1234", "ผู้ตรวจสอบสาธิต", UserRole.VIEWER),
         ("divisionadmin", "division1234", "Division Admin Demo", UserRole.DIVISION_ADMIN),
         ("bureauadmin", "bureau1234", "Bureau Admin Demo", UserRole.BUREAU_ADMIN),
@@ -125,6 +131,7 @@ def _seed_development_accounts(db) -> None:
     scope_seed = {
         "demo": "bureau",
         "author": "bureau",
+        "coordinator": "bureau",
         "divisionadmin": "division",
         "bureauadmin": "bureau",
         "stationadmin": "station",
@@ -173,9 +180,12 @@ def _seed_demo_exam_data(db) -> None:
     bank = db.scalar(select(QuestionBank).where(QuestionBank.name == "PDPA-TH-50"))
     demo = db.scalar(select(UserAccount).where(UserAccount.username_normalized == "demo"))
     author = db.scalar(select(UserAccount).where(UserAccount.username_normalized == "author"))
+    coordinator = db.scalar(
+        select(UserAccount).where(UserAccount.username_normalized == "coordinator")
+    )
     bureau = db.scalar(select(OrgUnit).where(OrgUnit.level == "bureau"))
     subject = db.scalar(select(Subject).where(Subject.code == "PDPA"))
-    if not all((bank, demo, author, bureau, subject)):
+    if not all((bank, demo, author, coordinator, bureau, subject)):
         return
 
     if db.scalar(select(Employee).where(Employee.emp_cid == "0000000000001")) is None:
@@ -280,7 +290,7 @@ def _seed_demo_exam_data(db) -> None:
             window_open_at=now - timedelta(minutes=5),
             window_close_at=now + timedelta(minutes=55),
             status="open",
-            created_by=author.person_id,
+            created_by=coordinator.person_id,
         )
         db.add(window)
         db.flush()

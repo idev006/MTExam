@@ -15,6 +15,7 @@ Provide a small, role-protected settings area for operational configuration with
 |---|---:|---:|---:|---:|
 | `super_admin` | yes | yes | yes (controlled override) | yes |
 | `exam_author` | yes | no | no | yes (future module) |
+| `exam_coordinator` | yes | no | no | no |
 | `examinee` | yes | no | yes | no |
 | `viewer` | yes | no | no | read-only modules only |
 

@@ -15,6 +15,7 @@ def test_session_policy_assigns_one_examinee_and_three_admin_sessions() -> None:
     assert policy.max_sessions_for(UserRole.SUPER_ADMIN) == 3
     assert policy.max_sessions_for(UserRole.DIVISION_ADMIN) == 3
     assert policy.max_sessions_for(UserRole.EXAM_AUTHOR) == 1
+    assert policy.max_sessions_for(UserRole.EXAM_COORDINATOR) == 1
 
 
 def test_session_policy_rejects_non_positive_values() -> None:

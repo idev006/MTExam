@@ -66,7 +66,7 @@ The real exam session API and Vue exam lobby/session wiring are now implemented 
 durable answer upsert, server-side timeout and idempotent submit; bureau eligibility and end-to-end
 acceptance remain to be verified.
 
-Reporting implementation now includes all seven roles, Exam Creation pass percentage and per-unit
+Reporting implementation now includes all eight roles, Exam Creation pass percentage and per-unit
 quota, transaction-checked exam start capacity, shared-filter dashboard/export APIs, ECharts,
 responsive filter/detail drawers and audited person/export reads. Automated verification is linked
 from the traceability matrix. Local browser checks passed at 360/768/1366/1920 px without overflow
@@ -195,3 +195,18 @@ frontend type-check/build, Ruff, file-size/traceability checks and Alembic drift
 Browser acceptance confirmed creator-scoped mutation actions and the DaisyUI revision modal without
 console or API errors. An audit also corrected a capability leak where a visible paper could advertise
 edit/revision actions to a non-owner even though the mutation endpoint correctly denied the request.
+
+### Exam Coordinator separation of duties — 2026-07-17
+
+New Exam Window scheduling now requires `exam_coordinator` or `super_admin`. Coordinators discover
+only Published Paper templates intersecting their assigned organization scope, receive a filtered
+quota policy, and cannot raise a Window quota above the Exam Creation template. Window list responses
+carry creator-derived `can_manage` capability so scoped read access never advertises unauthorized
+mutations. Authors retain creator-only lifecycle access to historical Windows but cannot create new
+ones, preventing active rounds from becoming orphaned during transition. Backend permission tests,
+the eight-role reporting context and frontend role-capability tests provide automated evidence.
+Final verification: 71 pytest cases passed with the opt-in PostgreSQL concurrency case passed
+separately, 21 Vitest cases passed, and Ruff, type-check, production build, source-size,
+traceability and Alembic PostgreSQL drift checks passed. Browser acceptance for the new role remains
+pending because the in-app browser rejected the recovered local error tab under its URL policy;
+automated API/component evidence is complete and no browser pass is claimed.

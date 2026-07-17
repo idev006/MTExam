@@ -97,6 +97,15 @@ The current development preview is available at `/exam/pdpa`. An administrator s
 - ไม่มี Redis requirement
 - State ถาวรอยู่ใน database
 
+### EXAM-010 — Coordinator-controlled Window scheduling
+
+- New Exam Windows may be created only by `exam_coordinator` or `super_admin`.
+- The selected Paper must be Published and have at least one exact quota bucket in coordinator scope.
+- Per-Window quota may be equal to or lower than its Exam Creation template; quota escalation is rejected.
+- Lifecycle mutation requires the Window creator, except audited `super_admin` override and the
+  documented legacy-author transition.
+- List responses expose `can_manage` so the UI does not advertise unauthorized mutations.
+
 ## Required Tests
 
 - Individual/fixed timing

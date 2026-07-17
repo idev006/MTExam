@@ -12,6 +12,7 @@
 |---|---|---|
 | `super_admin` | บริหารระบบและกำกับทุกโมดูล | ทุก use case, ตั้งค่า, role และ audit |
 | `exam_author` | สร้าง ตรวจ และเผยแพร่เนื้อหาการสอบ | question bank, paper, preview; ไม่ทำ exam session จริง |
+| `exam_coordinator` | จัดตารางและควบคุมรอบสอบ | Published paper template และ Window ใน organization scope; ไม่แก้เนื้อหา |
 | `examinee` | ทำข้อสอบและติดตามผลของตนเอง | login, start/resume, answer, recovery, submit, own result |
 | `viewer` | ติดตามข้อมูลแบบอ่านอย่างเดียว | dashboard, report ที่ได้รับอนุญาต; ไม่มี mutation |
 | CSV source/data owner | ส่ง snapshot บุคลากร | จัดเตรียมไฟล์ CSV และยืนยัน value sets |
@@ -33,7 +34,7 @@
 | UC-PAPER-01 | Create and publish exam paper | Exam Author | `exam_author`, `super_admin` | published paper/variant |
 | UC-PAPER-02 | Create Exam Creation and sets | Exam Author | `exam_author`, `super_admin` | independent subject-bound creation and variants |
 | UC-PAPER-03 | Edit Draft or create Paper revision | Exam Author | `exam_author`, `super_admin` | safe correction without rewriting exam history |
-| UC-EXAM-00 | Create and operate an Exam Window | Exam Author | `exam_author`, `super_admin` | scheduled round with isolated quota, timing policy and audited lifecycle |
+| UC-EXAM-00 | Create and operate an Exam Window | Exam Coordinator | `exam_coordinator`, `super_admin`; legacy creator author operates existing Window only | scheduled round with scoped quota, timing policy and audited lifecycle |
 | UC-EXAM-01 | Start or resume exam | Examinee | `examinee`, controlled `super_admin` preview | durable exam session |
 | UC-EXAM-02 | Answer and autosave | Examinee | `examinee`, controlled `super_admin` preview | server/local recovery state |
 | UC-EXAM-03 | Submit exam | Examinee | `examinee`, controlled `super_admin` preview | immutable score/result |

@@ -40,6 +40,9 @@
 - D-023: Release 1 uses local accounts; SSO will be a replaceable identity-provider adapter later.
 - D-024: Admin configures late-entry grace minutes for scheduled batch windows.
 - D-025: PDF is the first report export format; Excel is the next compatible exporter.
+- D-026: Exam content authoring and new Exam Window scheduling are separated. `exam_coordinator`
+  owns new operations within assigned organization scope; authors retain creator-only lifecycle
+  access solely for historical Windows so active rounds are not orphaned.
 
 ## Rule
 

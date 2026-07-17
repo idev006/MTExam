@@ -63,6 +63,9 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | PAPER-API | requirements/exam-paper.md | exam paper list/create/publish API | API authorization smoke | Implemented minimal slice |
 | USER-ADMIN-API | requirements/authentication.md | user list/create/deactivate API | API authorization smoke | Implemented minimal slice |
 | EXAM-WINDOW-API | requirements/exam-session.md | scoped window quota/timing/lifecycle API and management UI | test_system_api.py; test_window_policy.py; WindowLifecycleActions.test.ts | Verified automated; device acceptance pending |
+| AUTH-007 | requirements/authentication.md | separated author/coordinator capabilities and creator-scoped Window operations | test_system_api.py; frontend/src/domain/roles.test.ts | Verified automated |
+| EXAM-010 | requirements/exam-session.md | coordinator scheduling scope and quota ceiling | test_system_api.py; frontend/src/domain/roles.test.ts | Verified automated |
+| EXAM-COORD-004 | project/exam-coordinator-authorization-design.md | operational Paper discovery, scoped quota policy and row capabilities | test_system_api.py; tests/api/test_reporting_api.py | Verified automated |
 | WINDOW-POLICY-001 | exam-paper-window-lifecycle-design.md | per-window quota locking and fixed/full-duration deadlines | PostgreSQL concurrency + domain policy tests | Verified automated |
 | AUDIT-API | requirements/reporting.md | audit list and mutation events | API authorization smoke | Implemented baseline; full mutation coverage pending |
 | SUBJECT-001 | requirements/question-bank.md | subjects and subject-bound question banks | API/frontend build | Implemented |

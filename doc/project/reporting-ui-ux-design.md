@@ -35,6 +35,7 @@
 | `bureau_admin` | Bureau Overview | ภาพรวม บก., เปรียบเทียบ กก., ผ่าน/ไม่ผ่าน, ไม่เข้าสอบ, รายบุคคล, export | หน่วยตนเอง + หน่วยลูก |
 | `station_admin` | Station Overview | บุคลากรที่ต้องสอบ, เข้าสอบ, ผ่าน/ไม่ผ่าน, ไม่ส่ง, รายบุคคล, export | หน่วยตนเอง + หน่วยลูก |
 | `exam_author` | Exam Creation Analytics | จำนวนข้อ, สถานะข้อ, สถิติชุดสอบ, วิเคราะห์รายข้อ/ตัวเลือก/variants | ชุดที่สร้างหรือได้รับมอบหมาย |
+| `exam_coordinator` | Exam Operations Dashboard | attendance, session status, quota usage และผลรอบสอบ | หน่วยงานที่ได้รับมอบหมายและหน่วยงานลูก |
 | `viewer` | Scoped Overview | รายงานอ่านอย่างเดียวตาม scope และ export ที่ได้รับอนุญาต | scope ที่กำหนด |
 | `examinee` | My Results | ประวัติสอบ, คะแนน, ผ่าน/ไม่ผ่าน, เฉลย/เหตุผล, เวลาที่ใช้ | ของตนเองเท่านั้น |
 

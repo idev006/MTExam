@@ -23,6 +23,8 @@ Production acceptance gate is closed.
 - Durable practice recovery and real exam-session API plus Vue exam lobby/session UI baseline
 - Exam Window management UI/API with per-round quota snapshots, fixed-end/full-duration policy,
   scheduled/open/suspended/closed/cancelled lifecycle, session counts and audit events
+- Separation of duties for Exam Window operations: scoped `exam_coordinator` role, Published Paper
+  discovery, quota ceilings, creator capabilities and legacy-author transition protection
 - Shared question-bank metadata with exam-window bureau scope and configurable late-entry grace minutes
 - PDF system-summary export and dependency-free XLSX system-summary export
 - User administration, audit API/UI baseline and responsive role-aware UI
@@ -37,7 +39,7 @@ Production acceptance gate is closed.
 - Random-pool paper selection with deterministic seed and preview support
 - Division/bureau/station admin scoped reporting: own organization plus active descendants,
   including organization-level breakdown statistics
-- Role-aware reporting dashboard for all seven roles with Exam Creation pass policy, per-unit quota,
+- Role-aware reporting dashboard for all eight roles with Exam Creation pass policy, per-unit quota,
   ECharts attendance/pass-fail/organization comparison, scoped person detail and shared-filter exports
 
 ## Partial / Production hardening
@@ -45,7 +47,7 @@ Production acceptance gate is closed.
 | Use-case area | Remaining acceptance work | Priority |
 |---|---|---|
 | Personnel import | Row correction, reconciliation history, rollback and per-row audit | P0 |
-| Authorization | Scope enforcement and account lifecycle baseline implemented; complete permission-matrix acceptance and administrative scope-assignment UI remain | P0 |
+| Authorization | Scope/account lifecycle and author/coordinator separation implemented; complete production permission-matrix acceptance remains | P0 |
 | Question Bank | Version history, bulk import, archive/restore and publish history | P1 |
 | Exam Paper | Immutable snapshots, deterministic variants, Draft editing and revision/clone implemented; production author acceptance remains | P0 |
 | Exam Session | Result-detail UI, rationale display, pagination/page-size setting, offline queue and complete acceptance testing | P0 |

@@ -6,17 +6,21 @@ import ConfirmModal from "@/components/feedback/ConfirmModal.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import WindowLifecycleActions, { type WindowStatus } from "@/components/windows/WindowLifecycleActions.vue";
+import { useAuth } from "@/stores/auth";
+import { WINDOW_CREATE_ROLES, hasRole } from "@/domain/roles";
 
 interface Paper { id: string; title: string; status: string; default_duration_minutes: number }
-interface QuotaItem { org_unit_id: string; org_unit_name?: string; eligible_count: number; selected?: boolean }
+interface QuotaItem { org_unit_id: string; org_unit_name?: string; eligible_count: number; maximum_count?: number; selected?: boolean }
 interface QuotaPolicy { paper_id: string; default_duration_minutes: number; eligible_org_units: QuotaItem[] }
 interface ExamWindow {
   id: string; exam_paper_id: string; paper_title: string; title: string; status: WindowStatus;
   duration_minutes: number; completion_policy: "fixed_end" | "full_duration";
   late_entry_minutes: number; window_open_at: string | null; window_close_at: string | null;
   eligible_org_units: QuotaItem[]; session_counts: Record<string, number>;
+  can_manage: boolean;
 }
 
+const { user } = useAuth();
 const papers = ref<Paper[]>([]);
 const windows = ref<ExamWindow[]>([]);
 const quotas = ref<QuotaItem[]>([]);
@@ -33,11 +37,13 @@ const form = reactive({
 });
 
 const publishedPapers = computed(() => papers.value.filter((paper) => paper.status === "published"));
+const canSchedule = computed(() => hasRole(user.value?.role, WINDOW_CREATE_ROLES));
 const canCreate = computed(() => Boolean(
   form.exam_paper_id && form.title.trim() && form.duration_minutes >= 1 && form.duration_minutes <= 600
   && form.window_open_at && form.window_close_at
   && new Date(form.window_close_at) > new Date(form.window_open_at)
-  && quotas.value.some((quota) => quota.selected && quota.eligible_count >= 0),
+  && quotas.value.some((quota) => quota.selected && quota.eligible_count >= 0)
+  && quotas.value.filter((quota) => quota.selected).every((quota) => quota.eligible_count <= (quota.maximum_count ?? quota.eligible_count)),
 ));
 const statusLabels: Record<WindowStatus, string> = {
   scheduled: "รอเปิด", open: "เปิดสอบ", suspended: "ระงับชั่วคราว", closed: "ปิดแล้ว", cancelled: "ยกเลิก",
@@ -69,7 +75,7 @@ async function loadPolicy() {
   try {
     const policy = await apiGet<QuotaPolicy>(`/papers/${form.exam_paper_id}/quota-policy`);
     form.duration_minutes = policy.default_duration_minutes;
-    quotas.value = policy.eligible_org_units.map((item) => ({ ...item, selected: true }));
+    quotas.value = policy.eligible_org_units.map((item) => ({ ...item, maximum_count: item.eligible_count, selected: true }));
   } catch (cause) { error.value = cause instanceof Error ? cause.message : "โหลด quota template ไม่สำเร็จ"; }
 }
 
@@ -131,8 +137,9 @@ onMounted(load);
     <PageHeader eyebrow="Exam Operations" title="จัดรอบสอบ" description="เลือก ExamPaper ที่เปิดใช้งาน แล้วกำหนดเวลา นโยบายสิ้นสุด และ quota จริงของแต่ละรอบ" />
     <AppAlert v-if="message" type="success">{{ message }}</AppAlert>
     <AppAlert v-if="error" type="error">{{ error }}</AppAlert>
+    <AppAlert v-if="!canSchedule" type="info">Exam Author จัดการ lifecycle ของรอบเดิมที่ตนสร้างได้ แต่การสร้างรอบใหม่เป็นหน้าที่ของ Exam Coordinator</AppAlert>
 
-    <section class="card mb-6 border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
+    <section v-if="canSchedule" class="card mb-6 border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
       <h2 class="card-title">สร้าง Exam Window</h2>
       <p class="text-sm text-base-content/60">ExamPaper เป็นแม่แบบข้อสอบ ส่วนข้อมูลในส่วนนี้คือรอบสอบจริงและสามารถกำหนด quota ต่างกันในแต่ละรอบ</p>
       <form class="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4" @submit.prevent="createWindow">
@@ -146,7 +153,7 @@ onMounted(load);
         <div class="min-w-0 rounded-box border border-base-300 p-3 md:col-span-2 xl:col-span-4">
           <h3 class="font-semibold">Quota ของรอบสอบ</h3><p class="mb-3 text-xs text-base-content/60">คัดลอกจาก ExamPaper เป็นค่าเริ่มต้น การแก้ตรงนี้ไม่เปลี่ยนรอบอื่น</p>
           <div v-if="!quotas.length" class="text-sm text-base-content/50">เลือก ExamPaper เพื่อโหลด quota template</div>
-          <div v-else class="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"><label v-for="quota in quotas" :key="quota.org_unit_id" class="flex min-w-0 items-center gap-3 rounded-box bg-base-200 p-3"><input v-model="quota.selected" class="checkbox checkbox-primary" type="checkbox" /><span class="min-w-0 flex-1 truncate">{{ quota.org_unit_name }}</span><input v-model.number="quota.eligible_count" class="input input-bordered input-sm w-20 shrink-0 sm:w-24" type="number" min="0" :disabled="!quota.selected" aria-label="จำนวนผู้มีสิทธิ์" /></label></div>
+          <div v-else class="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"><label v-for="quota in quotas" :key="quota.org_unit_id" class="flex min-w-0 items-center gap-3 rounded-box bg-base-200 p-3"><input v-model="quota.selected" class="checkbox checkbox-primary" type="checkbox" /><span class="min-w-0 flex-1 truncate">{{ quota.org_unit_name }} <span class="block text-xs text-base-content/50">สูงสุด {{ quota.maximum_count }} คน</span></span><input v-model.number="quota.eligible_count" class="input input-bordered input-sm w-20 shrink-0 sm:w-24" type="number" min="0" :max="quota.maximum_count" :disabled="!quota.selected" aria-label="จำนวนผู้มีสิทธิ์" /></label></div>
         </div>
         <div class="flex justify-end md:col-span-2 xl:col-span-4"><button class="btn btn-primary" type="submit" :disabled="!canCreate || busy"><span v-if="busy" class="loading loading-spinner loading-sm"></span>สร้างรอบสอบ</button></div>
       </form>
@@ -159,7 +166,8 @@ onMounted(load);
         <article v-for="window in windows" :key="window.id" class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body p-5">
           <div class="flex items-start justify-between gap-3"><div><h3 class="font-bold">{{ window.title }}</h3><p class="text-sm text-base-content/60">{{ window.paper_title }}</p></div><span class="badge shrink-0" :class="statusClasses[window.status]">{{ statusLabels[window.status] }}</span></div>
           <dl class="grid grid-cols-2 gap-3 text-sm"><div><dt class="text-base-content/50">เปิดเริ่มสอบ</dt><dd>{{ displayDate(window.window_open_at) }}</dd></div><div><dt class="text-base-content/50">ปิดรับการเริ่ม</dt><dd>{{ displayDate(window.window_close_at) }}</dd></div><div><dt class="text-base-content/50">เวลาทำข้อสอบ</dt><dd>{{ window.duration_minutes }} นาที</dd></div><div><dt class="text-base-content/50">นโยบายเวลา</dt><dd>{{ window.completion_policy === 'full_duration' ? 'ได้เวลาครบหลังเริ่ม' : 'หยุดพร้อมกัน' }}</dd></div><div><dt class="text-base-content/50">Quota</dt><dd>{{ window.eligible_org_units.reduce((sum, item) => sum + item.eligible_count, 0) }} คน / {{ window.eligible_org_units.length }} หน่วย</dd></div><div><dt class="text-base-content/50">Session</dt><dd>{{ window.session_counts.total ?? 0 }} คน</dd></div></dl>
-          <WindowLifecycleActions :status="window.status" :deletable="['scheduled', 'cancelled'].includes(window.status) && (window.session_counts.total ?? 0) === 0" @request="requestStatus(window, $event)" @remove="deletePending = window" />
+          <WindowLifecycleActions v-if="window.can_manage" :status="window.status" :deletable="['scheduled', 'cancelled'].includes(window.status) && (window.session_counts.total ?? 0) === 0" @request="requestStatus(window, $event)" @remove="deletePending = window" />
+          <p v-else class="text-xs text-base-content/50">ดูได้ตาม scope · จัดการได้เฉพาะผู้สร้างรอบหรือ super_admin</p>
         </div></article>
       </div>
     </section>

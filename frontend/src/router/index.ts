@@ -12,6 +12,7 @@ import AuditView from "@/views/AuditView.vue";
 import ExamLobbyView from "@/views/ExamLobbyView.vue";
 import ExamSessionView from "@/views/ExamSessionView.vue";
 import ExamWindowManagementView from "@/views/ExamWindowManagementView.vue";
+import { AUTHOR_ROLES, REPORT_ROLES, WINDOW_PAGE_ROLES } from "@/domain/roles";
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,25 +33,25 @@ export const router = createRouter({
       path: "/authoring",
       name: "authoring",
       component: AuthoringView,
-      meta: { requiresAuth: true, allowedRoles: ["super_admin", "exam_author"] },
+      meta: { requiresAuth: true, allowedRoles: AUTHOR_ROLES },
     },
     {
       path: "/papers",
       name: "paper-builder",
       component: PaperBuilderView,
-      meta: { requiresAuth: true, allowedRoles: ["super_admin", "exam_author"] },
+      meta: { requiresAuth: true, allowedRoles: AUTHOR_ROLES },
     },
     {
       path: "/reports",
       name: "reports",
       component: () => import("@/views/ReportsView.vue"),
-      meta: { requiresAuth: true, allowedRoles: ["super_admin", "viewer", "division_admin", "bureau_admin", "station_admin", "exam_author", "examinee"] },
+      meta: { requiresAuth: true, allowedRoles: REPORT_ROLES },
     },
     {
       path: "/exam-windows",
       name: "exam-window-management",
       component: ExamWindowManagementView,
-      meta: { requiresAuth: true, allowedRoles: ["super_admin", "exam_author"] },
+      meta: { requiresAuth: true, allowedRoles: WINDOW_PAGE_ROLES },
     },
     {
       path: "/login",

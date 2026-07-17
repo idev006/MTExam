@@ -75,6 +75,7 @@ class WindowResponse(BaseModel):
     window_open_at: str | None
     window_close_at: str | None
     session_counts: dict[str, int] = Field(default_factory=dict)
+    can_manage: bool = False
 
 
 class WindowClockResponse(BaseModel):
@@ -94,6 +95,7 @@ def list_windows(
             require_roles(
                 UserRole.SUPER_ADMIN,
                 UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
                 UserRole.VIEWER,
                 UserRole.DIVISION_ADMIN,
                 UserRole.BUREAU_ADMIN,
@@ -105,7 +107,7 @@ def list_windows(
 ) -> list[WindowResponse]:
     windows = list(db.scalars(select(ExamWindow).order_by(ExamWindow.created_at.desc())))
     visible = [window for window in windows if _can_view_window(db, account, window)]
-    return [_response(window, db) for window in visible]
+    return [_response(window, db, account) for window in visible]
 
 
 @router.post("", response_model=WindowResponse, status_code=201)
@@ -113,22 +115,31 @@ def create_window(
     payload: WindowCreate,
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[
-        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+        UserAccount,
+        Depends(require_roles(UserRole.EXAM_COORDINATOR, UserRole.SUPER_ADMIN)),
     ],
 ) -> WindowResponse:
     paper = db.get(ExamPaper, payload.exam_paper_id)
     if paper is None or paper.status != PaperStatus.PUBLISHED:
         raise HTTPException(status_code=409, detail="Only published papers can create an exam window")
-    _require_window_author(account, paper.created_by)
     paper_scopes = list(
         db.scalars(select(ExamPaperOrgUnit).where(ExamPaperOrgUnit.exam_paper_id == paper.id))
     )
     paper_quotas = {row.org_unit_id: row.eligible_count for row in paper_scopes}
     if paper.passing_percentage is None or not paper_quotas or any(value is None for value in paper_quotas.values()):
         raise HTTPException(status_code=409, detail="Exam Creation policy is incomplete")
+    if account.role == UserRole.EXAM_COORDINATOR:
+        scoped_orgs = accessible_org_unit_ids(db, account)
+        paper_quotas = {
+            org_id: count for org_id, count in paper_quotas.items() if org_id in scoped_orgs
+        }
+        if not paper_quotas:
+            raise HTTPException(status_code=403, detail="Exam Creation is outside coordinator scope")
     quota_by_org = _window_quotas(payload, paper_quotas)
     if not set(quota_by_org).issubset(paper_quotas):
         raise HTTPException(status_code=422, detail="Window organizations must use the Exam Creation scope template")
+    if any(count > int(paper_quotas[org_id] or 0) for org_id, count in quota_by_org.items()):
+        raise HTTPException(status_code=422, detail="Window quota cannot exceed the Exam Creation template")
     open_at = _parse_datetime(payload.window_open_at)
     close_at = _parse_datetime(payload.window_close_at)
     if close_at and open_at and close_at <= open_at:
@@ -173,7 +184,7 @@ def create_window(
     )
     db.commit()
     db.refresh(window)
-    return _response(window, db)
+    return _response(window, db, account)
 
 
 @router.patch("/{window_id}/status", response_model=WindowResponse)
@@ -182,13 +193,20 @@ def change_window_status(
     payload: WindowStatusUpdate,
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[
-        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+        UserAccount,
+        Depends(
+            require_roles(
+                UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
+                UserRole.SUPER_ADMIN,
+            )
+        ),
     ],
 ) -> WindowResponse:
     window = db.get(ExamWindow, window_id)
     if window is None:
         raise HTTPException(status_code=404, detail="Exam window not found")
-    _require_window_author(account, window.created_by)
+    _require_window_manager(account, window.created_by)
     if payload.status in {ExamWindowStatus.SUSPENDED, ExamWindowStatus.CANCELLED} and not (
         payload.reason and payload.reason.strip()
     ):
@@ -201,13 +219,20 @@ def delete_unused_window(
     window_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[
-        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+        UserAccount,
+        Depends(
+            require_roles(
+                UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
+                UserRole.SUPER_ADMIN,
+            )
+        ),
     ],
 ) -> dict[str, str]:
     window = db.get(ExamWindow, window_id)
     if window is None:
         raise HTTPException(status_code=404, detail="Exam window not found")
-    _require_window_author(account, window.created_by)
+    _require_window_manager(account, window.created_by)
     session_count = db.scalar(select(func.count()).select_from(ExamSession).where(ExamSession.exam_window_id == window.id)) or 0
     if window.status not in {ExamWindowStatus.SCHEDULED, ExamWindowStatus.CANCELLED} or session_count:
         raise HTTPException(status_code=409, detail="Only a Scheduled or Cancelled Exam Window without sessions can be deleted")
@@ -231,14 +256,21 @@ def open_window(
     window_id: UUID,
     db: Annotated[Session, Depends(get_db_session)],
     account: Annotated[
-        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+        UserAccount,
+        Depends(
+            require_roles(
+                UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
+                UserRole.SUPER_ADMIN,
+            )
+        ),
     ],
 ) -> WindowResponse:
     """Compatibility endpoint; new clients use PATCH /status."""
     window = db.get(ExamWindow, window_id)
     if window is None:
         raise HTTPException(status_code=404, detail="Exam window not found")
-    _require_window_author(account, window.created_by)
+    _require_window_manager(account, window.created_by)
     return _change_status(db, window=window, account=account, target=ExamWindowStatus.OPEN)
 
 
@@ -250,7 +282,11 @@ def window_clock(
         UserAccount,
         Depends(
             require_roles(
-                UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.EXAMINEE, UserRole.VIEWER
+                UserRole.SUPER_ADMIN,
+                UserRole.EXAM_AUTHOR,
+                UserRole.EXAM_COORDINATOR,
+                UserRole.EXAMINEE,
+                UserRole.VIEWER,
             )
         ),
     ],
@@ -310,7 +346,7 @@ def _change_status(
         ExamWindowStatus.CANCELLED: set(),
     }
     if window.status == target:
-        return _response(window, db)
+        return _response(window, db, account)
     if target not in transitions.get(window.status, set()):
         raise HTTPException(status_code=409, detail=f"Cannot change exam window from {window.status} to {target}")
     if target == ExamWindowStatus.OPEN:
@@ -336,19 +372,25 @@ def _change_status(
     )
     db.commit()
     db.refresh(window)
-    return _response(window, db)
+    return _response(window, db, account)
 
 
-def _require_window_author(account: UserAccount, owner_id: UUID) -> None:
+def _require_window_manager(account: UserAccount, owner_id: UUID) -> None:
     if account.role != UserRole.SUPER_ADMIN and owner_id != account.person_id:
-        raise HTTPException(status_code=403, detail="Exam window is outside your author scope")
+        raise HTTPException(status_code=403, detail="Exam Window is outside your operation scope")
 
 
 def _can_view_window(db: Session, account: UserAccount, window: ExamWindow) -> bool:
     if account.role == UserRole.SUPER_ADMIN or window.created_by == account.person_id:
         return True
     scope_ids = set(db.scalars(select(ExamWindowScope.org_unit_id).where(ExamWindowScope.exam_window_id == window.id)))
-    if account.role in {UserRole.VIEWER, UserRole.DIVISION_ADMIN, UserRole.BUREAU_ADMIN, UserRole.STATION_ADMIN}:
+    if account.role in {
+        UserRole.VIEWER,
+        UserRole.DIVISION_ADMIN,
+        UserRole.BUREAU_ADMIN,
+        UserRole.STATION_ADMIN,
+        UserRole.EXAM_COORDINATOR,
+    }:
         return bool(scope_ids & accessible_org_unit_ids(db, account))
     for assigned_id in active_org_unit_ids(db, account):
         unit = db.get(OrgUnit, assigned_id)
@@ -359,7 +401,9 @@ def _can_view_window(db: Session, account: UserAccount, window: ExamWindow) -> b
     return False
 
 
-def _response(window: ExamWindow, db: Session) -> WindowResponse:
+def _response(
+    window: ExamWindow, db: Session, account: UserAccount | None = None
+) -> WindowResponse:
     paper = db.get(ExamPaper, window.exam_paper_id)
     scopes = list(db.scalars(select(ExamWindowScope).where(ExamWindowScope.exam_window_id == window.id)))
     counts = {status.value: 0 for status in ExamSessionStatus}
@@ -386,6 +430,16 @@ def _response(window: ExamWindow, db: Session) -> WindowResponse:
         window_open_at=window.window_open_at.isoformat() if window.window_open_at else None,
         window_close_at=window.window_close_at.isoformat() if window.window_close_at else None,
         session_counts=counts,
+        can_manage=(
+            account is not None
+            and (
+                account.role == UserRole.SUPER_ADMIN
+                or (
+                    account.role in {UserRole.EXAM_AUTHOR, UserRole.EXAM_COORDINATOR}
+                    and window.created_by == account.person_id
+                )
+            )
+        ),
     )
 
 
