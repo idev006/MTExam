@@ -35,6 +35,9 @@ misrepresent a shared parent quota as separate child quotas.
 - The client disables conflicting checkboxes and applies a defensive overlap guard before submit.
 - The backend remains authoritative and returns `422` for any parent-child overlap submitted outside
   the UI.
+- Exam authors may create Exam Creations and quota buckets for their assigned organization and its
+  active descendants. This lets a parent-unit author allocate quota to child units while preserving
+  the overlap guard.
 - Quota inputs remain non-negative integers and the create action remains unavailable for invalid
   policy data.
 

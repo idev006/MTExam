@@ -33,7 +33,6 @@ from backend.app.services.audit import record_audit
 from backend.app.services.org_authorization import (
     accessible_org_unit_ids,
     active_org_unit_ids,
-    can_access_org_unit,
 )
 
 router = APIRouter(prefix="/papers", tags=["papers"])
@@ -184,7 +183,8 @@ def _paper_response(
 def _validated_payload(
     db: Session, account: UserAccount, payload: PaperCreate
 ) -> tuple[list[Question], list[OrgUnit], dict[UUID, int]]:
-    if not can_access_org_unit(db, account, payload.org_unit_id):
+    allowed_content_orgs = accessible_org_unit_ids(db, account)
+    if payload.org_unit_id not in allowed_content_orgs:
         raise HTTPException(status_code=403, detail="Paper owner organization scope is not allowed")
     if len(payload.question_ids) < payload.desired_question_count:
         raise HTTPException(status_code=422, detail="question_ids must contain at least desired_question_count items")
@@ -194,7 +194,7 @@ def _validated_payload(
     org_units = list(db.scalars(select(OrgUnit).where(OrgUnit.id.in_(quota_by_org), OrgUnit.status == "active")))
     if len(org_units) != len(quota_by_org):
         raise HTTPException(status_code=422, detail="All eligible organizations must be active")
-    if any(not can_access_org_unit(db, account, unit.id) for unit in org_units):
+    if any(unit.id not in allowed_content_orgs for unit in org_units):
         raise HTTPException(status_code=403, detail="One or more allowed organizations are outside your scope")
     selected_org_ids = set(quota_by_org)
     for unit in org_units:

@@ -14,7 +14,7 @@ organization scope. Backend authorization remains authoritative.
 
 | Capability | exam_author | exam_coordinator | super_admin |
 |---|---:|---:|---:|
-| Create/edit/publish/revise Exam Creation | Own creations | No | Emergency override where endpoint permits |
+| Create/edit/publish/revise Exam Creation | Own creations in assigned unit plus active descendants | No | Emergency override where endpoint permits |
 | Read an operational Paper template | Own/assigned content | Published templates intersecting coordinator scope | All |
 | Create a new Exam Window | No | Yes, in assigned scope | Yes |
 | Operate a newly-created Window | No | Creator only | All |
@@ -27,12 +27,15 @@ reach a terminal state.
 
 ## Organization and quota invariants
 
-1. Coordinator scope is the active assigned unit plus active descendants.
-2. A coordinator sees only Published Exam Creations with at least one quota bucket in that scope.
-3. The Window may select only exact quota buckets returned by the scoped Paper policy.
-4. A Window quota may be reduced but never exceed the corresponding Exam Creation template count.
-5. A coordinator cannot operate a Window created by another coordinator, even in the same unit.
-6. `super_admin` is the audited emergency override.
+1. Author Exam Creation scope is the active assigned unit plus active descendants, so a bureau-level
+   author can assign quota to child units without receiving separate child assignments.
+2. Author quota buckets may not overlap ancestor and descendant units in the same Exam Creation.
+3. Coordinator scope is the active assigned unit plus active descendants.
+4. A coordinator sees only Published Exam Creations with at least one quota bucket in that scope.
+5. The Window may select only exact quota buckets returned by the scoped Paper policy.
+6. A Window quota may be reduced but never exceed the corresponding Exam Creation template count.
+7. A coordinator cannot operate a Window created by another coordinator, even in the same unit.
+8. `super_admin` is the audited emergency override.
 
 No database migration is required: account roles are stored as portable strings and organization
 assignments already model scope consistently on PostgreSQL, MySQL and SQLite.

@@ -165,6 +165,8 @@ that duration when no override is supplied. The `/papers` page lists visible cre
 Draft, Open and Closed states through a DaisyUI confirmation modal. Backend creator authorization,
 publish-readiness validation, audit logging and the rule that a creation cannot return to Draft after
 an Exam Window exists are covered by automated API tests; Vue tests cover state-specific actions.
+Author-scoped Exam Creation quota now includes the author's assigned organization and active
+descendants, with backend overlap prevention for parent-child quota conflicts.
 
 ### Exam Window operational boundary — 2026-07-17
 

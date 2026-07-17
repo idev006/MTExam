@@ -416,6 +416,75 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
     assert denied.status_code == 403
 
 
+def test_exam_author_can_assign_exam_creation_quota_to_descendant_org(
+    client: TestClient,
+) -> None:
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "author", "password": "author1234"}
+        ).status_code
+        == 200
+    )
+    subject = next(
+        row for row in client.get("/api/v1/question-banks/subjects").json() if row["code"] == "PDPA"
+    )
+    questions = client.get(
+        "/api/v1/question-banks/questions", params={"subject_id": subject["id"]}
+    ).json()
+    org_units = client.get("/api/v1/org-units").json()
+    parent = next(row for row in org_units if row["code"].startswith("BAG_"))
+    child = next(row for row in org_units if row["parent_id"] == parent["id"])
+
+    response = client.post(
+        "/api/v1/papers",
+        json={
+            "title": "Exam Creation descendant quota",
+            "org_unit_id": parent["id"],
+            "subject_id": subject["id"],
+            "question_ids": [questions[0]["id"]],
+            "desired_question_count": 1,
+            "default_duration_minutes": 45,
+            "eligible_org_units": [{"org_unit_id": child["id"], "eligible_count": 50}],
+            "passing_percentage": 60,
+            "variant_count": 1,
+            "question_selection_mode": "fixed_set",
+            "pool_criteria": None,
+        },
+    )
+
+    assert response.status_code == 201
+    quota_policy = client.get(f"/api/v1/papers/{response.json()['id']}/quota-policy")
+    assert quota_policy.status_code == 200
+    assert quota_policy.json()["eligible_org_units"] == [
+        {
+            "org_unit_id": child["id"],
+            "org_unit_name": child["name"],
+            "eligible_count": 50,
+        }
+    ]
+
+    overlapped = client.post(
+        "/api/v1/papers",
+        json={
+            "title": "Exam Creation overlapping quota",
+            "org_unit_id": parent["id"],
+            "subject_id": subject["id"],
+            "question_ids": [questions[0]["id"]],
+            "desired_question_count": 1,
+            "default_duration_minutes": 45,
+            "eligible_org_units": [
+                {"org_unit_id": parent["id"], "eligible_count": 100},
+                {"org_unit_id": child["id"], "eligible_count": 50},
+            ],
+            "passing_percentage": 60,
+            "variant_count": 1,
+            "question_selection_mode": "fixed_set",
+            "pool_criteria": None,
+        },
+    )
+    assert overlapped.status_code == 422
+
+
 def test_practice_session_recovers_answers_and_submit_is_idempotent(client: TestClient) -> None:
     assert (
         client.post(

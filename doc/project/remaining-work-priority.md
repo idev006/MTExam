@@ -54,6 +54,9 @@ Exam Creation policy update 2026-07-17: authors can set a 1–600 minute default
 Exam Window inherits unless overridden. The `/papers` list exposes audited open/close/Draft actions;
 the backend rechecks creator authorization and blocks returning to Draft after any window exists.
 Production device acceptance remains covered by item 9 and complete mutation-audit review by item 7.
+Author organization scope update 2026-07-17: Exam Creation owner and quota validation now use the
+author's assigned unit plus active descendants, while the parent-child overlap guard remains
+authoritative. Automated API evidence covers descendant quota success and overlapping quota denial.
 
 Exam Window boundary update 2026-07-17: Paper organization quotas now act as a template and each
 Window owns the enforceable quota for that round. The Window management UI supports fixed-end or
