@@ -32,6 +32,7 @@
 | UC-QBANK-02 | Manage questions and choices in bank | Exam Author | `exam_author`, `super_admin` | validated draft questions and published bank |
 | UC-PAPER-01 | Create and publish exam paper | Exam Author | `exam_author`, `super_admin` | published paper/variant |
 | UC-PAPER-02 | Create Exam Creation and sets | Exam Author | `exam_author`, `super_admin` | independent subject-bound creation and variants |
+| UC-PAPER-03 | Edit Draft or create Paper revision | Exam Author | `exam_author`, `super_admin` | safe correction without rewriting exam history |
 | UC-EXAM-00 | Create and operate an Exam Window | Exam Author | `exam_author`, `super_admin` | scheduled round with isolated quota, timing policy and audited lifecycle |
 | UC-EXAM-01 | Start or resume exam | Examinee | `examinee`, controlled `super_admin` preview | durable exam session |
 | UC-EXAM-02 | Answer and autosave | Examinee | `examinee`, controlled `super_admin` preview | server/local recovery state |

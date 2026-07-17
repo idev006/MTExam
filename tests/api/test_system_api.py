@@ -107,8 +107,37 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
         "allowed_org_unit_count": 1,
         "passing_percentage": 60.0,
         "published_at": None,
+        "family_id": response.json()["id"],
+        "revision_number": 1,
+        "based_on_paper_id": None,
+        "change_summary": None,
+        "window_count": 0,
+        "session_count": 0,
+        "can_edit": True,
+        "can_revise": True,
     }
     paper_id = response.json()["id"]
+
+    edit_payload = {
+        "title": "Exam Creation API regression edited",
+        "org_unit_id": owner["id"],
+        "subject_id": subject["id"],
+        "question_ids": [questions[0]["id"]],
+        "desired_question_count": 1,
+        "default_duration_minutes": 50,
+        "eligible_org_units": [{"org_unit_id": owner["id"], "eligible_count": 120}],
+        "passing_percentage": 65,
+        "variant_count": 1,
+        "question_selection_mode": "fixed_set",
+        "pool_criteria": None,
+        "change_summary": "ปรับเวลา เกณฑ์ผ่าน และ quota ก่อนเปิดใช้",
+    }
+    edited = client.patch(f"/api/v1/papers/{paper_id}", json=edit_payload)
+    assert edited.status_code == 200
+    assert edited.json()["title"] == edit_payload["title"]
+    assert edited.json()["default_duration_minutes"] == 50
+    assert edited.json()["passing_percentage"] == 65
+    assert edited.json()["change_summary"] == edit_payload["change_summary"]
 
     opened = client.patch(f"/api/v1/papers/{paper_id}/status", json={"status": "published"})
     assert opened.status_code == 200
@@ -128,7 +157,7 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
     )
     quota_policy = client.get(f"/api/v1/papers/{paper_id}/quota-policy")
     assert quota_policy.status_code == 200
-    assert quota_policy.json()["eligible_org_units"][0]["eligible_count"] == 100
+    assert quota_policy.json()["eligible_org_units"][0]["eligible_count"] == 120
 
     window = client.post(
         "/api/v1/exam-windows",
@@ -142,7 +171,7 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
         },
     )
     assert window.status_code == 201
-    assert window.json()["duration_minutes"] == 45
+    assert window.json()["duration_minutes"] == 50
     assert window.json()["completion_policy"] == "full_duration"
     assert window.json()["eligible_org_units"] == [
         {"org_unit_id": owner["id"], "eligible_count": 25}
@@ -165,6 +194,11 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
         },
     )
     assert other_author.status_code == 201
+    assigned_scope = client.put(
+        f"/api/v1/admin/users/{other_author.json()['id']}/scope",
+        json={"org_unit_ids": [owner["id"]]},
+    )
+    assert assigned_scope.status_code == 200
     assert (
         client.post(
             "/api/v1/auth/login",
@@ -172,6 +206,11 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
         ).status_code
         == 200
     )
+    foreign_paper = next(
+        item for item in client.get("/api/v1/papers").json() if item["id"] == paper_id
+    )
+    assert foreign_paper["can_edit"] is False
+    assert foreign_paper["can_revise"] is False
     cross_author = client.patch(
         f"/api/v1/exam-windows/{window_id}/status", json={"status": "open"}
     )
@@ -226,6 +265,35 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
     assert blocked_draft.status_code == 409
     assert blocked_draft.json()["error"]["code"] == "STATE_CONFLICT"
 
+    blocked_edit = client.patch(f"/api/v1/papers/{paper_id}", json=edit_payload)
+    assert blocked_edit.status_code == 409
+    revision = client.post(
+        f"/api/v1/papers/{paper_id}/revisions",
+        json={"change_summary": "สร้างฉบับใหม่เพื่อแก้ไขหลังใช้งานจริง"},
+    )
+    assert revision.status_code == 201
+    revision_id = revision.json()["id"]
+    assert revision.json()["status"] == "draft"
+    assert revision.json()["revision_number"] == 2
+    assert revision.json()["family_id"] == paper_id
+    assert revision.json()["based_on_paper_id"] == paper_id
+    assert revision.json()["can_edit"] is True
+    revision_edit = client.get(f"/api/v1/papers/{revision_id}/edit")
+    assert revision_edit.status_code == 200
+    assert revision_edit.json()["question_ids"] == [questions[0]["id"]]
+    assert revision_edit.json()["eligible_org_units"][0]["eligible_count"] == 120
+
+    disposable = client.post(
+        "/api/v1/exam-windows",
+        json={"exam_paper_id": paper_id, "title": "รอบที่สร้างผิดสำหรับทดสอบลบ"},
+    )
+    assert disposable.status_code == 201
+    deleted = client.delete(f"/api/v1/exam-windows/{disposable.json()['id']}")
+    assert deleted.status_code == 200
+    assert deleted.json()["status"] == "deleted"
+    cannot_delete_used_state = client.delete(f"/api/v1/exam-windows/{window_id}")
+    assert cannot_delete_used_state.status_code == 409
+
     assert (
         client.post(
             "/api/v1/auth/login", json={"username": "superadmin", "password": "super1234"}
@@ -242,6 +310,9 @@ def test_exam_author_can_create_exam_creation_with_policy_and_quota(
     )
     assert window_events.status_code == 200
     assert any(event["subject_id"] == window_id for event in window_events.json())
+    assert client.get("/api/v1/audit", params={"event_type": "paper.edit"}).json()
+    assert client.get("/api/v1/audit", params={"event_type": "paper.revision_create"}).json()
+    assert client.get("/api/v1/audit", params={"event_type": "exam_window.delete"}).json()
 
     assert (
         client.post(

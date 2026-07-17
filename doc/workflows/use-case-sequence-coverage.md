@@ -19,6 +19,7 @@ evidence.
 | UC-QBANK-02 | Manage questions inside a bank | question/choice validation |
 | UC-PAPER-01 | Publish an Exam Creation | paper publication |
 | UC-PAPER-02 | Create Exam Creation and sets | subject, count, scope and variants |
+| UC-PAPER-03 | Edit Draft or create Paper revision | Draft invariant, clone lineage and audit |
 | UC-EXAM-00 | Create and operate an Exam Window | per-window quota, timing policy, lifecycle and audit |
 | UC-EXAM-01 | Start or resume exam | durable session and server deadline |
 | UC-EXAM-02 | Answer and autosave/recover | local/API retry path |

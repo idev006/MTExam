@@ -174,9 +174,24 @@ counts and enforce capacity against the Window row. Authors choose fixed-end or 
 and operate an audited Scheduled/Open/Suspended/Closed/Cancelled lifecycle. Backend owner checks,
 domain deadline tests, PostgreSQL concurrent quota evidence and Vue lifecycle tests protect the flow.
 
-Final automated evidence: 71 pytest cases passed (the opt-in PostgreSQL case passed separately),
+Automated evidence for that slice: 71 pytest cases passed (the opt-in PostgreSQL case passed separately),
 14 Vitest cases passed, Ruff/type-check/build/Alembic drift checks passed, and browser acceptance at
 360/768/1366/1920 px found no overflow or console errors. The implementation audit closed four
 findings: missing Window-owner validation, Paper-coupled quota locking, implicit fixed-end timing and
-missing mandatory reasons for suspend/cancel. ExamPaper revision/clone remains the next domain slice;
-the existing ECharts chunk-size build warning remains a non-blocking performance follow-up.
+missing mandatory reasons for suspend/cancel. The existing ECharts chunk-size build warning remains
+a non-blocking performance follow-up.
+
+### ExamPaper Draft editing and revision — 2026-07-17
+
+The Paper Builder now edits Drafts that have no Window, records a mandatory change summary, and
+creates a numbered Draft revision for Papers with operational history. Revision lineage copies the
+question set, pass/duration policy and quota template without changing the source. Authors can also
+delete a mistaken Scheduled/Cancelled Window only when it has zero sessions. Backend conflicts,
+cross-role denial, audit events and Vue action states are covered by automated tests.
+
+Final verification for the revision slice: 71 pytest cases passed with the opt-in PostgreSQL case
+skipped in the standard run and passed separately against Docker PostgreSQL; 18 Vitest cases,
+frontend type-check/build, Ruff, file-size/traceability checks and Alembic drift checks passed.
+Browser acceptance confirmed creator-scoped mutation actions and the DaisyUI revision modal without
+console or API errors. An audit also corrected a capability leak where a visible paper could advertise
+edit/revision actions to a non-owner even though the mutation endpoint correctly denied the request.

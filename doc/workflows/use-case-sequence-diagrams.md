@@ -227,6 +227,26 @@ sequenceDiagram
     API-->>UI: Updated creation or 409 conflict
 ```
 
+## UC-PAPER-03 — Edit Draft or create Paper revision
+
+```mermaid
+sequenceDiagram
+    actor E as exam_author
+    participant UI as Paper Builder
+    participant API as Paper API
+    participant DB as PostgreSQL
+    alt Draft and no ExamWindow
+        E->>UI: Edit configuration and enter change summary
+        UI->>API: PATCH /papers/{id}
+        API->>API: Verify owner, Draft and zero Windows
+        API->>DB: Replace questions/quotas and append audit
+    else Operational history exists
+        E->>UI: Create Revision
+        UI->>API: POST /papers/{id}/revisions
+        API->>DB: Copy source into next Draft revision + audit
+    end
+```
+
 ## UC-EXAM-00 — Create and operate an Exam Window
 
 ```mermaid

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 export type WindowStatus = "scheduled" | "open" | "suspended" | "closed" | "cancelled";
 
-defineProps<{ status: WindowStatus }>();
-defineEmits<{ request: [status: Exclude<WindowStatus, "scheduled">] }>();
+withDefaults(defineProps<{ status: WindowStatus; deletable?: boolean }>(), { deletable: false });
+defineEmits<{ request: [status: Exclude<WindowStatus, "scheduled">]; remove: [] }>();
 </script>
 
 <template>
@@ -11,6 +11,7 @@ defineEmits<{ request: [status: Exclude<WindowStatus, "scheduled">] }>();
     <button v-if="status === 'open'" class="btn btn-warning btn-sm" type="button" data-testid="suspend-window" @click="$emit('request', 'suspended')">ระงับชั่วคราว</button>
     <button v-if="status === 'open' || status === 'suspended'" class="btn btn-error btn-outline btn-sm" type="button" data-testid="close-window" @click="$emit('request', 'closed')">ปิดรอบสอบ</button>
     <button v-if="status === 'scheduled' || status === 'suspended'" class="btn btn-ghost btn-sm" type="button" data-testid="cancel-window" @click="$emit('request', 'cancelled')">ยกเลิกรอบ</button>
+    <button v-if="deletable" class="btn btn-error btn-ghost btn-sm" type="button" data-testid="delete-window" @click="$emit('remove')">ลบรอบที่ไม่เคยใช้</button>
     <span v-if="status === 'closed' || status === 'cancelled'" class="text-sm text-base-content/50">รอบสอบสิ้นสุดแล้ว</span>
   </div>
 </template>

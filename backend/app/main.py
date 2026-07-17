@@ -223,9 +223,13 @@ def _seed_demo_exam_data(db) -> None:
             org_unit_id=bureau.id,
             created_by=author.person_id,
             published_at=utc_now(),
+            revision_number=1,
+            updated_at=utc_now(),
+            updated_by=author.person_id,
         )
         db.add(paper)
         db.flush()
+        paper.family_id = paper.id
         questions = list(
             db.scalars(
                 select(Question)
@@ -257,6 +261,11 @@ def _seed_demo_exam_data(db) -> None:
         )
         if quota is not None and quota.eligible_count is None:
             quota.eligible_count = 10
+
+    if paper.family_id is None:
+        paper.family_id = paper.id
+        paper.updated_at = paper.updated_at or paper.created_at
+        paper.updated_by = paper.updated_by or paper.created_by
 
     window = db.scalar(select(ExamWindow).where(ExamWindow.exam_paper_id == paper.id))
     if window is None:

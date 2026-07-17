@@ -69,6 +69,8 @@ Test path และ ticket จะเติมเมื่อสร้าง repo
 | QBANK-UI-001 | requirements/question-bank.md | bank/question management UI | Vue type-check/build; API smoke | Implemented MVP |
 | EXAM-CREATION-STATS-001 | requirements/exam-paper.md, requirements/reporting.md | per-paper Exam Creation statistics | API/frontend build | Implemented baseline |
 | PAPER-LIFE-002 | requirements/exam-paper.md | default duration + scoped Draft/Published/Archived API and UI | tests/api/test_system_api.py; PaperLifecycleActions.test.ts | Verified automated |
+| PAPER-REV-003 | requirements/exam-paper.md | Draft edit, revision lineage and safe unused-Window delete | test_system_api.py; PaperEditActions.test.ts; WindowLifecycleActions.test.ts | Verified automated |
+| PAPER-008 | requirements/exam-paper.md | Draft edit invariant, revision copy and guarded Window deletion | test_system_api.py; frontend action tests | Verified automated |
 | PAPER-SCOPE-001 | requirements/exam-paper.md | desired question count and allowed bureau units | API/frontend build | Implemented |
 | EXAM-SESSION-API-001 | requirements/exam-session.md | start/resume, answer, timeout and submit endpoints | tests/api/test_system_api.py; API smoke | Implemented |
 | USECASE-SEQ-COVERAGE-001 | use-cases/actor-use-case-catalog.md | sequence diagram for every catalog use case | tests/architecture/test_document_traceability.py | Verified |

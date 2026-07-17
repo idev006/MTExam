@@ -5,6 +5,7 @@ import ConfirmModal from "@/components/feedback/ConfirmModal.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import OrgQuotaTree from "@/components/papers/OrgQuotaTree.vue";
+import PaperEditActions from "@/components/papers/PaperEditActions.vue";
 import PaperLifecycleActions, { type PaperLifecycleStatus } from "@/components/papers/PaperLifecycleActions.vue";
 import { hasQuotaOverlap, type QuotaOrgUnit } from "@/components/papers/orgQuota";
 import { apiGet, apiRequest } from "@/api/client";
@@ -15,6 +16,15 @@ interface Paper {
   id: string; title: string; status: PaperLifecycleStatus; question_count: number;
   desired_question_count: number; default_duration_minutes: number;
   allowed_org_unit_count: number; passing_percentage: number | null;
+  revision_number: number; based_on_paper_id: string | null; change_summary: string | null;
+  window_count: number; session_count: number; can_edit: boolean; can_revise: boolean;
+}
+interface PaperEdit {
+  id: string; title: string; org_unit_id: string; subject_id: string | null; question_ids: string[];
+  desired_question_count: number; default_duration_minutes: number;
+  eligible_org_units: Array<{ org_unit_id: string; eligible_count: number }>;
+  passing_percentage: number; variant_count: number; question_selection_mode: string;
+  pool_criteria: Record<string, unknown> | null; change_summary: string | null;
 }
 
 const subjects = ref<Subject[]>([]);
@@ -31,9 +41,16 @@ const loading = ref(false);
 const papersLoading = ref(false);
 const statusBusy = ref(false);
 const pendingStatus = ref<{ paper: Paper; status: PaperLifecycleStatus } | null>(null);
+const editingId = ref<string | null>(null);
+const preserveQuestionSelection = ref(false);
+const revisionPending = ref<Paper | null>(null);
+const revisionTitle = ref("");
+const revisionSummary = ref("");
 const form = reactive({
   title: "", org_unit_id: "", subject_id: "", desired_question_count: 10,
   variant_count: 1, passing_percentage: 60, default_duration_minutes: 60,
+  question_selection_mode: "fixed_set", pool_criteria: null as Record<string, unknown> | null,
+  change_summary: "",
 });
 
 const statusLabels: Record<PaperLifecycleStatus, string> = {
@@ -72,7 +89,8 @@ const canSubmit = computed(() => Boolean(
   && Number.isInteger(form.default_duration_minutes)
   && form.default_duration_minutes >= 1 && form.default_duration_minutes <= 600
   && !hasQuotaOverlap(orgUnits.value, selectedOrgIds.value)
-  && selectedOrgIds.value.every((id) => Number.isInteger(quotaCounts[id]) && quotaCounts[id] >= 0),
+  && selectedOrgIds.value.every((id) => Number.isInteger(quotaCounts[id]) && quotaCounts[id] >= 0)
+  && (!editingId.value || form.change_summary.trim().length >= 3),
 ));
 
 async function loadBase() {
@@ -91,7 +109,7 @@ async function loadQuestions() {
   loading.value = true;
   try {
     questions.value = await apiGet<Question[]>(`/question-banks/questions?subject_id=${form.subject_id}`);
-    selectedIds.value = [];
+    if (!preserveQuestionSelection.value) selectedIds.value = [];
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : "โหลดคำถามไม่สำเร็จ";
   } finally { loading.value = false; }
@@ -109,18 +127,73 @@ async function create() {
   if (!canSubmit.value) return;
   error.value = "";
   try {
-    await apiRequest("/papers", "POST", {
+    const payload = {
       ...form,
       question_ids: selectedIds.value,
       eligible_org_units: selectedOrgIds.value.map((org_unit_id) => ({
         org_unit_id, eligible_count: quotaCounts[org_unit_id],
       })),
-    });
-    message.value = "สร้าง Exam Creation พร้อมเกณฑ์ผ่านและ quota แล้ว";
+    };
+    if (editingId.value) {
+      await apiRequest(`/papers/${editingId.value}`, "PATCH", payload);
+      message.value = "บันทึกการแก้ไข Draft และ Audit Log แล้ว";
+    } else {
+      const { change_summary: _summary, ...createPayload } = payload;
+      await apiRequest("/papers", "POST", createPayload);
+      message.value = "สร้าง Exam Creation พร้อมเกณฑ์ผ่านและ quota แล้ว";
+    }
+    resetForm();
     await loadPapers();
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : "สร้าง Exam Creation ไม่สำเร็จ";
   }
+}
+
+function resetForm() {
+  editingId.value = null;
+  Object.assign(form, { title: "", org_unit_id: "", subject_id: "", desired_question_count: 10, variant_count: 1, passing_percentage: 60, default_duration_minutes: 60, question_selection_mode: "fixed_set", pool_criteria: null, change_summary: "" });
+  selectedIds.value = [];
+  selectedOrgIds.value = [];
+  Object.keys(quotaCounts).forEach((key) => delete quotaCounts[key]);
+}
+async function startEdit(paper: Paper) {
+  error.value = "";
+  try {
+    const detail = await apiGet<PaperEdit>(`/papers/${paper.id}/edit`);
+    editingId.value = paper.id;
+    preserveQuestionSelection.value = true;
+    Object.assign(form, {
+      title: detail.title, org_unit_id: detail.org_unit_id, subject_id: detail.subject_id ?? "",
+      desired_question_count: detail.desired_question_count, variant_count: detail.variant_count,
+      passing_percentage: detail.passing_percentage, default_duration_minutes: detail.default_duration_minutes,
+      question_selection_mode: detail.question_selection_mode, pool_criteria: detail.pool_criteria,
+      change_summary: "",
+    });
+    await loadQuestions();
+    selectedIds.value = detail.question_ids;
+    selectedOrgIds.value = detail.eligible_org_units.map((item) => item.org_unit_id);
+    Object.keys(quotaCounts).forEach((key) => delete quotaCounts[key]);
+    detail.eligible_org_units.forEach((item) => { quotaCounts[item.org_unit_id] = item.eligible_count; });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  } catch (cause) { error.value = cause instanceof Error ? cause.message : "โหลด Draft เพื่อแก้ไขไม่สำเร็จ"; }
+  finally { preserveQuestionSelection.value = false; }
+}
+function requestRevision(paper: Paper) {
+  revisionPending.value = paper; revisionTitle.value = ""; revisionSummary.value = "";
+}
+async function createRevision() {
+  if (!revisionPending.value || revisionSummary.value.trim().length < 3) return;
+  statusBusy.value = true;
+  try {
+    const revision = await apiRequest<Paper>(`/papers/${revisionPending.value.id}/revisions`, "POST", {
+      title: revisionTitle.value.trim() || undefined, change_summary: revisionSummary.value.trim(),
+    });
+    revisionPending.value = null;
+    message.value = `สร้าง Revision ${revision.revision_number} เป็น Draft แล้ว`;
+    await loadPapers();
+    await startEdit(revision);
+  } catch (cause) { error.value = cause instanceof Error ? cause.message : "สร้าง Revision ไม่สำเร็จ"; }
+  finally { statusBusy.value = false; }
 }
 
 async function loadPapers() {
@@ -174,12 +247,17 @@ onMounted(loadBase);
               <span class="badge shrink-0" :class="statusClasses[paper.status]">{{ statusLabels[paper.status] }}</span>
             </div>
             <dl class="my-4 grid grid-cols-2 gap-2 text-sm">
+              <div><dt class="text-base-content/60">Revision</dt><dd class="font-medium">{{ paper.revision_number }}</dd></div>
+              <div><dt class="text-base-content/60">การใช้งาน</dt><dd class="font-medium">{{ paper.window_count }} รอบ / {{ paper.session_count }} session</dd></div>
               <div><dt class="text-base-content/60">ระยะเวลา</dt><dd class="font-medium">{{ paper.default_duration_minutes }} นาที</dd></div>
               <div><dt class="text-base-content/60">เกณฑ์ผ่าน</dt><dd class="font-medium">{{ paper.passing_percentage ?? "—" }}%</dd></div>
               <div><dt class="text-base-content/60">คำถาม</dt><dd class="font-medium">{{ paper.question_count }} / {{ paper.desired_question_count }} ข้อ</dd></div>
               <div><dt class="text-base-content/60">หน่วยงาน quota</dt><dd class="font-medium">{{ paper.allowed_org_unit_count }} หน่วย</dd></div>
             </dl>
-            <PaperLifecycleActions :status="paper.status" @request="requestStatus(paper, $event)" />
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <PaperEditActions :can-edit="paper.can_edit" :can-revise="paper.can_revise" :revision-number="paper.revision_number" @edit="startEdit(paper)" @revise="requestRevision(paper)" />
+              <PaperLifecycleActions :status="paper.status" @request="requestStatus(paper, $event)" />
+            </div>
           </article>
         </div>
       </div>
@@ -187,7 +265,7 @@ onMounted(loadBase);
 
     <form class="space-y-6" @submit.prevent="create">
       <section class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body">
-        <h2 class="card-title">ข้อมูลการสร้างข้อสอบ</h2>
+        <div class="flex items-center justify-between gap-3"><h2 class="card-title">{{ editingId ? 'แก้ไข Draft' : 'ข้อมูลการสร้างข้อสอบ' }}</h2><button v-if="editingId" class="btn btn-ghost btn-sm" type="button" @click="resetForm">ยกเลิกการแก้ไข</button></div>
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <label class="form-control"><span class="label-text">ชื่อ Exam Creation</span><input v-model="form.title" class="input input-bordered" required /></label>
           <label class="form-control"><span class="label-text">รายวิชา</span><select v-model="form.subject_id" class="select select-bordered" required><option disabled value="">เลือกรายวิชา</option><option v-for="subject in subjects" :key="subject.id" :value="subject.id">{{ subject.code }} — {{ subject.name }}</option></select></label>
@@ -196,6 +274,8 @@ onMounted(loadBase);
           <label class="form-control"><span class="label-text">จำนวน variants</span><input v-model.number="form.variant_count" class="input input-bordered" type="number" min="1" max="20" required /></label>
           <label class="form-control"><span class="label-text">เกณฑ์ผ่าน (%)</span><input v-model.number="form.passing_percentage" class="input input-bordered" type="number" min="0" max="100" step="0.01" required /></label>
           <label class="form-control"><span class="label-text">ระยะเวลาทำข้อสอบ (นาที)</span><input v-model.number="form.default_duration_minutes" class="input input-bordered" type="number" min="1" max="600" required /><span class="label-text-alt mt-1 text-base-content/60">Exam Window จะใช้ค่านี้เป็นค่าเริ่มต้น</span></label>
+          <label class="form-control"><span class="label-text">รูปแบบเลือกคำถาม</span><select v-model="form.question_selection_mode" class="select select-bordered"><option value="fixed_set">Fixed set</option><option value="random_pool">Random pool</option></select></label>
+          <label v-if="editingId" class="form-control md:col-span-2"><span class="label-text">สรุปการแก้ไข</span><input v-model="form.change_summary" class="input input-bordered" minlength="3" maxlength="500" placeholder="ระบุสิ่งที่เปลี่ยนเพื่อบันทึก Audit" required /></label>
         </div>
       </div></section>
 
@@ -220,7 +300,7 @@ onMounted(loadBase);
           <label v-for="question in filteredQuestions" :key="question.id" class="rounded-box flex cursor-pointer gap-3 border border-base-300 p-3"><input v-model="selectedIds" class="checkbox checkbox-primary" type="checkbox" :value="question.id" /><span>{{ question.content }}</span></label>
         </div>
       </div></section>
-      <div class="flex justify-end"><button class="btn btn-primary btn-lg" type="submit" :disabled="!canSubmit">สร้าง Exam Creation</button></div>
+      <div class="flex justify-end"><button class="btn btn-primary btn-lg" type="submit" :disabled="!canSubmit">{{ editingId ? 'บันทึก Draft' : 'สร้าง Exam Creation' }}</button></div>
     </form>
     <ConfirmModal
       :open="Boolean(pendingStatus)"
@@ -232,5 +312,18 @@ onMounted(loadBase);
       @confirm="confirmStatus"
       @cancel="pendingStatus = null"
     />
+    <ConfirmModal
+      :open="Boolean(revisionPending)"
+      title="สร้าง Revision ใหม่"
+      :message="revisionPending ? `ระบบจะคัดลอก “${revisionPending.title}” เป็น Draft ใหม่ โดยไม่เปลี่ยนข้อสอบและผลสอบเดิม` : ''"
+      confirm-label="สร้าง Revision"
+      cancel-label="ยกเลิก"
+      :busy="statusBusy"
+      :confirm-disabled="revisionSummary.trim().length < 3"
+      @confirm="createRevision"
+      @cancel="revisionPending = null"
+    >
+      <div class="grid gap-3"><label class="form-control"><span class="label-text">ชื่อฉบับใหม่ (ไม่บังคับ)</span><input v-model="revisionTitle" class="input input-bordered" maxlength="255" /></label><label class="form-control"><span class="label-text">เหตุผล/สรุปการเปลี่ยนแปลง *</span><textarea v-model="revisionSummary" class="textarea textarea-bordered" minlength="3" maxlength="500"></textarea></label></div>
+    </ConfirmModal>
   </PageContainer>
 </template>

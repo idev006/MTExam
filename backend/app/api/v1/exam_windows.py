@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from backend.app.api.v1.auth import require_roles
@@ -194,6 +194,36 @@ def change_window_status(
     ):
         raise HTTPException(status_code=422, detail="A reason is required to suspend or cancel an exam window")
     return _change_status(db, window=window, account=account, target=payload.status, reason=payload.reason)
+
+
+@router.delete("/{window_id}")
+def delete_unused_window(
+    window_id: UUID,
+    db: Annotated[Session, Depends(get_db_session)],
+    account: Annotated[
+        UserAccount, Depends(require_roles(UserRole.EXAM_AUTHOR, UserRole.SUPER_ADMIN))
+    ],
+) -> dict[str, str]:
+    window = db.get(ExamWindow, window_id)
+    if window is None:
+        raise HTTPException(status_code=404, detail="Exam window not found")
+    _require_window_author(account, window.created_by)
+    session_count = db.scalar(select(func.count()).select_from(ExamSession).where(ExamSession.exam_window_id == window.id)) or 0
+    if window.status not in {ExamWindowStatus.SCHEDULED, ExamWindowStatus.CANCELLED} or session_count:
+        raise HTTPException(status_code=409, detail="Only a Scheduled or Cancelled Exam Window without sessions can be deleted")
+    paper_id = window.exam_paper_id
+    record_audit(
+        db,
+        actor_person_id=account.person_id,
+        event_type="exam_window.delete",
+        subject_type="exam_window",
+        subject_id=window.id,
+        metadata={"paper_id": str(paper_id), "status": str(window.status)},
+    )
+    db.execute(delete(ExamWindowScope).where(ExamWindowScope.exam_window_id == window.id))
+    db.delete(window)
+    db.commit()
+    return {"status": "deleted", "paper_id": str(paper_id)}
 
 
 @router.post("/{window_id}/open", response_model=WindowResponse)

@@ -108,7 +108,7 @@ Snapshot immutable หลังสร้าง
 
 id, title, question_selection_mode, pool_criteria_text, variant_count, desired_question_count,
 default_duration_minutes, passing_percentage, status, org_unit_id, subject_id, created_by, created_at,
-published_at
+published_at, family_id, revision_number, based_on_paper_id, updated_at, updated_by, change_summary
 
 ### exam_paper_questions
 

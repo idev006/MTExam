@@ -70,6 +70,15 @@
 
 บันทึก created, edited, generated, published และ archived พร้อม actor และเวลา
 
+### PAPER-008 — Draft edit and revision
+
+- Draft ที่ไม่มี ExamWindow แก้ไขข้อมูลข้อสอบและ policy ได้แบบ transaction
+- การแก้ไขต้องระบุ change summary และสร้าง Audit event
+- Paper ที่มี Window แล้วห้ามแก้โดยตรง ต้องสร้าง Revision ใหม่
+- Revision เก็บ `family_id`, `revision_number`, `based_on_paper_id` และคัดลอกคำถาม/quota
+- Window แบบ Scheduled/Cancelled ที่ไม่มี Session ลบได้โดยเจ้าของและต้อง Audit
+- Closed Window หรือ Window ที่มี Session ห้ามลบ
+
 ## Required Tests
 
 - Fixed/random selection
@@ -79,6 +88,7 @@
 - Correctness invariant
 - Lifecycle transition
 - Permission และ organization scope
+- Draft edit conflict, revision copy integrity และ unused-Window deletion
 # Exam Creation and sets
 
 Each paper creation is an independent `Exam Creation` record (the `ExamPaper` aggregate). It

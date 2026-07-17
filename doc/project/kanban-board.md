@@ -54,6 +54,7 @@ P1-QBANK, P1-REPORT, P1-AUDIT and P1-ADMIN are broad-rollout work; SSO-001 is co
 | QBANK-API | Question-bank authoring API/UI slice | High | Verify | Complete choice editing/versioning |
 | PAPER-API-001 | Paper builder list/create/publish with immutable snapshots and deterministic variants | High | Verify | Random-pool criteria and preview |
 | PAPER-LIFE-002 | Default exam duration and audited Draft/Open/Closed lifecycle | High | Verify | Automated API/UI evidence complete; human device acceptance pending |
+| PAPER-REV-003 | Draft editing, revision/clone and safe unused-Window deletion | High | Verify | Automated evidence complete; human acceptance pending |
 | USER-ADMIN-001 | Role-aware user administration and lifecycle revocation | High | Verify | Full permission matrix and scope-assignment UI |
 | EXAM-WINDOW-001 | Per-round quota/timing policy and audited Window management UI/API | High | Verify | Automated gates complete; human device acceptance pending |
 | AUDIT-API-001 | Scoped/paginated audit API/UI and mutation events | High | Verify | Full mutation coverage/retention |

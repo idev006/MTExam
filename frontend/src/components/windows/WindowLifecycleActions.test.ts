@@ -22,4 +22,10 @@ describe("WindowLifecycleActions", () => {
     expect(wrapper.find("button").exists()).toBe(false);
     expect(wrapper.text()).toContain("รอบสอบสิ้นสุดแล้ว");
   });
+
+  it("offers deletion only when the parent confirms the window is unused", async () => {
+    const wrapper = mount(WindowLifecycleActions, { props: { status: "scheduled", deletable: true } });
+    await wrapper.get('[data-testid="delete-window"]').trigger("click");
+    expect(wrapper.emitted("remove")).toHaveLength(1);
+  });
 });

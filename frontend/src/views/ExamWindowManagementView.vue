@@ -25,6 +25,7 @@ const busy = ref(false);
 const message = ref("");
 const error = ref("");
 const pending = ref<{ window: ExamWindow; status: Exclude<WindowStatus, "scheduled"> } | null>(null);
+const deletePending = ref<ExamWindow | null>(null);
 const statusReason = ref("");
 const form = reactive({
   exam_paper_id: "", title: "", duration_minutes: 60, completion_policy: "fixed_end",
@@ -107,6 +108,18 @@ async function confirmStatus() {
   } catch (cause) { error.value = cause instanceof Error ? cause.message : "เปลี่ยนสถานะรอบสอบไม่สำเร็จ"; }
   finally { busy.value = false; }
 }
+async function deleteWindow() {
+  if (!deletePending.value) return;
+  busy.value = true; error.value = "";
+  try {
+    const title = deletePending.value.title;
+    await apiRequest(`/exam-windows/${deletePending.value.id}`, "DELETE");
+    deletePending.value = null;
+    message.value = `ลบรอบสอบ “${title}” แล้ว ExamPaper จะกลับ Draft ได้เมื่อไม่มีรอบอื่นอ้างอิง`;
+    await load();
+  } catch (cause) { error.value = cause instanceof Error ? cause.message : "ลบรอบสอบไม่สำเร็จ"; }
+  finally { busy.value = false; }
+}
 function displayDate(value: string | null) { return value ? new Date(value).toLocaleString("th-TH") : "ไม่กำหนด"; }
 
 watch(() => form.exam_paper_id, loadPolicy);
@@ -146,7 +159,7 @@ onMounted(load);
         <article v-for="window in windows" :key="window.id" class="card border border-base-300 bg-base-100 shadow-sm"><div class="card-body p-5">
           <div class="flex items-start justify-between gap-3"><div><h3 class="font-bold">{{ window.title }}</h3><p class="text-sm text-base-content/60">{{ window.paper_title }}</p></div><span class="badge shrink-0" :class="statusClasses[window.status]">{{ statusLabels[window.status] }}</span></div>
           <dl class="grid grid-cols-2 gap-3 text-sm"><div><dt class="text-base-content/50">เปิดเริ่มสอบ</dt><dd>{{ displayDate(window.window_open_at) }}</dd></div><div><dt class="text-base-content/50">ปิดรับการเริ่ม</dt><dd>{{ displayDate(window.window_close_at) }}</dd></div><div><dt class="text-base-content/50">เวลาทำข้อสอบ</dt><dd>{{ window.duration_minutes }} นาที</dd></div><div><dt class="text-base-content/50">นโยบายเวลา</dt><dd>{{ window.completion_policy === 'full_duration' ? 'ได้เวลาครบหลังเริ่ม' : 'หยุดพร้อมกัน' }}</dd></div><div><dt class="text-base-content/50">Quota</dt><dd>{{ window.eligible_org_units.reduce((sum, item) => sum + item.eligible_count, 0) }} คน / {{ window.eligible_org_units.length }} หน่วย</dd></div><div><dt class="text-base-content/50">Session</dt><dd>{{ window.session_counts.total ?? 0 }} คน</dd></div></dl>
-          <WindowLifecycleActions :status="window.status" @request="requestStatus(window, $event)" />
+          <WindowLifecycleActions :status="window.status" :deletable="['scheduled', 'cancelled'].includes(window.status) && (window.session_counts.total ?? 0) === 0" @request="requestStatus(window, $event)" @remove="deletePending = window" />
         </div></article>
       </div>
     </section>
@@ -166,5 +179,15 @@ onMounted(load);
         <textarea v-model="statusReason" class="textarea textarea-bordered" maxlength="500" placeholder="ระบุเหตุผลเพื่อบันทึกใน Audit Log"></textarea>
       </label>
     </ConfirmModal>
+    <ConfirmModal
+      :open="Boolean(deletePending)"
+      title="ลบรอบสอบที่ไม่เคยใช้งาน"
+      :message="deletePending ? `ยืนยันลบ “${deletePending.title}” รอบนี้ไม่มี Session และการลบจะถูกบันทึกใน Audit Log` : ''"
+      confirm-label="ลบรอบสอบ"
+      cancel-label="ยกเลิก"
+      :busy="busy"
+      @confirm="deleteWindow"
+      @cancel="deletePending = null"
+    />
   </PageContainer>
 </template>

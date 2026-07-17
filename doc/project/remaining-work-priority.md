@@ -58,7 +58,12 @@ Production device acceptance remains covered by item 9 and complete mutation-aud
 Exam Window boundary update 2026-07-17: Paper organization quotas now act as a template and each
 Window owns the enforceable quota for that round. The Window management UI supports fixed-end or
 full-duration timing and an audited Scheduled/Open/Suspended/Closed/Cancelled lifecycle. ExamPaper
-revision/clone and human device acceptance remain open follow-up work.
+Human device acceptance remains open follow-up work.
+
+ExamPaper revision update 2026-07-17: Drafts without Windows are editable with a required change
+summary; used Papers create a lineage-preserving Revision instead. Scheduled/Cancelled Windows with
+zero sessions can be deleted to recover from setup mistakes. Physical Paper deletion remains
+intentionally excluded and human acceptance remains open.
 
 Automated gate scripts are under `poc/` and can be orchestrated with
 `scripts/run-production-gates.ps1`. External sign-offs remain intentionally manual.

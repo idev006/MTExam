@@ -592,3 +592,11 @@ organization quotas per round and owns scheduling, duration override, fixed-end/
 and the Scheduled/Open/Suspended/Closed/Cancelled lifecycle. Mutations require the Window creator or
 super admin and generate audit evidence. The management contract, compatibility rules and sequence
 are maintained in [ExamPaper and ExamWindow Lifecycle Design](exam-paper-window-lifecycle-design.md).
+
+## 33. ExamPaper Draft editing and revision
+
+Direct mutation is limited to Draft Papers without Window references. Used Papers create a new Draft
+revision with explicit lineage instead of rewriting historical content. Mistaken Scheduled/Cancelled
+Windows may be deleted only when they have no sessions. Authorization, change summaries and audit
+events are mandatory. Detailed rules and sequence evidence are maintained in
+[ExamPaper Draft Editing and Revision Design](exam-paper-revision-design.md).
