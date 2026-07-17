@@ -1,7 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import OrgQuotaTree from "@/components/papers/OrgQuotaTree.vue";
-import { hasQuotaOverlap, type QuotaOrgUnit } from "@/components/papers/orgQuota";
+import { hasQuotaOverlap, sortOrgUnitsByName, type QuotaOrgUnit } from "@/components/papers/orgQuota";
 
 const units: QuotaOrgUnit[] = [
   { id: "bureau", code: "B", name: "กองบังคับการอำนวยการ", level: "bureau", parent_id: null, status: "active" },
@@ -47,5 +47,15 @@ describe("hasQuotaOverlap", () => {
   it("detects a parent-child selection as a defensive submit guard", () => {
     expect(hasQuotaOverlap(units, ["bureau", "division-6"])).toBe(true);
     expect(hasQuotaOverlap(units, ["division-1", "division-6"])).toBe(false);
+  });
+});
+
+describe("sortOrgUnitsByName", () => {
+  it("sorts organization options alphabetically by display name", () => {
+    expect(sortOrgUnitsByName([
+      { id: "z", code: "Z", name: "Zulu", level: "bureau", parent_id: null, status: "active" },
+      { id: "a", code: "A", name: "Alpha", level: "bureau", parent_id: null, status: "active" },
+      { id: "b", code: "B", name: "Alpha", level: "station", parent_id: null, status: "active" },
+    ]).map((unit) => unit.id)).toEqual(["a", "b", "z"]);
   });
 });

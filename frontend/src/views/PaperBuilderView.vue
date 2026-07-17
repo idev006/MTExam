@@ -7,7 +7,7 @@ import PageHeader from "@/components/layout/PageHeader.vue";
 import OrgQuotaTree from "@/components/papers/OrgQuotaTree.vue";
 import PaperEditActions from "@/components/papers/PaperEditActions.vue";
 import PaperLifecycleActions, { type PaperLifecycleStatus } from "@/components/papers/PaperLifecycleActions.vue";
-import { hasQuotaOverlap, type QuotaOrgUnit } from "@/components/papers/orgQuota";
+import { hasQuotaOverlap, sortOrgUnitsByName, type QuotaOrgUnit } from "@/components/papers/orgQuota";
 import { apiGet, apiRequest } from "@/api/client";
 
 interface Subject { id: string; code: string; name: string }
@@ -29,6 +29,10 @@ interface PaperEdit {
 
 const subjects = ref<Subject[]>([]);
 const orgUnits = ref<QuotaOrgUnit[]>([]);
+watch(orgUnits, (rows) => {
+  const sorted = sortOrgUnitsByName(rows);
+  if (sorted.some((unit, index) => unit.id !== rows[index]?.id)) orgUnits.value = sorted;
+});
 const questions = ref<Question[]>([]);
 const papers = ref<Paper[]>([]);
 const selectedIds = ref<string[]>([]);

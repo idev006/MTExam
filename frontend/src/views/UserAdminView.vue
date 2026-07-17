@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import AppAlert from "@/components/feedback/AppAlert.vue";
 import AppToast from "@/components/feedback/AppToast.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import { apiGet, apiRequest } from "@/api/client";
+import { sortOrgUnitsByName } from "@/components/papers/orgQuota";
 import { USER_ROLES } from "@/domain/roles";
 
 interface User { id: string; username: string; full_name: string; role: string; status: string }
@@ -13,6 +14,10 @@ const users = ref<User[]>([]); const units = ref<OrgUnit[]>([]); const error = r
 const form = ref({ username: "", password: "", full_name: "", role: "examinee" });
 const roleOptions = USER_ROLES;
 const selectedUser = ref<User | null>(null); const selectedScope = ref<string[]>([]);
+watch(units, (rows) => {
+  const sorted = sortOrgUnitsByName(rows);
+  if (sorted.some((unit, index) => unit.id !== rows[index]?.id)) units.value = sorted;
+});
 async function load() { try { [users.value, units.value] = await Promise.all([apiGet<User[]>("/admin/users"), apiGet<OrgUnit[]>("/org-units")]); } catch (e) { error.value = e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ"; } }
 async function create() { await apiRequest<User>("/admin/users", "POST", form.value); form.value = { username: "", password: "", full_name: "", role: "examinee" }; toast.value = true; await load(); }
 async function deactivate(id: string) { await apiRequest<User>(`/admin/users/${id}/deactivate`, "POST"); await load(); }

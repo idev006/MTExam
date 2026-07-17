@@ -33,5 +33,5 @@ def list_org_units(
         Depends(require_roles(UserRole.SUPER_ADMIN, UserRole.EXAM_AUTHOR, UserRole.VIEWER)),
     ],
 ) -> list[OrgUnitResponse]:
-    rows = db.scalars(select(OrgUnit).order_by(OrgUnit.level, OrgUnit.code))
+    rows = db.scalars(select(OrgUnit).order_by(OrgUnit.name, OrgUnit.code))
     return [OrgUnitResponse.model_validate(row, from_attributes=True) for row in rows]

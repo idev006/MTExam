@@ -7,6 +7,15 @@ export interface QuotaOrgUnit {
   status: string;
 }
 
+export function sortOrgUnitsByName<T extends Pick<QuotaOrgUnit, "code" | "name">>(
+  units: T[],
+): T[] {
+  return [...units].sort((left, right) => {
+    const byName = left.name.localeCompare(right.name, "th", { sensitivity: "base" });
+    return byName || left.code.localeCompare(right.code, "en", { sensitivity: "base" });
+  });
+}
+
 export function findSelectedAncestor(
   units: QuotaOrgUnit[],
   selectedIds: string[],

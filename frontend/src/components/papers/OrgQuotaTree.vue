@@ -4,6 +4,7 @@ import {
   descendantCount,
   findSelectedAncestor,
   hasSelectedDescendant,
+  sortOrgUnitsByName,
   type QuotaOrgUnit,
 } from "@/components/papers/orgQuota";
 
@@ -26,11 +27,12 @@ const childrenByParent = computed(() => {
     if (!unit.parent_id || !byId.value.has(unit.parent_id)) continue;
     result.set(unit.parent_id, [...(result.get(unit.parent_id) ?? []), unit]);
   }
+  for (const [parentId, children] of result) result.set(parentId, sortOrgUnitsByName(children));
   return result;
 });
-const roots = computed(() => props.units.filter(
+const roots = computed(() => sortOrgUnitsByName(props.units.filter(
   (unit) => !unit.parent_id || !byId.value.has(unit.parent_id),
-));
+)));
 const visibleRows = computed(() => {
   const rows: Array<{ unit: QuotaOrgUnit; depth: number }> = [];
   const visit = (unit: QuotaOrgUnit, depth: number) => {

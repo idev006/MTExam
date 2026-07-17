@@ -167,6 +167,8 @@ publish-readiness validation, audit logging and the rule that a creation cannot 
 an Exam Window exists are covered by automated API tests; Vue tests cover state-specific actions.
 Author-scoped Exam Creation quota now includes the author's assigned organization and active
 descendants, with backend overlap prevention for parent-child quota conflicts.
+Organization selectors in user scope, question-bank ownership and Paper Builder now sort by display
+name, while quota trees preserve hierarchy and sort sibling units alphabetically.
 
 ### Exam Window operational boundary — 2026-07-17
 

@@ -59,6 +59,20 @@ def test_exam_creation_subjects_are_loaded_from_database(client: TestClient) -> 
     assert any(subject["id"] == created.json()["id"] for subject in subjects)
 
 
+def test_org_units_are_returned_alphabetically_for_scope_selection(client: TestClient) -> None:
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"username": "author", "password": "author1234"}
+        ).status_code
+        == 200
+    )
+    response = client.get("/api/v1/org-units")
+
+    assert response.status_code == 200
+    names_and_codes = [(row["name"], row["code"]) for row in response.json()]
+    assert names_and_codes == sorted(names_and_codes)
+
+
 def test_exam_author_can_create_exam_creation_with_policy_and_quota(
     client: TestClient,
 ) -> None:

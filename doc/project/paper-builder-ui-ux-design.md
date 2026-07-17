@@ -29,6 +29,8 @@ misrepresent a shared parent quota as separate child quotas.
   tree remains vertically scrollable.
 - Notebook/desktop: the tree uses the available width and the summary is a sticky right column.
 - Expand/collapse controls expose `aria-expanded`; disabled choices retain a visible reason.
+- Organization choices are sorted alphabetically by display name. Hierarchical controls preserve
+  parent-child grouping and sort sibling units by name.
 
 ## Validation and defense in depth
 

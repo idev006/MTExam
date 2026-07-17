@@ -4,11 +4,16 @@ import AppAlert from "@/components/feedback/AppAlert.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import PageHeader from "@/components/layout/PageHeader.vue";
 import { apiGet, apiRequest } from "@/api/client";
+import { sortOrgUnitsByName } from "@/components/papers/orgQuota";
 interface Bank { id: string; name: string; status: string; subject_id?: string }
 interface Subject { id: string; code: string; name: string; status: string }
-interface OrgUnit { id: string; name: string; level: string; status: string }
+interface OrgUnit { id: string; code: string; name: string; level: string; status: string }
 interface Question { id: string; content: string; difficulty: string | null; status: string; choices: { id: string; content: string; is_correct: boolean }[] }
 const banks = ref<Bank[]>([]); const subjects = ref<Subject[]>([]); const orgUnits = ref<OrgUnit[]>([]); const questions = ref<Question[]>([]); const selectedBankId = ref(""); const message = ref(""); const error = ref("");
+watch(orgUnits, (rows) => {
+  const sorted = sortOrgUnitsByName(rows);
+  if (sorted.some((unit, index) => unit.id !== rows[index]?.id)) orgUnits.value = sorted;
+});
 const bankForm = ref({ name: "", owner_org_unit_id: "", subject_id: "", is_shared: false });
 const questionForm = ref({ content: "", difficulty: "medium", choices: [{ content: "", is_correct: true }, { content: "", is_correct: false }, { content: "", is_correct: false }, { content: "", is_correct: false }] });
 const selectedBank = computed(() => banks.value.find((bank) => bank.id === selectedBankId.value));
